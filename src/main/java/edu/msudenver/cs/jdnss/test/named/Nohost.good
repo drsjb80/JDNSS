@@ -1,0 +1,11 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN
+;; flags: qr aa rd; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 0
+;; WARNING: recursion requested but not available
+
+;; QUESTION SECTION:
+;www.SOA.com.			IN	A
+
+;; AUTHORITY SECTION:
+SOA.com.		86400	IN	SOA	SOA.com. root.one.test.com. 11 28800 7200 604800 86400
+

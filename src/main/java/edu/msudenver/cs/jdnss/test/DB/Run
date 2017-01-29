@@ -1,0 +1,8 @@
+java -jar ../../JDNSS-1.6.0.jar \
+    --DBClass=com.mysql.jdbc.Driver \
+    --DBURL=jdbc:mysql://localhost/JDNSS \
+    --DBUser=JDNSS \
+    --DBPass=JDNSS \
+    --port=5000 \
+    --LogHandler=Console \
+    --LogLevel=FINEST

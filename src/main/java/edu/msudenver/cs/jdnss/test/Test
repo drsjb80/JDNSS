@@ -1,0 +1,102 @@
+#! /bin/bash -e
+
+PORT=5354
+
+. TESTS
+
+#	name		file		query	type
+# tests=( 'subdomain	subdomain.com  	www.subdomain.com' )
+
+
+for i in "${tests[@]}"
+do
+    # create an array with the contents of the current array element
+    b=(${i[@]})
+
+    name=${b[0]};
+    file=${b[1]};
+    query=${b[2]};
+    type=${b[3]};
+
+    echo -n "Testing $name..."
+
+    DIGARGS='+nostats +nocmd'
+    DIGHOST='@localhost'
+
+    case $name in
+    	TCP )
+	    DIGARGS="+vc $DIGARGS"
+	    JDNSSARGS='--TCP=true';;
+	ip )
+	    DIGHOST='@127.0.0.2'
+	    JDNSSARGS='--IPAddress=127.0.0.2';;
+	192* | *reverse | *.in-addr.arpa )
+	    query="-x $query";;
+	dnssec )
+	    DIGARGS="+dnssec $DIGARGS";;
+    esac
+
+    JDNSSARGS="$JDNSSARGS --LogHandler=Console --LogLevel=SEVERE"
+    # JDNSSARGS="$JDNSSARGS --LogHandler=Console --LogLevel=FINEST"
+    JDNSS="java $DEBUG -jar ../JDNSS-*.jar $JDNSSARGS --once=true"
+
+    $JDNSS --port=$PORT $file &
+    sleep 1
+
+    dig $DIGARGS $DIGHOST $query -p $PORT $type | \
+        sed -e 's/, id: [0-9][0-9]*$//' > /tmp/$name
+
+    diff --minimal named/$name.good /tmp/$name
+    if [[ $? != 0 ]]
+    then
+    	echo "FAILED"
+        exit 1
+    fi
+
+    rm /tmp/$name
+    sleep 1
+
+    echo "passed"
+
+done
+
+exit
+
+echo -n "Testing MC..."
+    name=MC
+
+    $JDNSS --TCP=false --UDP=false --MC --once=true scopesconf.org &
+    sleep 1
+    java -cp .. MClient www.scopesconf.org A > /tmp/$name
+
+    diff --minimal $name.good /tmp/$name
+    if [[ $? != 0 ]]
+    then
+    	echo "FAILED"
+        exit 1
+    fi
+
+    rm /tmp/$name
+    echo "passed"
+
+echo -n "Testing trunc..."
+
+    name=trunc
+    java -cp .. JDNSS --LogLevel=WARNING --port=$PORT trunc.org &
+    sleep 1
+
+    dig $DIGARGS @localhost test.trunc.org -p $PORT > /tmp/$name
+
+    diff --minimal $name.good /tmp/$name
+    if [[ $? != 0 ]]
+    then
+    	echo "FAILED"
+        exit 1
+    fi
+
+    rm /tmp/$name
+    sleep 1
+
+    echo "passed"
+
+    kill %+

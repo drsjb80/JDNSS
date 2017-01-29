@@ -1,0 +1,10 @@
+options {
+	directory 	"/home/beaty/src/JDNSS/src/test";
+	pid-file 	"/home/beaty/src/JDNSS/src/test/named/named.pid";
+	allow-query-cache { none; };
+	allow-query     { any; };
+	listen-on	port 5354 { 127.0.0.1; } ;
+	recursion no;
+};
+
+zone "NAME" { type master; file "NAME"; };

@@ -1,0 +1,11 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 0
+;; WARNING: recursion requested but not available
+
+;; QUESTION SECTION:
+;ftp.CNAMEAAAA.com.		IN	A
+
+;; AUTHORITY SECTION:
+CNAMEAAAA.com.		86400	IN	SOA	CNAMEAAAA.com. root.one.test.com.CNAMEAAAA.com. 11 28800 7200 604800 86400
+

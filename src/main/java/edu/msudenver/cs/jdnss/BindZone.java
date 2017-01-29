@@ -1,5 +1,4 @@
 package edu.msudenver.cs.jdnss;
-
 /**
  * @author Steve Beaty
  * @version $Id: BindZone.java,v 1.1 2011/03/03 22:35:14 drb80 Exp $
@@ -29,12 +28,15 @@ class BindZone implements Zone
     private Hashtable hTXT;
     private Hashtable hHINFO;
     private Hashtable hSOA;
+    private Hashtable hDNSKEY;
+    private Hashtable hDNSRRSIG;
+    private Hashtable hDNSNSEC;
 
     private JavaLN logger = JDNSS.logger;
 
     public BindZone (String name)
     {
-	this.name = name;
+        this.name = name;
 
         hA = new Hashtable();
         hAAAA = new Hashtable();
@@ -45,6 +47,9 @@ class BindZone implements Zone
         hTXT = new Hashtable();
         hHINFO = new Hashtable();
         hSOA = new Hashtable();
+        hDNSKEY = new Hashtable();
+        hDNSRRSIG = new Hashtable();
+        hDNSNSEC = new Hashtable();
     }
 
     /**
@@ -54,8 +59,8 @@ class BindZone implements Zone
 
     /**
      * Create a printable String
-     * @param h	a Hashtable
-     * @return	the contents in String form
+     * @param h        a Hashtable
+     * @return        the contents in String form
      */
     private String dumphash (Hashtable h)
     {
@@ -87,6 +92,9 @@ class BindZone implements Zone
         s += "PTR: " + dumphash (hPTR) + "\n";
         s += "TXT: " + dumphash (hTXT) + "\n";
         s += "HINFO: " + dumphash (hHINFO) + "\n";
+        s += "DNSKEY: " + dumphash (hDNSKEY) + "\n";
+        s += "DNSRRSIG: " + dumphash (hDNSRRSIG) + "\n";
+        s += "DNSNSEC: " + dumphash (hDNSNSEC) + "\n";
         s += "--------";
 
         return (s);
@@ -94,44 +102,47 @@ class BindZone implements Zone
 
     private Hashtable getTable (int type)
     {
-	logger.entering (type);
+        logger.entering (type);
 
         switch (type)
         {
-            case Utils.A:	return (hA);
-            case Utils.AAAA:	return (hAAAA);
-            case Utils.NS:	return (hNS);
-            case Utils.MX:	return (hMX);
-            case Utils.CNAME:	return (hCNAME);
-            case Utils.PTR:	return (hPTR);
-            case Utils.TXT:	return (hTXT);
-            case Utils.HINFO:	return (hHINFO);
-            case Utils.SOA:	return (hSOA);
+            case Utils.A:        return (hA);
+            case Utils.AAAA:        return (hAAAA);
+            case Utils.NS:        return (hNS);
+            case Utils.MX:        return (hMX);
+            case Utils.CNAME:        return (hCNAME);
+            case Utils.PTR:        return (hPTR);
+            case Utils.TXT:        return (hTXT);
+            case Utils.HINFO:        return (hHINFO);
+            case Utils.SOA:        return (hSOA);
+            case Utils.NSEC:        return (hDNSNSEC);
+            case Utils.RRSIG:        return (hDNSRRSIG);
+            case Utils.DNSKEY:        return (hDNSKEY);
             default:
-	    {
-		logger.config ("type not found: " + type);
-	        logger.exiting ("null");
-		return (null);
-	    }
+            {
+                logger.config ("type not found: " + type);
+                logger.exiting ("null");
+                return (null);
+            }
         }
     }
 
     /**
      * Add an address to a name.  There may be multiple addresses per name
-     * @param name	the name
-     * @param rr	the resource record
+     * @param name        the name
+     * @param rr        the resource record
      */
     public void add (String name, RR rr)
     {
         logger.entering (new Object[]{name, rr});
 
-	if ((rr instanceof SOARR) && name != this.name)
-	    this.name = name;
+        if ((rr instanceof SOARR) && name != this.name)
+            this.name = name;
 
         Hashtable h = getTable (rr.getType());
         Vector value;
 
-	logger.finest (h.get (name));
+        logger.finest (h.get (name));
 
         /*
         ** if there isn't already a entry
@@ -140,38 +151,38 @@ class BindZone implements Zone
         {
             value = new Vector();
             h.put (name, value);
-	    value.add (rr);
+            value.add (rr);
         }
-	else if (! value.contains (rr))
-	{
-	    value.add (rr);
+        else if (! value.contains (rr))
+        {
+            value.add (rr);
         }
-	else
-	{
-	    logger.info (rr + " already present");
-	}
+        else
+        {
+            logger.info (rr + " already present");
+        }
     }
 
     /**
      * Get the Vector for a particular name
-     * @param type	the query type
-     * @param name	the name
-     * @return a Vector with the appropriate addresses for the given name
+     * @param type        the query type
+     * @param name        the name
+     * @return a Vector with the appropriate addresses for the given name 
      */
     public Vector get (int type, String name)
     {
-	logger.entering (new Object[]{new Integer (type), name});
+        logger.entering (new Object[]{new Integer (type), name});
 
-	Hashtable h = getTable (type);
-	logger.finest (h);
+        Hashtable h = getTable (type);
+        logger.finest (h);
 
-	Vector v = null;
+        Vector v = null;
 
-	if (h != null)
-	    v = (Vector) h.get (name);
+        if (h != null)
+            v = (Vector) h.get (name);
 
-	logger.exiting  (v);
-	return (v);
+        logger.exiting  (v);
+        return (v);
     }
 
     /**
@@ -180,14 +191,14 @@ class BindZone implements Zone
      */
     public static void main (String[] args)
     {
-	/*
+        /*
         Zone z = new Zone ("mpcs.org", "ns.mpcs.org", "root.mpcs.org",
-	    1, 2, 3, 4, 5, 6);
-	*/
-
+            1, 2, 3, 4, 5, 6);
+        */
+        
         BindZone z = new BindZone ("name");
-	z.add ("name",
-	    new SOARR ("domain", "server", "contact", 1, 2, 3, 4, 5, 6));
+        z.add ("name", 
+            new SOARR ("domain", "server", "contact", 1, 2, 3, 4, 5, 6));
 
         z.add ("www", new ARR ("www", 0, "1.2.3.4"));
         z.add ("www", new ARR ("www", 0, "4.3.1.1"));

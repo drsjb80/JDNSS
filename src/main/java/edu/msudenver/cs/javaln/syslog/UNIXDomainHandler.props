@@ -1,0 +1,8 @@
+# -Djava.util.logging.config.file=UNIXDomainHandler.props
+# see also: /usr/java/default/jre/lib/logging.properties
+
+.level = FINEST
+handlers = edu.msudenver.cs.javaln.syslog.UNIXDomainHandler
+edu.msudenver.cs.javaln.syslog.UNIXDomainHandler.level = FINEST
+edu.msudenver.cs.javaln.syslog.UNIXDomainHandler.formatter = \
+	edu.msudenver.cs.javaln.syslog.SyslogdFormatter

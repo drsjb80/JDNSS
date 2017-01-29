@@ -1,0 +1,5 @@
+ncftpput upload.sourceforge.net incoming JCLO*.jar
+
+scp *.html drb80@shell.sourceforge.net:/home/groups/j/jc/jclo/htdocs
+
+ssh drb80@shell.sourceforge.net "chmod go+r /home/groups/j/jc/jclo/htdocs/*"

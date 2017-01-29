@@ -1,0 +1,8 @@
+# -Djava.util.logging.config.file=CLIHandler.props
+# see also: /usr/java/default/jre/lib/logging.properties
+
+.level = FINEST
+handlers = edu.msudenver.cs.javaln.syslog.CLIHandler
+edu.msudenver.cs.javaln.syslog.CLIHandler.level = FINEST
+edu.msudenver.cs.javaln.syslog.CLIHandler.formatter = \
+	edu.msudenver.cs.javaln.syslog.CLIFormatter

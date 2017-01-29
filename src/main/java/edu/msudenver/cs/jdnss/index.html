@@ -1,0 +1,183 @@
+<html><head><title>JDNSS: An authoritative-only Java DNS Server</title>
+
+<style type="text/css">
+@media screen, print
+{
+        body
+        {
+                font-family : sans-serif;
+                text-align : justify
+        }
+}
+ 
+@media print {
+	body { font-size : 12pt }
+	table { font-size : 12pt }
+}
+
+h1, h2, h3
+{
+	font-family : sans-serif;
+	text-align : center;
+}
+A {text-decoration : none}
+</style></head>
+<body>
+
+<center><h2>JDNSS: An authoritative-only Java DNS Server</h2></center>
+
+<p>JDNSS is a small DNS server written in Java.  It was written to be both
+more portable and more secure due to its implementation in Java.  It is
+currently intended for use as a "leaf" server as it does not do iterative
+or recursive lookups for clients, nor does it do any cacheing.  It reads
+zone files listed on the command line.  The other command line arguments
+are as follows:<p>
+
+<table border>
+<tr><th>argument</th><th>use</th></tr>
+<tr>
+    <td>--port=#</td>
+    <td>listen to UDP and TCP at port number instead of 53.</td>
+</tr>
+
+<tr>
+    <td>--threads=#</td>
+    <td>the maximum number of threads to allow (default: 10).</td>
+</tr>
+
+<tr>
+    <td>--IPaddress=#</td>
+    <td>listen to IP address number instead of the default for the machine.</td>
+</tr>
+
+<tr>
+    <td>--TCP=(true|false)</td>
+    <td>listen to the TCP port (default: true).</td>
+</tr>
+
+<tr>
+    <td>--UDP=(true|false)</td>
+    <td>listen to the UDP port (default: true).</td>
+</tr>
+
+<tr>
+    <td>--MC=(true|false)</td>
+    <td>listen to the multicast port (default: false).</td>
+</tr>
+
+<tr>
+    <td>--MCPort=#</td>
+    <td>multicast port number (default: 5353).</td>
+</tr>
+
+<tr>
+    <td>--MCAddress=#</td>
+    <td>multicast address (default: 224.0.0.251).</td>
+</tr>
+
+<tr>
+    <td>--MCAddress=#</td>
+    <td>multicast address (default: 224.0.0.251).</td>
+</tr>
+
+<tr>
+    <td>--DBClass=(string)</td>
+    <td>The Java driver class for the database (e.g.: com.mysql.jdbc.Driver).</td>
+</tr>
+
+<tr>
+    <td>--DBURL=(string)</td>
+    <td>The URL of the database (e.g.: jdbc:mysql://localhost/JDNSS).</td>
+</tr>
+
+<tr>
+    <td>--DBUser=(string)</td>
+    <td>The database user name</td>
+</tr>
+
+<tr>
+    <td>--DBPass=(string)</td>
+    <td>The database user name</td>
+</tr>
+
+
+<tr>
+    <td>--LogHandler=(Syslogd|CLI|UNIXDomain|Console)</td>
+    <td>specify where log messages will go: a syslog daemon listening on
+    localhost port 514, the command line interface command "logger", the
+    UNIX domain socket, or the console.  The default handler sends log
+    messages to syslogd.  If you choose Syslogd, make sure you have a
+    syslogd process listening; in FC8 for example one needs a "-r514" in
+    /etc/sysconfig/rsyslog or /etc/default/syslogd.</td>
+</tr>
+
+<tr>
+    <td>--LogLevel=(SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST)</td>
+    <td>default: INFO.</td>
+</tr>
+
+<tr>
+    <td>--SyslogdHost=hostname</td>
+    <td>default: "localhost".</td>
+</tr>
+
+<tr>
+    <td>--SyslogdPort=#</td>
+    <td>default: 514.</td>
+</tr>
+
+<tr>
+    <td>--RFC2671=(true|false)</td>
+    <td>default: false.  Whether or not JDNSS sends back an NOTIMPL message
+    when an EDNS query is sent (e.g. for DNSSEC).  Most servers choose to
+    silently ignore these and send back the answer, which is JDNSS's
+    approach too.  If you want to send back a NOTIMPL, set this to true.
+    Here is the relevant passage from RFC2671.
+<blockquote>
+Responders who do not understand these protocol extensions are expected to
+send a response with RCODE NOTIMPL, FORMERR, or SERVFAIL.  Therefore use of
+extensions should be "probed" such that a responder who isn't known to
+support them be allowed a retry with no extensions if it responds with such
+an RCODE.
+</blockquote>
+
+</tr>
+
+<tr>
+    <td>--version</td>
+    <td>display the JDNSS version number and exit.</td>
+</tr>
+
+</table>
+
+<p>You can run it via "java -jar JDNSS-1.6.0.jar zone1 zone2" if zone1
+and zone2 are two zone files you want to serve.  There are also
+self-extracting executables available for Windows and UNIX.
+All files are available at:
+<a href="http://sourceforge.net/projects/jdnss/">
+http://sourceforge.net/projects/jdnss/</a></p>
+
+<p>For a quick test, download and save the <a href="test.com">test.com</a>
+then run JDNSS with the following optinso: <code>--port=5300
+test/test.com</code>.  You should be able to run the following queries
+(from a different window):
+<pre>
+nslookup -port=5300 test.com localhost
+nslookup -port=5300 www.test.com localhost
+nslookup -port=5300 -type=SOA test.com localhost
+nslookup -port=5300 -type=NS test.com localhost
+nslookup -port=5300 -type=MX test.com localhost
+nslookup -port=5300 -type=AAAA www.test.com localhost
+nslookup -port=5300 -type=TXT one.test.com localhost
+</pre>
+
+<p>There is a script for /etc/init.d for UNIX in the jar file; extract it
+via "jar xf JDNSS-1.6.0.jar etc/jdnss".</p>
+
+<p>There are a lot of tests in the test directory; Test is a shell script
+that runs them all and checks the output.</p>
+
+<p>Todo: QU/QM, A6</p>
+
+</body>
+</html>

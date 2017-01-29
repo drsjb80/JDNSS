@@ -1,0 +1,392 @@
+----------
+tests[0][]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[1][--debug]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[2][--debug=true]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[3][--debug=yes]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[4][--debug=YES]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[5][--debug=false]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[6][--font-size]
+Caught an IllegalArgumentExceptionjava.lang.IllegalArgumentException: '--font-size' requires '=VALUE'
+----------
+tests[7][--font-style=BOLD]
+int: font__size = 0
+String: font__name = null
+String: font__style = BOLD
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[8][--font-size=10, --font-style=BOLD, --font-name=foo, --debug]
+int: font__size = 10
+String: font__name = foo
+String: font__style = BOLD
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[9][--none=none]
+Caught an IllegalArgumentExceptionjava.lang.IllegalArgumentException: No such option: "none"
+----------
+tests[10][--font-size=10.5]
+Caught an IllegalArgumentExceptionjava.lang.NumberFormatException: For input string: "10.5"
+----------
+tests[11][--1]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = true
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[12][--debug, one, two, three]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = [one, two, three]
+----------
+tests[0][]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[1][-debug]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[2][-font-size, 10]
+int: font__size = 10
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[3][-font-style, BOLD]
+int: font__size = 0
+String: font__name = null
+String: font__style = BOLD
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[4][-font-size, 10, -font-style, BOLD, -font-name, foo, -debug]
+int: font__size = 10
+String: font__name = foo
+String: font__style = BOLD
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[5][-none, none]
+Caught an IllegalArgumentExceptionjava.lang.IllegalArgumentException: No such option: "none"
+----------
+tests[6][-font-size, 10.5]
+Caught an IllegalArgumentExceptionjava.lang.NumberFormatException: For input string: "10.5"
+----------
+tests[7][-1]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = true
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[8][-Djava.util.logging.config.file=MethodFilter.props]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = MethodFilter.props
+String[]: additional = null
+----------
+tests[9][-debug, one, two, three]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = [one, two, three]
+----------
+tests[0][]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[1][-debug]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[2][--debug]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[3][--debug=true]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[4][-font-size, 10]
+int: font__size = 10
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[5][--font-size=10]
+int: font__size = 10
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[6][-font-style, BOLD]
+int: font__size = 0
+String: font__name = null
+String: font__style = BOLD
+boolean: debug = false
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[7][-font-size, 10, --font-style=BOLD, -font-name, foo, -debug]
+int: font__size = 10
+String: font__name = foo
+String: font__style = BOLD
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[8][-none, none]
+Caught an IllegalArgumentExceptionjava.lang.IllegalArgumentException: No such option: "none"
+----------
+tests[9][-font-size, 10.5]
+Caught an IllegalArgumentExceptionjava.lang.NumberFormatException: For input string: "10.5"
+----------
+tests[10][-1]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = false
+boolean: d = false
+boolean: _1 = true
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = null
+----------
+tests[11][-debug, one, two, three]
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: debug = true
+boolean: d = false
+boolean: _1 = false
+String[]: Accept = null
+int[]: ints = null
+boolean: help = false
+String: Djava_$util_$logging_$config_$file = null
+String[]: additional = [one, two, three]
+----------
+int: font__size = 0
+String: font__name = null
+String: font__style = null
+boolean: JCLOdebug = true
+boolean: JCLO_1 = true
+String[]: JCLOadditional = null

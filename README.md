@@ -10,36 +10,30 @@ are as follows:
 
 Argument     | Use
 ------------ | -------------
---port=#    | listen to UDP and TCP at port number instead of 53.
---threads=# | the maximum number of threads to allow (default: 10).
---IPaddress=#   | listen to IP address number instead of the default for the machine.
---TCP=(true\|false)  | listen to the TCP port (default: true).
---UDP=(true\|false)  | listen to the UDP port (default: true).
---MC=(true\|false)   | listen to the multicast port (default: false).
---MCPort=#  | multicast port number (default: 5353).
---MCAddress=#   | multicast address (default: 224.0.0.251).
---MCAddress=#   | multicast address (default: 224.0.0.251).
+--port=#            | Listen to UDP and TCP at port number instead of 53.
+--threads=#         | The maximum number of threads to allow (default: 10).
+--IPaddress=#       | Listen to IP address number instead of the default for the machine.
+--TCP=(true\|false) | Listen to the TCP port (default: true).
+--UDP=(true\|false) | Listen to the UDP port (default: true).
+--MC=(true\|false)  | Listen to the multicast port (default: false).
+--MCPort=#          | Multicast port number (default: 5353).
+--MCAddress=#       | Multicast address (default: 224.0.0.251).
+--MCAddress=#       | Multicast address (default: 224.0.0.251).
 --DBClass=(string)  | The Java driver class for the database (e.g.: com.mysql.jdbc.Driver).
 --DBURL=(string)    | The URL of the database (e.g.: jdbc:mysql://localhost/JDNSS).
 --DBUser=(string)   | The database user name
---DBPass=(string)   | The database user name
---LogHandler=(Syslogd\|CLI\|UNIXDomain\|Console)   | specify where log messages will go: a syslog daemon listening on localhost port 514, the command line interface command "logger", the UNIX domain socket, or the console.  The default handler sends log messages to syslogd.  If you choose Syslogd, make sure you have a syslogd process listening; in FC8 for example one needs a "-r514" in /etc/sysconfig/rsyslog or /etc/default/syslogd.
---LogLevel=(SEVERE\|WARNING\|INFO\|CONFIG\|FINE\|FINER\|FINEST)   | default: INFO.
---SyslogdHost=hostname  | default: "localhost".
---SyslogdPort=# | default: 514.
---RFC2671=(true\|false) | Default: false.  Whether or not JDNSS sends back an NOTIMPL message when an EDNS query is sent (e.g. for DNSSEC).  Most servers choose to silently ignore these and send back the answer, which is JDNSS's approach too.  If you want to send back a NOTIMPL, set this to true.  Here is the relevant passage from RFC2671.
-> Responders who do not understand these protocol extensions are expected to
-> send a response with RCODE NOTIMPL, FORMERR, or SERVFAIL.  Therefore use of
-> extensions should be "probed" such that a responder who isn't known to
-> support them be allowed a retry with no extensions if it responds with such
-> an RCODE.
+--DBPass=(string)   | The database user password
+--LogHandler=(Syslogd\|CLI\|UNIXDomain\|Console)   | Specify where log messages will go: a syslog daemon listening on localhost port 514, the command line interface command "logger", the UNIX domain socket, or the console.  The default handler sends log messages to syslogd.  If you choose Syslogd, make sure you have a syslogd process listening; in FC8 for example one needs a "-r514" in /etc/sysconfig/rsyslog or /etc/default/syslogd.
+--LogLevel=(SEVERE\|WARNING\|INFO\|CONFIG\|FINE\|FINER\|FINEST)   | Default: INFO.
+--SyslogdHost=hostname  | Default: "localhost".
+--SyslogdPort=# | Default: 514.
+--RFC2671=(true\|false) | Default: false.  Whether or not JDNSS sends back an NOTIMPL message when an EDNS query is sent (e.g. for DNSSEC).  Most servers choose to silently ignore these and send back the answer, which is JDNSS's approach too.  If you want to send back a NOTIMPL, set this to true.  Here is the relevant passage from RFC2671.  "Responders who do not understand these protocol extensions are expected to send a response with RCODE NOTIMPL, FORMERR, or SERVFAIL.  Therefore use of extensions should be "probed" such that a responder who isn't known to support them be allowed a retry with no extensions if it responds with such an RCODE."
 --version   | display the JDNSS version number and exit.
 
 You can run it via "java -jar JDNSS-VERSION.jar zone1 zone2" if zone1
 and zone2 are two zone files you want to serve.
 
-For a quick test, download and save the <a href="test.com">test.com</a>
-then run JDNSS with the following options:
+For a quick test, download and save the https://github.com/drsjb80/JDNSS/blob/master/test.com file and run JDNSS with the following options:
 
 > --port=5300 test.com
 
@@ -55,7 +49,6 @@ You should be able to run the following queries (from a different window):
 
 There is a script for /etc/init.d for UNIX.
 
-There are a lot of tests in the test directory; Test is a shell script
-that runs them all and checks the output.
+There are a lot of tests in the test directory; Test is a shell script that runs them all and checks the output.
 
 Todo: QU/QM, A6

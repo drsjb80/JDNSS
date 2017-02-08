@@ -46,5 +46,3 @@ You should be able to run the following queries (from a different window):
 * nslookup -port=5300 -type=MX test.com localhost
 * nslookup -port=5300 -type=AAAA www.test.com localhost
 * nslookup -port=5300 -type=TXT one.test.com localhost
-
-Todo: QU/QM, A6

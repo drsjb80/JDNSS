@@ -39,16 +39,12 @@ For a quick test, download and save the https://github.com/drsjb80/JDNSS/blob/ma
 
 You should be able to run the following queries (from a different window):
 
-> nslookup -port=5300 test.com localhost
-> nslookup -port=5300 www.test.com localhost
-> nslookup -port=5300 -type=SOA test.com localhost
-> nslookup -port=5300 -type=NS test.com localhost
-> nslookup -port=5300 -type=MX test.com localhost
-> nslookup -port=5300 -type=AAAA www.test.com localhost
-> nslookup -port=5300 -type=TXT one.test.com localhost
-
-There is a script for /etc/init.d for UNIX.
-
-There are a lot of tests in the test directory; Test is a shell script that runs them all and checks the output.
+* nslookup -port=5300 test.com localhost
+* nslookup -port=5300 www.test.com localhost
+* nslookup -port=5300 -type=SOA test.com localhost
+* nslookup -port=5300 -type=NS test.com localhost
+* nslookup -port=5300 -type=MX test.com localhost
+* nslookup -port=5300 -type=AAAA www.test.com localhost
+* nslookup -port=5300 -type=TXT one.test.com localhost
 
 Todo: QU/QM, A6

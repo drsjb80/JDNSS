@@ -18,7 +18,6 @@ Argument     | Use
 --MC=(true\|false)  | Listen to the multicast port (default: false).
 --MCPort=#          | Multicast port number (default: 5353).
 --MCAddress=#       | Multicast address (default: 224.0.0.251).
---MCAddress=#       | Multicast address (default: 224.0.0.251).
 --DBClass=(string)  | The Java driver class for the database (e.g.: com.mysql.jdbc.Driver).
 --DBURL=(string)    | The URL of the database (e.g.: jdbc:mysql://localhost/JDNSS).
 --DBUser=(string)   | The database user name

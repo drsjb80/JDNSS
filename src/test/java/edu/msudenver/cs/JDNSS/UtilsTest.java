@@ -15,10 +15,12 @@ public class UtilsTest
     {
         Assert.assertEquals (Utils.reverseIP ("192.168.1.2"), "2.1.168.192");
         Assert.assertEquals (Utils.reverseIP (""), "");
-        Assert.assertEquals (Utils.reverseIP (null), null);
         Assert.assertEquals (Utils.reverseIP ("foo"), "foo");
         Assert.assertEquals (Utils.reverseIP ("."), ".");
         Assert.assertEquals (Utils.reverseIP ("..."), "...");
+
+        exception.expect (IllegalArgumentException.class);
+        Assert.assertEquals (Utils.reverseIP (null), null);
     }
 
     @Test
@@ -51,5 +53,18 @@ public class UtilsTest
         exception.expect (IllegalArgumentException.class);
         Utils.getTwoBytes (0xfff00f00, 1);
         Utils.getTwoBytes (0xfff00f00, 5);
+    }
+
+    @Test
+    public void getNybble()
+    {
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 1), (byte) 0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 2), (byte) 0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 3), (byte) 15);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 4), (byte) 0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 5), (byte) 0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 6), (byte) 15);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 7), (byte) 15);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 8), (byte) 15);
     }
 }

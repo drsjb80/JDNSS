@@ -43,6 +43,8 @@ public class Utils
     public static final int NOTIMPL     = 4;
     public static final int REFUSED     = 5;
 
+    // time to make a map or two here...
+
     public static int mapStringToType (String s)
     {
         if (s.equalsIgnoreCase ("A"))               return (A);
@@ -178,18 +180,21 @@ public class Utils
     public static byte getByte (int from, int which)
     {
         Assert (which >= 1 && which <= 4);
+
         int shift = (which - 1) * 8;
         return ((byte) ((from & (0xff << shift)) >> shift));
     }
 
     /**
      * Get two bytes from an integer
-     * @param from        the integer to retrive from
+     * @param from        the integer to retrieve from
      * @param which        which byte to start with
      * @return                 the requested byte array
      */
     public static byte[] getTwoBytes (int from, int which)
     {
+        Assert (which > 1 && which <= 4);
+
         byte ret[] = new byte[2];
         ret[0] = getByte (from, which);
         ret[1] = getByte (from, which-1);
@@ -220,8 +225,9 @@ public class Utils
     public static byte getNybble (int from, int which)
     {
         Assert (which >= 1 && which <= 8);
+
         int shift = (which - 1) * 4;
-        return ((byte) ((from & (0x0f << shift)) >> shift));
+        return ((byte) (from >>> shift & 0x0f));
     }
 
     /**
@@ -241,6 +247,15 @@ public class Utils
 
     }
 
+    /**
+     * Performs an unsigned addition of four bytes.
+     *
+     * @param a        one of the bytes to add
+     * @param b        the other one
+     * @param c        the other other one
+     * @param d        the other other other one
+     * @return        the sum
+     */
     public static int addThem (byte a, byte b, byte c, byte d)
     {
         return
@@ -252,6 +267,13 @@ public class Utils
         );
     }
 
+    /**
+     * Performs an unsigned addition of two integers.
+     *
+     * @param a        one of the bytes to add
+     * @param b        the other one
+     * @return        the sum
+     */
     public static int addThem (int a, int b)
     {
         return
@@ -300,7 +322,9 @@ public class Utils
      */
     public static byte[] convertString (String s)
     {
-        // there's an extra byte both before and after
+        Assert (s != null && !s.equals (""));
+        
+        // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
         int pointer = 0;
 
@@ -357,9 +381,18 @@ public class Utils
         return (ret);
     }
 
+    /**
+     *  split the sting using the dots and reassemble backwards.
+     */
     public static String reverseIP (String s)
     {
+        Assert (s != null);
+
         String a[] = s.split ("\\.");
+
+        // all dots
+        if (a.length == 0) return s;
+
         String ret = "";
 
         for (int i = (a.length-1); i > 0; i--)
@@ -493,6 +526,7 @@ public class Utils
         return (docolons (s, 16));
     }
 
+    // replace with built-in
     public static byte[] decodeBase64 (String s)
     {
         int k = 0;
@@ -570,14 +604,18 @@ public class Utils
         int i;
         byte a[];
 
+        System.out.println ("----");
         a  = decodeBase64 ("TWFuTWFu");
         for (i = 0; i < a.length; i++) System.out.println (a[i]);
+        System.out.println ("----");
 
         a  = decodeBase64 ("TWF=");
         for (i = 0; i < a.length; i++) System.out.println (a[i]);
+        System.out.println ("----");
 
         a  = decodeBase64 ("TW==");
         for (i = 0; i < a.length; i++) System.out.println (a[i]);
+        System.out.println ("----");
     }
 
     public static String toString (DatagramPacket dgp)

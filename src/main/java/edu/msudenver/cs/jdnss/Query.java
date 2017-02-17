@@ -10,12 +10,12 @@ import java.util.Vector;
 import java.net.DatagramPacket;
 
 public class Query
-{   
+{
     private String qname[];
     private int qtype[];
     private int qclass[];
     private JavaLN logger = JDNSS.logger;
-   
+
     // http://www.networksorcery.com/enp/protocol/dns.htm
     private int id;
     private int opcode = 0;        // standard query
@@ -62,7 +62,7 @@ public class Query
         (
             (QR ? 128 : 0) |
             (opcode << 3) |
-            (AA ? 4 : 0) | 
+            (AA ? 4 : 0) |
             (TC ? 2 : 0) |
             (RD ? 1 : 0)
         );
@@ -90,7 +90,7 @@ public class Query
     {
         // internal representation
         this.id = id;
-            this.numQuestions = questions.length;
+        this.numQuestions = questions.length;
         this.qname = new String[this.numQuestions];
         this.qtype = new int[this.numQuestions];
         this.qclass = new int[this.numQuestions];
@@ -99,7 +99,7 @@ public class Query
         buffer = new byte[12];
         rebuild();
 
-            for (int i = 0; i < questions.length; i++)
+        for (int i = 0; i < questions.length; i++)
         {
             this.qname[i] = questions[i];
             this.qtype[i] = type[i];
@@ -146,7 +146,7 @@ public class Query
 
     /**
      * Evaluates and saves all questions
-    */
+     */
     private void parseQueries ()
     {
         logger.entering();
@@ -156,17 +156,17 @@ public class Query
         i.e., the parameters that define what is being asked.  The section
         contains QDCOUNT (usually 1) entries, each of the following format:
 
-                                            1  1  1  1  1  1
-              0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-            +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-            |                                               |
-            /                     QNAME                     /
-            /                                               /
-            +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-            |                     QTYPE                     |
-            +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-            |                     QCLASS                    |
-            +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        1  1  1  1  1  1
+        0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                                               |
+        /                     QNAME                     /
+        /                                               /
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                     QTYPE                     |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                     QCLASS                    |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
         */
 
         int location = 12;
@@ -246,13 +246,17 @@ public class Query
         logger.finest (v);
 
         if (v != null)
+        {
             addThem (v, host, Utils.A);
+        }
 
         v = zone.get (Utils.AAAA, host);
         logger.finest (v);
 
         if (v != null)
+        {
             addThem (v, host, Utils.AAAA);
+        }
     }
 
     private void createAuthorities (Zone zone)
@@ -296,14 +300,20 @@ public class Query
             buffer = Utils.combine (buffer, add);
 
             if (firsttime && which != Utils.NS)
+            {
                 createAuthorities (zone);
+            }
 
             firsttime = false;
 
             if (which == Utils.MX)
+            {
                 createAdditional (zone, ((MXRR) v.elementAt(i)).getHost());
+            }
             else if (which == Utils.NS)
+            {
                 createAdditional (zone, ((NSRR) v.elementAt(i)).getString());
+            }
         }
 
         rebuild();
@@ -350,25 +360,25 @@ public class Query
     void addSOA (Zone zone, SOARR SOA)
     {
         authority = Utils.combine
-            (authority, SOA.getBytes (zone.getName(), minimum));
+        (authority, SOA.getBytes (zone.getName(), minimum));
         numAuthorities++;
         addAuthorities();
         rebuild();
     }
 
-/*
-Suppose that an authoritative server has an A RR but has no AAAA RR for a
-host name.  Then, the server should return a response to a query for an
-AAAA RR of the name with the response code (RCODE) being 0 (indicating no
-error) and with an empty answer section (see Sections 4.3.2 and 6.2.4 of
-[1]).  Such a response indicates that there is at least one RR of a
-different type than AAAA for the queried name, and the stub resolver can
-then look for A RRs.
+    /*
+    Suppose that an authoritative server has an A RR but has no AAAA RR for a
+    host name.  Then, the server should return a response to a query for an
+    AAAA RR of the name with the response code (RCODE) being 0 (indicating no
+    error) and with an empty answer section (see Sections 4.3.2 and 6.2.4 of
+    [1]).  Such a response indicates that there is at least one RR of a
+    different type than AAAA for the queried name, and the stub resolver can
+    then look for A RRs.
 
-This way, the caching server can cache the fact that the queried name has
-no AAAA RR (but may have other types of RRs), and thus improve the response
-time to further queries for an AAAA RR of the name.
-*/
+    This way, the caching server can cache the fact that the queried name has
+    no AAAA RR (but may have other types of RRs), and thus improve the response
+    time to further queries for an AAAA RR of the name.
+    */
     private void dealWithOther (Zone zone, int type, String name)
     {
         int other = type == Utils.A ? Utils.AAAA : Utils.A;
@@ -423,7 +433,7 @@ time to further queries for an AAAA RR of the name.
             {
                 return (null);
             }
-            
+
             // there is a CNAME, is it of the correct type?
             v = zone.get (type, s); logger.finer (v);
             if (v != null)
@@ -532,7 +542,9 @@ time to further queries for an AAAA RR of the name.
         }
 
         if (numAuthorities > 0)
+        {
             addAuthorities();
+        }
 
         addAdditionals();
         rebuild();

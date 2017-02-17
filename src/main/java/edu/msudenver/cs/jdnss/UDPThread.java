@@ -32,12 +32,12 @@ public class UDPThread extends Thread
     public UDPThread (Query query, DatagramSocket socket, int port,
         InetAddress address, JDNSS dnsService)
     {
-	logger.entering (new Object[]{query, socket, address});
+        logger.entering (new Object[]{query, socket, address});
 
         this.query = query;
         this.socket = socket;
-	this.port = port;
-	this.address = address;
+        this.port = port;
+        this.address = address;
         this.dnsService = dnsService;
     }
 
@@ -46,49 +46,49 @@ public class UDPThread extends Thread
      */
     public void run()
     {
-	logger.entering();
+        logger.entering();
 
-	byte b[] = query.makeResponses (dnsService, true);
-	logger.finest (Utils.toString (b));
+        byte b[] = query.makeResponses (dnsService, true);
+        logger.finest (Utils.toString (b));
 
-	if (b != null)
-	{
-	    if (socket instanceof MulticastSocket)
-	    {
-	        port = 5353;
+        if (b != null)
+        {
+            if (socket instanceof MulticastSocket)
+            {
+                port = 5353;
 
-		try
-		{
-		    address = InetAddress.getByName ("224.0.0.251");
-		}
-		catch (UnknownHostException uhe)
-		{
-		    logger.throwing (uhe);
-		    return;
-		}
-	    }
+                try
+                {
+                    address = InetAddress.getByName ("224.0.0.251");
+                }
+                catch (UnknownHostException uhe)
+                {
+                    logger.throwing (uhe);
+                    return;
+                }
+            }
 
-	    logger.finest (port);
-	    logger.finest (address);
-	    logger.finest (b.length);
+            logger.finest (port);
+            logger.finest (address);
+            logger.finest (b.length);
 
-	    DatagramPacket reply = new DatagramPacket (b, b.length,
-		address, port);
+            DatagramPacket reply = new DatagramPacket (b, b.length,
+            address, port);
 
-	    logger.finest ("\n" + Utils.toString (reply.getData()));
-	    logger.finest (reply.getLength());
-	    logger.finest (reply.getOffset());
-	    logger.finest (reply.getAddress());
-	    logger.finest (reply.getPort());
+            logger.finest ("\n" + Utils.toString (reply.getData()));
+            logger.finest (reply.getLength());
+            logger.finest (reply.getOffset());
+            logger.finest (reply.getAddress());
+            logger.finest (reply.getPort());
 
-	    try
-	    {
-		socket.send (reply);
-	    }
-	    catch (IOException e)
-	    {
-		logger.throwing (e);
-	    }
-	}
+            try
+            {
+                socket.send (reply);
+            }
+            catch (IOException e)
+            {
+                logger.throwing (e);
+            }
+        }
     }
 }

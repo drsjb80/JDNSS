@@ -10,7 +10,7 @@ public class SandV
     SandV (String string, Vector v)
     {
         this.string = string;
-	this.v = v;
+        this.v = v;
     }
 
     public String getString() { return (string); }

@@ -1,0 +1,6 @@
+# build directory
+target/
+
+# IntelliJ IDEA Ultimate
+.idea/
+jdnss.iml

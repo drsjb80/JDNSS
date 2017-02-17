@@ -21,7 +21,7 @@ public class TCPThread extends Thread
      */
     public TCPThread (Socket socket, JDNSS dnsService)
     {
-	logger.entering(new Object[]{socket, dnsService});
+        logger.entering(new Object[]{socket, dnsService});
 
         this.socket = socket;
         this.dnsService = dnsService;
@@ -29,41 +29,41 @@ public class TCPThread extends Thread
 
     public void run()
     {
-	logger.entering();
+        logger.entering();
 
         InputStream is = null;
         OutputStream os = null;
 
-	try
-	{
-	    is = socket.getInputStream();
-	    os = socket.getOutputStream();
+        try
+        {
+            is = socket.getInputStream();
+            os = socket.getOutputStream();
 
-	    // in TCP, the first two bytes signify the length of the request
-	    byte buffer[] = new byte[2];
+            // in TCP, the first two bytes signify the length of the request
+            byte buffer[] = new byte[2];
 
-	    is.read (buffer, 0, 2);
+            is.read (buffer, 0, 2);
 
-	    byte query[] = new byte [Utils.addThem (buffer[0], buffer[1])];
+            byte query[] = new byte [Utils.addThem (buffer[0], buffer[1])];
 
-	    is.read (query);
+            is.read (query);
 
-	    Query q = new Query (query);
-	    byte b[] = q.makeResponses (dnsService, false);
+            Query q = new Query (query);
+            byte b[] = q.makeResponses (dnsService, false);
 
-	    int count = b.length;
-	    buffer[0] = Utils.getByte (count, 2);
-	    buffer[1] = Utils.getByte (count, 1);
+            int count = b.length;
+            buffer[0] = Utils.getByte (count, 2);
+            buffer[1] = Utils.getByte (count, 1);
 
-	    os.write (Utils.combine (buffer, b));
+            os.write (Utils.combine (buffer, b));
 
-	    is.close ();
-	    os.close();
-	    socket.close ();
-	}
-	catch (Throwable t)
-	{
-	    logger.throwing (t);
-	}
+            is.close ();
+            os.close();
+            socket.close ();
+        }
+        catch (Throwable t)
+        {
+            logger.throwing (t);
+        }
     }
 }

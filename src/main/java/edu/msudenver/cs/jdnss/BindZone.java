@@ -137,7 +137,9 @@ class BindZone implements Zone
         logger.entering (new Object[]{name, rr});
 
         if ((rr instanceof SOARR) && name != this.name)
+        {
             this.name = name;
+        }
 
         Hashtable h = getTable (rr.getType());
         Vector value;
@@ -167,7 +169,7 @@ class BindZone implements Zone
      * Get the Vector for a particular name
      * @param type        the query type
      * @param name        the name
-     * @return a Vector with the appropriate addresses for the given name 
+     * @return a Vector with the appropriate addresses for the given name
      */
     public Vector get (int type, String name)
     {
@@ -179,7 +181,9 @@ class BindZone implements Zone
         Vector v = null;
 
         if (h != null)
+        {
             v = (Vector) h.get (name);
+        }
 
         logger.exiting  (v);
         return (v);
@@ -195,9 +199,9 @@ class BindZone implements Zone
         Zone z = new Zone ("mpcs.org", "ns.mpcs.org", "root.mpcs.org",
             1, 2, 3, 4, 5, 6);
         */
-        
+
         BindZone z = new BindZone ("name");
-        z.add ("name", 
+        z.add ("name",
             new SOARR ("domain", "server", "contact", 1, 2, 3, 4, 5, 6));
 
         z.add ("www", new ARR ("www", 0, "1.2.3.4"));

@@ -62,7 +62,7 @@ public class Utils
         else if (s.equalsIgnoreCase ("ORIGIN"))     return (ORIGIN);
         else return (0);
     }
-    
+
     public static String mapTypeToString (int i)
     {
         switch (i)
@@ -71,11 +71,11 @@ public class Utils
             case NS : return "NS";
             case CNAME : return "CNAME";
             case SOA : return "SOA";
-            case PTR : return "PTR";        
+            case PTR : return "PTR";
             case HINFO : return "HINFO";
-            case MX : return "MX";        
+            case MX : return "MX";
             case TXT : return "TXT";
-            case AAAA : return "AAAA";        
+            case AAAA : return "AAAA";
             case A6 : return "A6";
             case OPT : return "OPT";
             case DNAME : return "DNAME";
@@ -276,7 +276,7 @@ public class Utils
         return
         (
             ((a & 0x000000ff) << 8) +
-             (b & 0x000000ff)
+            (b & 0x000000ff)
         );
     }
 
@@ -322,7 +322,7 @@ public class Utils
     public static byte[] convertString (String s)
     {
         Assert (s != null && !s.equals (""));
-        
+
         // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
         int pointer = 0;
@@ -358,9 +358,9 @@ public class Utils
         Assert (one != null || two != null);
 
         if (one == null)
+        {
             return (two);
-        if (two == null)
-            return (one);
+        }
 
         byte[] temp = new byte[one.length + two.length];
         System.arraycopy (one, 0, temp, 0, one.length);
@@ -374,7 +374,9 @@ public class Utils
         a[0] = two;
 
         if (one == null)
+        {
             return (a);
+        }
 
         byte[] temp = new byte[one.length + 1];
         System.arraycopy (one, 0, temp, 0, one.length);
@@ -404,7 +406,9 @@ public class Utils
         String ret = "";
 
         for (int i = (a.length-1); i > 0; i--)
+        {
             ret += a[i] + ".";
+        }
 
         ret += a[0];
 
@@ -428,12 +432,12 @@ public class Utils
     }
 
     /**
-     * How many times does one string exist in another?
-     *
-     * @param s        the String to search
-     * @param c        what to search for
-     * @return        the number of matches
-     */
+      * How many times does one string exist in another?
+      *
+      * @param s        the String to search
+      * @param c        what to search for
+      * @return        the number of matches
+      */
     public static int count (String s, String c)
     {
         int count = 0;
@@ -529,7 +533,9 @@ public class Utils
     {
         // if this is an v6t/v4 address
         if (count (s, ".") > 0)
+        {
             return (dodots (s));
+        }
 
         return (docolons (s, 16));
     }
@@ -547,11 +553,26 @@ public class Utils
         {
             char j = s.charAt (i);
 
-                 if (j >= 'A' && j <= 'Z')        vals[k++] = j - 'A';
-            else if (j >= 'a' && j <= 'z')        vals[k++] = j - 'a' + 26;
-            else if (j >= '0' && j <= '9')        vals[k++] = j - '0' + 52;
-            else if (j == '+')                        vals[k++] = 62;
-            else if (j == '/')                        vals[k++] = 63;
+            if (j >= 'A' && j <= 'Z')
+            {
+                vals[k++] = j - 'A';
+            }
+            else if (j >= 'a' && j <= 'z')
+            {
+                vals[k++] = j - 'a' + 26;
+            }
+            else if (j >= '0' && j <= '9')
+            {
+                vals[k++] = j - '0' + 52;
+            }
+            else if (j == '+')
+            {
+                vals[k++] = 62;
+            }
+            else if (j == '/')
+            {
+                vals[k++] = 63;
+            }
             else if (j == '=')
             {
                 vals[k++] = 0;
@@ -562,19 +583,25 @@ public class Utils
                 // logger.severe ("Illegal Base64 value: " + j);
                 break;
             }
-            
+
             if (k == 4)
             {
                 byte tmp[] = new byte[base + 3 - equals];
                 if (ret != null)
+                {
                     System.arraycopy (ret, 0, tmp, 0, ret.length);
+                }
                 ret = tmp;
 
-                    ret[base++] = (byte) ((vals[0] << 2) + (vals[1] >> 4));
+                ret[base++] = (byte) ((vals[0] << 2) + (vals[1] >> 4));
                 if (equals < 2)
+                {
                     ret[base++] = (byte) ((vals[1] << 4) + (vals[2] >> 2));
+                }
                 if (equals < 1)
+                {
                     ret[base++] = (byte) ((vals[2] << 6) + (vals[3]));
+                }
                 k = 0;
             }
         }
@@ -667,7 +694,9 @@ public class Utils
 
             SandN sn = parseName (tmp, buffer);
             if (sn == null)
+            {
                 return (null);        // error already flagged
+            }
 
             name += sn.getString();
             current += 2;
@@ -676,7 +705,9 @@ public class Utils
         int length = buffer[current++] & 0x3f;
 
         if (length == 0)
+        {
             return (new SandN ("", 0));
+        }
 
         while (length > 0)
         {
@@ -705,7 +736,9 @@ public class Utils
 
                 SandN sn = parseName (tmp, buffer);
                 if (sn == null)
+                {
                     return (null);        // error already flagged
+                }
 
                 name += sn.getString();
                 current += 2;

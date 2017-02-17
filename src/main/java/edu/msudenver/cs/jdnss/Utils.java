@@ -145,8 +145,10 @@ public class Utils
     /**
      * Returns a formatted nicely byte array
      *
-     * @param buffer        what to format
-     * @return                 a String with eight bytes per line
+     * @param buffer    what to format
+     * @return          a String with eight bytes per line in the form
+     *                  character (or dot if not a character) followed by
+     *                  the an integer representation.
      */
     public static String toString (byte buffer[])
     {
@@ -239,12 +241,7 @@ public class Utils
      */
     public static int addThem (byte a, byte b)
     {
-        return
-        (
-            ((a & 0x000000ff) << 8) +
-             (b & 0x000000ff)
-        );
-
+        return (((a & 0xff) << 8) + (b & 0xff));
     }
 
     /**
@@ -260,10 +257,10 @@ public class Utils
     {
         return
         (
-            ((a & 0x000000ff) << 24) +
-            ((b & 0x000000ff) << 16) +
-            ((c & 0x000000ff) << 8) +
-             (d & 0x000000ff)
+            ((a & 0xff) << 24) +
+            ((b & 0xff) << 16) +
+            ((c & 0xff) << 8) +
+             (d & 0xff)
         );
     }
 
@@ -309,6 +306,8 @@ public class Utils
      */
     public static byte[] toCS (String s)
     {
+        Assert (s != null && !s.equals (""));
+
         byte a[] = new byte[1];
         a[0] = getByte (s.length(), 1);
         return (combine (a, s.getBytes()));
@@ -356,8 +355,12 @@ public class Utils
      */
     public static byte[] combine (byte one[], byte two[])
     {
+        Assert (one != null || two != null);
+
         if (one == null)
             return (two);
+        if (two == null)
+            return (one);
 
         byte[] temp = new byte[one.length + two.length];
         System.arraycopy (one, 0, temp, 0, one.length);
@@ -367,14 +370,15 @@ public class Utils
 
     public static byte[] combine (byte one[], byte two)
     {
-        byte[] a = new byte[two];
+        byte[] a = new byte[1];
+        a[0] = two;
 
         if (one == null)
             return (a);
 
-        byte[] temp = new byte[one.length + a.length];
+        byte[] temp = new byte[one.length + 1];
         System.arraycopy (one, 0, temp, 0, one.length);
-        System.arraycopy (a, 0, temp, one.length, a.length);
+        System.arraycopy (a, 0, temp, one.length, 1);
         return (temp);
     }
 

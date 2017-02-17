@@ -332,10 +332,14 @@ public class Utils
 
         for (int i = 0; i < b.length; i++)
         {
+            // how long?
             int l = b[i].length();
             a[pointer++] = (byte) l;
+
+            // what characters?
             byte c[] = b[i].getBytes();
             System.arraycopy (c, 0, a, pointer, l);
+
             pointer += l;
         }
         a[pointer] = 0;

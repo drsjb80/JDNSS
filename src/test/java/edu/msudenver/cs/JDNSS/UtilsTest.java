@@ -1,5 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
+import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Rule;
@@ -66,5 +67,15 @@ public class UtilsTest
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 6), (byte) 15);
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 7), (byte) 15);
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 8), (byte) 15);
+    }
+
+    @Test
+    public void convertString()
+    {
+        Assert.assertTrue (Arrays.equals (Utils.convertString ("foo"),
+            new byte[] {3, 'f', 'o', 'o', 0}));
+        Assert.assertTrue (Arrays.equals (Utils.convertString
+            ("www.foobar.org"), new byte[]
+            {3,'w','w','w',6,'f','o','o','b','a','r',3,'o','r','g',0}));
     }
 }

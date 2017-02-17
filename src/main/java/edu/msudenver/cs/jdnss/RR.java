@@ -9,26 +9,26 @@ package edu.msudenver.cs.jdnss;
 import edu.msudenver.cs.javaln.*;
 
 /*
-**                                        1  1  1  1  1  1 
-**          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+ 
-**        |                                               | 
-**        /                                               / 
-**        /                      NAME                     / 
-**        |                                               | 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+ 
-**        |                      TYPE                     | 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+ 
-**        |                     CLASS                     | 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+ 
-**        |                      TTL                      | 
-**        |                                               | 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+ 
-**        |                   RDLENGTH                    | 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--| 
-**        /                     RDATA                     / 
-**        /                                               / 
-**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+ 
+**                                        1  1  1  1  1  1
+**          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+**        |                                               |
+**        /                                               /
+**        /                      NAME                     /
+**        |                                               |
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+**        |                      TYPE                     |
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+**        |                     CLASS                     |
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+**        |                      TTL                      |
+**        |                                               |
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+**        |                   RDLENGTH                    |
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
+**        /                     RDATA                     /
+**        /                                               /
+**        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 
 public abstract class RR
@@ -66,7 +66,9 @@ public abstract class RR
     public boolean equals (Object o)
     {
         if (! (o instanceof RR))
+        {
             return (false);
+        }
 
         RR rr = (RR) o;
         return (rr.rrname.equals (this.rrname) && rr.rrclass == rrclass &&
@@ -150,7 +152,9 @@ class SOARR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof SOARR))
+            {
                 return (false);
+            }
 
             SOARR soarr = (SOARR) o;
             return (soarr.domain == domain && soarr.server == server &&
@@ -234,7 +238,9 @@ class HINFORR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof HINFORR))
+            {
                 return (false);
+            }
 
             HINFORR hinforr = (HINFORR) o;
             return (hinforr.CPU == CPU && hinforr.OS == OS);
@@ -256,7 +262,7 @@ class HINFORR extends RR
             super.toString());
     }
 
-    protected byte[] getBytes() 
+    protected byte[] getBytes()
     {
         return (Utils.combine (Utils.toCS (CPU), Utils.toCS (OS)));
     }
@@ -272,7 +278,9 @@ class MXRR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof MXRR))
+            {
                 return (false);
+            }
 
             MXRR mxrr = (MXRR) o;
             return (mxrr.host == host && mxrr.preference == preference);
@@ -320,7 +328,9 @@ abstract class STRINGRR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof STRINGRR))
+            {
                 return (false);
+            }
 
             STRINGRR stringrr = (STRINGRR) o;
             return (stringrr.string.equals (string));
@@ -391,7 +401,9 @@ abstract class ADDRRR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof ADDRRR))
+            {
                 return (false);
+            }
 
             ADDRRR addrrr = (ADDRRR) o;
             return (addrrr.address.equals (address));
@@ -463,7 +475,9 @@ class DNSKEYRR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof DNSKEYRR))
+            {
                 return (false);
+            }
 
             DNSKEYRR dnskeyrr = (DNSKEYRR) o;
             return (dnskeyrr.flags == flags &&
@@ -525,7 +539,9 @@ class DNSRRSIGRR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof DNSRRSIGRR))
+            {
                 return (false);
+            }
 
             DNSRRSIGRR dnsrrsigrr = (DNSRRSIGRR) o;
 
@@ -585,7 +601,9 @@ class DNSNSECRR extends RR
         if (super.equals (o))
         {
             if (! (o instanceof DNSNSECRR))
+            {
                 return (false);
+            }
 
             DNSNSECRR dnsnsecrr = (DNSNSECRR) o;
             return (dnsnsecrr.nextDomainName.equals (nextDomainName) &&

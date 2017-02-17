@@ -9,16 +9,16 @@ class TestSem extends Thread
 
     public void run()
     {
-	System.out.println (this + " before P()");
-	s.P();
-	System.out.println (this + " after P()");
+        System.out.println (this + " before P()");
+        s.P();
+        System.out.println (this + " after P()");
 
-	try { Thread.sleep (10 * 1000); }
-	catch (InterruptedException e) { e.printStackTrace(); }
+        try { Thread.sleep (10 * 1000); }
+        catch (InterruptedException e) { e.printStackTrace(); }
 
-	System.out.println (this + " before V()");
-	s.V();
-	System.out.println (this + " after V()");
+        System.out.println (this + " before V()");
+        s.V();
+        System.out.println (this + " after V()");
     }
 }
 
@@ -30,46 +30,49 @@ public class Semaphore
 
     public Semaphore (int total)
     {
-    	this.total = total;
+        this.total = total;
     }
 
     public synchronized void P()
     {
-	String name = Thread.currentThread().getName();
-	logger.finest ("P: count = " + count + " " +  name);
+        String name = Thread.currentThread().getName();
+        logger.finest ("P: count = " + count + " " +  name);
 
-	while (count >= total)
-	{
-	    logger.finest (name + " blocked");
+        while (count >= total)
+        {
+            logger.finest (name + " blocked");
 
-	    try
-	    {
-	        wait();
-	    }
-	    catch (Exception e)
-	    {
-	        logger.throwing (e);
-	    }
+            try
+            {
+                wait();
+            }
+            catch (Exception e)
+            {
+                logger.throwing (e);
+            }
 
-	    logger.finest (name + " unblocked");
-	}
+            logger.finest (name + " unblocked");
+        }
 
-	count++;
+        count++;
     }
 
     public synchronized void V()
     {
-	logger.finest ("V: count = " + count + " " +
-	    Thread.currentThread().getName());
-	count--;
-	if (count > 0) notify();
+        logger.finest ("V: count = " + count + " " +
+        Thread.currentThread().getName());
+        count--;
+        if (count > 0)
+        {
+            notify();
+        }
     }
 
     public static void main (String args[])
     {
         for (int i = 0; i < 10; i++)
-	{
-	    new TestSem().start();
-	}
+        {
+            new TestSem().start();
+        }
     }
 }

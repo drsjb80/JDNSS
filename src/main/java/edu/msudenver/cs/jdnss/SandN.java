@@ -8,7 +8,7 @@ public class SandN
     SandN (String string, int number)
     {
         this.string = string;
-	this.number = number;
+        this.number = number;
     }
 
     public String getString() { return (string); }

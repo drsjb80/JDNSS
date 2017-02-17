@@ -361,6 +361,10 @@ public class Utils
         {
             return (two);
         }
+        if (two == null)
+        {
+            return (one);
+        }
 
         byte[] temp = new byte[one.length + two.length];
         System.arraycopy (one, 0, temp, 0, one.length);

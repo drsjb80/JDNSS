@@ -77,4 +77,49 @@
       </plugin>
     </plugins>
   </reporting>
+  <organization>
+    <name>MSU Denver Computer Science</name>
+    <url>http://cs.msudenver.edu</url>
+  </organization>
+  <developers>
+    <developer>
+      <id>beatys</id>
+      <name>Steve Beaty</name>
+      <email>beatys@msudenver.edu</email>
+      <url>http://weba.msudenver.edu/searchchannel/jsp/directoryprofile/profile.jsp?uName=beaty</url>
+      <organization>MSU Denver Computer Science</organization>
+      <organizationUrl>http://cs.msudenver.edu</organizationUrl>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>America/Denver</timezone>
+      <properties>
+        <picUrl>http://www.msudenver.edu/directoryprofile/Data/beatys/beatys.jpg</picUrl>
+      </properties>
+    </developer>
+  </developers>
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/drsjb80/JDNSS/issues</url>
+  </issueManagement>
+  <description>
+    JDNSS is a small DNS server written in Java. It was written to be both
+    more portable and more secure due to its implementation in Java. It is
+    currently intended for use as a "leaf" server as it does not do iterative
+    or recursive lookups for clients, nor does it do any cacheing. It reads
+    BIND zone files.
+  </description>
+  <licenses>
+    <license>
+      <name>GNU General Public License v3</name>
+      <url>https://www.gnu.org/licenses/gpl.html</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>FreeBSD</name>
+      <url>https://www.freebsd.org/copyright/freebsd-license.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 </project>

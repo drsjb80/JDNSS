@@ -7,7 +7,6 @@
   <version>2.0</version>
   <name>Java DNS Server</name>
   <url>https://github.com/drsjb80/JDNSS</url>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -16,7 +15,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -52,8 +50,13 @@
         </executions>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
-
   <reporting>
     <plugins>
       <plugin>
@@ -74,5 +77,4 @@
       </plugin>
     </plugins>
   </reporting>
-
 </project>

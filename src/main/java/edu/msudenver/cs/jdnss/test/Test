@@ -36,9 +36,10 @@ do
 	    DIGARGS="+dnssec $DIGARGS";;
     esac
 
+    JAR='../../../../../../../../target/jdnss-2.0.jar'
     JDNSSARGS="$JDNSSARGS --LogHandler=Console --LogLevel=SEVERE"
     # JDNSSARGS="$JDNSSARGS --LogHandler=Console --LogLevel=FINEST"
-    JDNSS="java $DEBUG -jar ../JDNSS-*.jar $JDNSSARGS --once=true"
+    JDNSS="java $DEBUG -jar $JAR  $JDNSSARGS --once=true"
 
     $JDNSS --port=$PORT $file &
     sleep 1

@@ -13,13 +13,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.ConsoleHandler;
 
-/**
- * The main driver for JDNSS
- *
- * @author Steve Beaty
- * @version $Id: JDNSS.java,v 1.44 2011/03/14 19:07:22 drb80 Exp $
- */
-
 class JDNSSArgs
 {
     boolean once = false;
@@ -222,7 +215,7 @@ public class JDNSS
 
         if (jargs.version)
         {
-            logger.severe (Version.getVersion());
+            logger.severe (new Version().getVersion());
             System.exit (0);
         }
 
@@ -251,7 +244,7 @@ public class JDNSS
             jargs.port = j;
         }
 
-        logger.info ("Starting JDNSS version " + Version.getVersion());
+        logger.info ("Starting JDNSS version " + new Version().getVersion());
 
         if (jargs.DBClass != null && jargs.DBURL != null)
         {

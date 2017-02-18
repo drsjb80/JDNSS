@@ -544,75 +544,6 @@ public class Utils
         return (docolons (s, 16));
     }
 
-    // replace with built-in
-    public static byte[] decodeBase64 (String s)
-    {
-        int k = 0;
-        int base = 0;
-        int equals = 0;
-        int vals[] = new int[4];
-        byte ret[] = null;
-
-        for (int i = 0; i < s.length(); i++)
-        {
-            char j = s.charAt (i);
-
-            if (j >= 'A' && j <= 'Z')
-            {
-                vals[k++] = j - 'A';
-            }
-            else if (j >= 'a' && j <= 'z')
-            {
-                vals[k++] = j - 'a' + 26;
-            }
-            else if (j >= '0' && j <= '9')
-            {
-                vals[k++] = j - '0' + 52;
-            }
-            else if (j == '+')
-            {
-                vals[k++] = 62;
-            }
-            else if (j == '/')
-            {
-                vals[k++] = 63;
-            }
-            else if (j == '=')
-            {
-                vals[k++] = 0;
-                equals++;
-            }
-            else
-            {
-                // logger.severe ("Illegal Base64 value: " + j);
-                break;
-            }
-
-            if (k == 4)
-            {
-                byte tmp[] = new byte[base + 3 - equals];
-                if (ret != null)
-                {
-                    System.arraycopy (ret, 0, tmp, 0, ret.length);
-                }
-                ret = tmp;
-
-                ret[base++] = (byte) ((vals[0] << 2) + (vals[1] >> 4));
-                if (equals < 2)
-                {
-                    ret[base++] = (byte) ((vals[1] << 4) + (vals[2] >> 2));
-                }
-                if (equals < 1)
-                {
-                    ret[base++] = (byte) ((vals[2] << 6) + (vals[3]));
-                }
-                k = 0;
-            }
-        }
-
-        return (ret);
-    }
-
     /**
      * Some unit tests
      */
@@ -638,23 +569,6 @@ public class Utils
         System.out.println (reverse ("123"));
         System.out.println (reverse ("1234"));
         */
-        System.out.println (reverseIP ("192.168.1.2"));
-
-        int i;
-        byte a[];
-
-        System.out.println ("----");
-        a  = decodeBase64 ("TWFuTWFu");
-        for (i = 0; i < a.length; i++) System.out.println (a[i]);
-        System.out.println ("----");
-
-        a  = decodeBase64 ("TWF=");
-        for (i = 0; i < a.length; i++) System.out.println (a[i]);
-        System.out.println ("----");
-
-        a  = decodeBase64 ("TW==");
-        for (i = 0; i < a.length; i++) System.out.println (a[i]);
-        System.out.println ("----");
     }
 
     public static String toString (DatagramPacket dgp)

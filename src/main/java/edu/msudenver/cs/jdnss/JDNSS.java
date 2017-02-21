@@ -17,9 +17,7 @@ class JDNSSArgs
 {
     boolean once = false;
     int port = 53;
-    int p = -1;			// backward compatibility
     int threads = 10;
-    int t = -1;			// backward compatibility
     boolean TCP = true;
     boolean UDP = true;
     boolean MC = false;
@@ -27,8 +25,6 @@ class JDNSSArgs
     String MCaddress = "224.0.0.251";
     boolean version;
     String IPaddress;
-    String IPAddress = null;
-    String I = null;		// backward compatibility
     int backlog;
 
     // i'm going to make an assumption that not everyone who uses this will
@@ -207,7 +203,6 @@ public class JDNSS
 
     private void doargs ()
     {
-
         setupLogging();
 
         logger.entering();
@@ -219,37 +214,12 @@ public class JDNSS
             System.exit (0);
         }
 
-        // the backward compatibility section
-        String ip = jargs.I;
-        if (ip != null)
-        {
-            jargs.IPaddress = ip;
-        }
-
-        ip = jargs.IPAddress;
-        if (ip != null)
-        {
-            jargs.IPaddress = ip;
-        }
-
-        int j = jargs.t;
-        if (j != -1)
-        {
-            jargs.threads = j;
-        }
-
-        j = jargs.p;
-        if (j != -1)
-        {
-            jargs.port = j;
-        }
-
         logger.info ("Starting JDNSS version " + new Version().getVersion());
 
         if (jargs.DBClass != null && jargs.DBURL != null)
         {
             DBConnection = new DBConnection (jargs.DBClass, jargs.DBURL,
-            jargs.DBUser, jargs.DBPass);
+                jargs.DBUser, jargs.DBPass);
         }
 
         String additional[] = jargs.additional;

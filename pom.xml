@@ -50,7 +50,6 @@
             <configuration>
               <sources>
                 <source>edu.msudenver.cs.javaln</source>
-                <!-- <source>edu.msudenver.cs.jclo</source> -->
               </sources>
             </configuration>
           </execution>

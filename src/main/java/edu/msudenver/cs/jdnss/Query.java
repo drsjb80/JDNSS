@@ -550,12 +550,4 @@ public class Query
         rebuild();
         return (buffer);
     }
-
-    public static void main (String args[])
-    {
-        String questions[] = new String[]{"www.pipes.org"};
-        int types[] = new int[]{Utils.A};
-        int classes[] = new int[]{1};
-        System.out.println (new Query (1000, questions, types, classes));
-    }
 }

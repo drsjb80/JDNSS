@@ -1,5 +1,6 @@
 # build directory
 target/
+dependency-reduced-pom.xml
 
 # IntelliJ IDEA Ultimate
 .idea/

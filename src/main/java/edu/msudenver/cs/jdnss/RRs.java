@@ -157,46 +157,4 @@ public class RRs
 
         return (s);
     }
-
-    public static void main (String args[])
-    {
-        byte one[] =
-        {
-            0x03, 'w', 'w', 'w',
-            0x04, 't', 'e', 's', 't',
-            0x03, 'c', 'o', 'm',
-            0x00,
-            0x00, 0x01, 0x00, 0x00
-        };
-
-        RRs rrs = new RRs (one, 1, 0, 0, 0);
-        System.out.println (rrs);
-
-        byte two[] =
-        {
-            0x03, 'w', 'w', 'w',
-            0x04, 't', 'e', 's', 't',
-            0x03, 'c', 'o', 'm',
-            0x00,
-            0x00, 0x01, 0x00, 0x00,
-            0x04, 'm', 'a', 'i', 'l',
-            (byte) 0xc0, 0x04, 0x00,
-            0x00, 0x01, 0x00, 0x00
-        };
-        rrs = new RRs (two, 2, 0, 0, 0);
-        System.out.println (rrs);
-
-        byte three[] = { (byte) 0xc0, 0x00, 0x01, 0x00, 0x00, 0x00 };
-        rrs = new RRs (three, 1, 0, 0, 0);
-
-        byte four[] =
-        {
-            0x03, 'w', 'w', 'w',
-            0x04, 't', 'e', 's', 't',
-            0x03, 'c', 'o', 'm',
-            (byte) 0xc0, 0x00, 0x0,
-            0x00, 0x01, 0x00, 0x000
-        };
-        rrs = new RRs (four, 1, 0, 0, 0);
-    }
 }

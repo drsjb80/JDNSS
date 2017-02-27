@@ -188,28 +188,4 @@ class BindZone implements Zone
         logger.exiting  (v);
         return (v);
     }
-
-    /**
-     * For Testing.
-     * Tests the Zones given the domain mpcs.org
-     */
-    public static void main (String[] args)
-    {
-        /*
-        Zone z = new Zone ("mpcs.org", "ns.mpcs.org", "root.mpcs.org",
-            1, 2, 3, 4, 5, 6);
-        */
-
-        BindZone z = new BindZone ("name");
-        z.add ("name",
-            new SOARR ("domain", "server", "contact", 1, 2, 3, 4, 5, 6));
-
-        z.add ("www", new ARR ("www", 0, "1.2.3.4"));
-        z.add ("www", new ARR ("www", 0, "4.3.1.1"));
-        z.add ("", new MXRR ("4.3.2.1", 0, "4.3.2.1", 10));
-
-        System.out.println (z);
-        System.out.println ("www: " + z.get (Utils.A, "www"));
-        System.out.println ("WWW: " + z.get (Utils.A, "WWW"));
-    }
 }

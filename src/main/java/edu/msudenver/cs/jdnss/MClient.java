@@ -42,7 +42,7 @@ public class MClient
             {
                 s.receive (receive);
 
-                q = new Query (Utils.trimbytearray (receive.getData(),
+                q = new Query (Utils.trimByteArray (receive.getData(),
                 receive.getLength()));
 
                 if (q.getQR() == false)

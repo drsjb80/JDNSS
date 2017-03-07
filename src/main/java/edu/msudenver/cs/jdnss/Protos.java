@@ -121,8 +121,8 @@ class UDP extends Protos
         try
         {
             dsocket.receive (packet);
-            q = new Query (Utils.trimbytearray
-            (packet.getData(), packet.getLength()));
+            q = new Query (Utils.trimByteArray
+                (packet.getData(), packet.getLength()));
         }
         catch (Exception e)
         {

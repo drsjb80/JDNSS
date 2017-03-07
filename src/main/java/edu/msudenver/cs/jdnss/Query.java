@@ -11,9 +11,9 @@ import java.net.DatagramPacket;
 
 public class Query
 {
-    private String qname[];
-    private int qtype[];
-    private int qclass[];
+    private String qnames[];
+    private int qtypes[];
+    private int qclasses[];
     private JavaLN logger = JDNSS.logger;
 
     // http://www.networksorcery.com/enp/protocol/dns.htm
@@ -86,28 +86,28 @@ public class Query
         logger.finest ("\n" + Utils.toString(buffer));
     }
 
-    Query (int id, String[] questions, int type[], int qclass[])
+    Query (int id, String[] qnames, int qtypes[], int quclasses[])
     {
         // internal representation
         this.id = id;
-        this.numQuestions = questions.length;
-        this.qname = new String[this.numQuestions];
-        this.qtype = new int[this.numQuestions];
-        this.qclass = new int[this.numQuestions];
+        this.numQuestions = qnames.length;
+        this.qnames = new String[this.numQuestions];
+        this.qtypes = new int[this.numQuestions];
+        this.qclasses = new int[this.numQuestions];
 
         // external representation
         buffer = new byte[12];
         rebuild();
 
-        for (int i = 0; i < questions.length; i++)
+        for (int i = 0; i < numQuestions; i++)
         {
-            this.qname[i] = questions[i];
-            this.qtype[i] = type[i];
-            this.qclass[i] = qclass[i];
+            this.qnames[i] = qnames[i];
+            this.qtypes[i] = qtypes[i];
+            this.qclasses[i] = qclasses[i];
 
-            buffer = Utils.combine (buffer, Utils.convertString (questions[i]));
-            buffer = Utils.combine (buffer, Utils.getTwoBytes (qtype[i], 2));
-            buffer = Utils.combine (buffer, Utils.getTwoBytes (qclass[i], 2));
+            buffer = Utils.combine (buffer, Utils.convertString (qnames[i]));
+            buffer = Utils.combine (buffer, Utils.getTwoBytes (qtypes[i], 2));
+            buffer = Utils.combine (buffer, Utils.getTwoBytes (qclasses[i], 2));
         }
     }
 
@@ -139,9 +139,9 @@ public class Query
         CD =                 (flags & 0x00000010) != 0;
         rcode =                flags & 0x0000000f;
 
-        qname = new String[numQuestions];
-        qtype = new int[numQuestions];
-        qclass = new int[numQuestions];
+        qnames = new String[numQuestions];
+        qtypes = new int[numQuestions];
+        qclasses = new int[numQuestions];
     }
 
     /**
@@ -177,11 +177,11 @@ public class Query
             if (sn != null)
             {
                 location = sn.getNumber();
-                qname[i] = sn.getString();
+                qnames[i] = sn.getString();
             }
-            qtype[i] = Utils.addThem (buffer[location], buffer[location + 1]);
+            qtypes[i] = Utils.addThem (buffer[location], buffer[location + 1]);
             location += 2;
-            qclass[i] = Utils.addThem (buffer[location], buffer[location + 1]);
+            qclasses[i] = Utils.addThem (buffer[location], buffer[location + 1]);
             location += 2;
         }
 
@@ -191,7 +191,7 @@ public class Query
             savedNumAdditionals = numAdditionals;
             savedAdditional = new byte[length];
             System.arraycopy (buffer, location, savedAdditional, 0, length);
-            buffer = Utils.trimbytearray (buffer, location);
+            buffer = Utils.trimByteArray (buffer, location);
             numAdditionals = 0;
             rebuild ();
         }
@@ -217,10 +217,9 @@ public class Query
 
         for (int i = 0; i < numQuestions; i++)
         {
-            s += "\nName: " + qname[i] +
-                 " Number: " + qtype[i] +
-                 " Class: " + qclass[i] +
-                 " Name: " + Utils.mapTypeToString (qtype[i]);
+            s += "\nName: " + qnames[i] +
+                " Type: " + qtypes[i] +
+                " Class: " + qclasses[i];
         }
         return s;
     }
@@ -469,10 +468,10 @@ public class Query
         AA = true;        // we are authoritative
         RA = false;        // recursion not available
 
-        for (int i = 0; i < qname.length; i++)
+        for (int i = 0; i < qnames.length; i++)
         {
-            String name = qname[i];
-            int type = qtype[i];
+            String name = qnames[i];
+            int type = qtypes[i];
             logger.finest (name);
             logger.finest (type);
 

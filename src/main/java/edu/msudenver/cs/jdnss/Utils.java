@@ -1,8 +1,13 @@
 package edu.msudenver.cs.jdnss;
+
 import java.text.DecimalFormat;
 import java.net.DatagramPacket;
-import edu.msudenver.cs.javaln.JavaLN;
+import java.util.HashMap;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.Arrays;
+
+import edu.msudenver.cs.javaln.JavaLN;
 
 /**
  * Common methods used throughout
@@ -35,6 +40,8 @@ public class Utils
     public static final int INCLUDE = 256;
     public static final int ORIGIN  = 257;
     public static final int TTL     = 258;
+    // count == 19
+
 
     public static final int NOERROR     = 0;
     public static final int FORMERROR   = 1;
@@ -43,47 +50,59 @@ public class Utils
     public static final int NOTIMPL     = 4;
     public static final int REFUSED     = 5;
 
-    // time to make a map or two here...
+    public static HashMap<String, Integer> StringToType =
+        new HashMap<String, Integer>();
+    public static HashMap<Integer, String> TypeToString =
+        new HashMap<Integer, String>();
+
+    static
+    {
+        StringToType.put ("A", A);
+        StringToType.put ("NS", NS);
+        StringToType.put ("CNAME", CNAME);
+        StringToType.put ("SOA", SOA);
+        StringToType.put ("PTR", PTR);
+        StringToType.put ("HINFO", HINFO);
+        StringToType.put ("MX", MX);
+        StringToType.put ("TXT", TXT);
+        StringToType.put ("AAAA", AAAA);
+        StringToType.put ("A6", A6);
+        StringToType.put ("DNAME", DNAME);
+        StringToType.put ("OPT", OPT);
+        StringToType.put ("DS", DS);
+        StringToType.put ("RRSIG", RRSIG);
+        StringToType.put ("NSEC", NSEC);
+        StringToType.put ("DNSKEY", DNSKEY);
+        StringToType.put ("INCLUDE", INCLUDE);
+        StringToType.put ("ORIGIN", ORIGIN);
+        StringToType.put ("TTL", TTL);
+
+        // swap the keys and values
+        for (Map.Entry<String, Integer> entry : StringToType.entrySet())
+        {
+            TypeToString.put (entry.getValue(), entry.getKey());
+        }
+    }
 
     public static int mapStringToType (String s)
     {
-        if (s.equalsIgnoreCase ("A"))               return (A);
-        else if (s.equalsIgnoreCase ("NS"))         return (NS);
-        else if (s.equalsIgnoreCase ("CNAME"))      return (CNAME);
-        else if (s.equalsIgnoreCase ("SOA"))        return (SOA);
-        else if (s.equalsIgnoreCase ("PTR"))        return (PTR);
-        else if (s.equalsIgnoreCase ("HINFO"))      return (HINFO);
-        else if (s.equalsIgnoreCase ("MX"))         return (MX);
-        else if (s.equalsIgnoreCase ("TXT"))        return (TXT);
-        else if (s.equalsIgnoreCase ("AAAA"))       return (AAAA);
-        else if (s.equalsIgnoreCase ("A6"))         return (A6);
-        else if (s.equalsIgnoreCase ("DNAME"))      return (DNAME);
-        else if (s.equalsIgnoreCase ("INCLUDE"))    return (INCLUDE);
-        else if (s.equalsIgnoreCase ("ORIGIN"))     return (ORIGIN);
-        else return (0);
+        try
+        {
+            return (StringToType.get(s.toUpperCase()));
+        }
+        catch (java.lang.NullPointerException NPE)
+        {
+            return (0);
+        }
     }
 
     public static String mapTypeToString (int i)
     {
-        switch (i)
-        {
-            case A : return "A";
-            case NS : return "NS";
-            case CNAME : return "CNAME";
-            case SOA : return "SOA";
-            case PTR : return "PTR";
-            case HINFO : return "HINFO";
-            case MX : return "MX";
-            case TXT : return "TXT";
-            case AAAA : return "AAAA";
-            case A6 : return "A6";
-            case OPT : return "OPT";
-            case DNAME : return "DNAME";
-            case RRSIG : return "RRSIG";
-            case NSEC : return "NSEC";
-            case DNSKEY : return "DNSKEY";
-            default : return "unknown";
-        }
+        String ret = TypeToString.get(i);
+
+        Assert (ret != null, "Couldn't find type: " + i);
+
+        return (ret);
     }
 
     /**
@@ -93,12 +112,12 @@ public class Utils
      */
     public static void Assert (boolean assertion)
     {
-        if (!assertion) throw new IllegalArgumentException ("Assertion failed");
+        if (!assertion) throw new AssertionError ("Assertion failed");
     }
 
     public static void Assert (boolean assertion, String message)
     {
-        if (!assertion) throw new IllegalArgumentException (message);
+        if (!assertion) throw new AssertionError (message);
     }
 
     /**
@@ -184,7 +203,7 @@ public class Utils
         Assert (which >= 1 && which <= 4);
 
         int shift = (which - 1) * 8;
-        return ((byte) ((from & (0xff << shift)) >> shift));
+        return ((byte)((from >>> shift) & 0xff));
     }
 
     /**
@@ -229,7 +248,7 @@ public class Utils
         Assert (which >= 1 && which <= 8);
 
         int shift = (which - 1) * 4;
-        return ((byte) (from >>> shift & 0x0f));
+        return ((byte) ((from >>> shift) & 0x0f));
     }
 
     /**
@@ -388,8 +407,12 @@ public class Utils
         return (temp);
     }
 
-    public static byte[] trimbytearray (byte[] old, int length)
+    public static byte[] trimByteArray (byte[] old, int length)
     {
+        Assert (old != null, "Byte array is null");
+        Assert (length > 0, length + " is invalid");
+        Assert (length <= old.length, length + " is invalid");
+
         byte ret[] = new byte[length];
         System.arraycopy (old, 0, ret, 0, length);
         return (ret);
@@ -426,12 +449,15 @@ public class Utils
      */
     public static String reverse (String s)
     {
+        Assert (s != null);
+
         String r = "";
 
         for (int i = s.length() - 1; i >= 0; i--)
         {
             r += s.charAt (i);
         }
+
         return (r);
     }
 
@@ -444,6 +470,12 @@ public class Utils
       */
     public static int count (String s, String c)
     {
+        Assert (s != null);
+        Assert (c != null);
+
+        if (s.equals ("")) return (0);
+        if (c.equals ("")) return (0);
+
         int count = 0;
         int where = 0;
 
@@ -468,7 +500,10 @@ public class Utils
         String colons = s.substring (0, splitat);
         String dots = s.substring (splitat + 1);
 
-        if (colons.equals (":")) colons = "::";
+        if (colons.equals (":"))
+        {
+            colons = "::";
+        }
 
         return (combine (docolons (colons, 12), IPV4 (dots)));
     }
@@ -482,32 +517,41 @@ public class Utils
      */
     private static byte[] docolons (String s, int length)
     {
-        int colons = count (s, ":");
+        int numColons = count (s, ":");
+        // System.out.println ("numColons = " + numColons);
         byte ret[] = new byte[length];
 
-        // nothing but colons
+        // nothing but colons, IPv6 unspecified
         if (s.equals ("::"))
         {
-            for (int i = 0; i < length; i++) ret[i] = 0;
+            for (int i = 0; i < length; i++)
+            {
+                ret[i] = 0;
+            }
+
             return (ret);
         }
 
-        // the number of missing bytes
-        int len = (length / 2 - colons) * 2;
-
         String split[] = s.split ("\\:");
-        int i = 0;
-        int where = 0;
+        // System.out.println ("split.length = " + split.length);
 
-        // leading "::"
-        if (split[0].equals ("") && split[1].equals (""))
+        /*
+        ** so, there should be eight total two-byte strings (six for v6 ->
+        ** v4). subtract how many there really are and multiply by two.
+        */
+        int len = ((length / 2) - split.length + 1) * 2;
+        int i = 0;
+
+        if (s.startsWith ("::"))
         {
-            // the leading two bytes are also missing
-            len = length - 2;
+            len += 2;
             i = 1;
         }
 
-        for (; i <= colons; i++)
+        // System.out.println ("len = " + len);
+
+        int where = 0;
+        for (; i <= numColons; i++)
         {
             // if this is where things are missing, fill in zeros
             if (split[i].equals (""))
@@ -542,33 +586,6 @@ public class Utils
         }
 
         return (docolons (s, 16));
-    }
-
-    /**
-     * Some unit tests
-     */
-    public static void main (String args[])
-    {
-        // Assert (false);
-        /*
-        System.out.println (toString (IPV4 ("65.66.67.68")));
-        System.out.println (toString (IPV6 ("::")));
-        System.out.println (toString (IPV6 ("::1")));
-        System.out.println (toString (IPV6 ("1::2:3:4:5")));
-        System.out.println (toString (IPV6 ("0:1:2:3:4:5:6:7")));
-        System.out.println (toString
-            (IPV6 ("FFFF:00FF:FF00:F00F:0FF0:F0F0:0F0F:0000")));
-        System.out.println (toString
-            (IPV6 ("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210")));
-        System.out.println (toString (IPV6 ("0:0:0:0:0:0:13.1.68.3")));
-        System.out.println (toString (IPV6 ("0:0:0:0:0:FFFF:129.144.52.38")));
-        System.out.println (toString (IPV6 ("::13.1.68.3")));
-        System.out.println (toString (IPV6 ("::FFFF:129.144.52.38")));
-        System.out.println (count ("65.66.67.68", "."));
-        System.out.println (count ("65.66.67.68", "6"));
-        System.out.println (reverse ("123"));
-        System.out.println (reverse ("1234"));
-        */
     }
 
     public static String toString (DatagramPacket dgp)

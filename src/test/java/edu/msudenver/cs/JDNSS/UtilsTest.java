@@ -6,10 +6,57 @@ import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
+/*
+** N.B.: we use (byte) casts to make sure we're not dealing with signed
+** integers in the constants, but that they are really unsigned bytes.
+*/
+
 public class UtilsTest
 {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @Test
+    public void mapStringToType()
+    {
+        Assert.assertEquals (Utils.mapStringToType ("a"), Utils.A);
+        Assert.assertEquals (Utils.mapStringToType ("A"), Utils.A);
+        Assert.assertEquals (Utils.mapStringToType ("foo"), 0);
+    }
+
+    @Test
+    public void mapTypeToString()
+    {
+        Assert.assertEquals (Utils.mapTypeToString (Utils.A), ("A"));
+
+        exception.expect (AssertionError.class);
+        Utils.mapTypeToString (-1);
+    }
+
+    @Test
+    public void count()
+    {
+        Assert.assertEquals (Utils.count ("foo", "bar"), 0);
+        Assert.assertEquals (Utils.count ("", "bar"), 0);
+        Assert.assertEquals (Utils.count ("foo", ""), 0);
+        Assert.assertEquals (Utils.count ("foo", "foo"), 1);
+        Assert.assertEquals (Utils.count ("foofoofoo", "foo"), 3);
+
+        exception.expect (AssertionError.class);
+        Utils.count (null, "bar");
+        Utils.count ("foo", null);
+    }
+        
+
+    @Test
+    public void reverse()
+    {
+        Assert.assertEquals (Utils.reverse (""), "");
+        Assert.assertEquals (Utils.reverse ("foo"), "oof");
+
+        exception.expect (AssertionError.class);
+        Utils.reverse (null);
+    }
 
     @Test
     public void reverse_IP()
@@ -20,40 +67,32 @@ public class UtilsTest
         Assert.assertEquals (Utils.reverseIP ("."), ".");
         Assert.assertEquals (Utils.reverseIP ("..."), "...");
 
-        exception.expect (IllegalArgumentException.class);
-        Assert.assertEquals (Utils.reverseIP (null), null);
+        exception.expect (AssertionError.class);
+        Utils.reverseIP (null);
     }
 
     @Test
     public void getByte()
     {
-        Assert.assertEquals (Utils.getByte (0xfff00f00, 1), (byte) 0);
-        Assert.assertEquals (Utils.getByte (0xfff00f00, 2), (byte) 15);
-        Assert.assertEquals (Utils.getByte (0xfff00f00, 3), (byte) 240);
-        Assert.assertEquals (Utils.getByte (0xfff00f00, 4), (byte) 255);
+        Assert.assertEquals (Utils.getByte (0xfff00f00, 1), 0x00);
+        Assert.assertEquals (Utils.getByte (0xfff00f00, 2), 0x0f);
     }
 
     @Test
     public void getTwoBytes()
     {
-        byte good1[] = {(byte) 0x0f, (byte) 0x00};
-        byte test1[] = Utils.getTwoBytes (0xfff00f00, 2);
-        Assert.assertTrue (good1[0] == test1[0]);
-        Assert.assertTrue (good1[1] == test1[1]);
+        Assert.assertTrue (Arrays.equals (Utils.getTwoBytes (0xfff00f00, 2),
+            new byte[]{(byte) 0x0f, (byte) 0x00}));
 
-        byte good2[] = {(byte) 0xf0, (byte) 0x0f};
-        byte test2[] = Utils.getTwoBytes (0xfff00f00, 3);
-        Assert.assertTrue (good2[0] == test2[0]);
-        Assert.assertTrue (good2[1] == test2[1]);
+        Assert.assertTrue (Arrays.equals (Utils.getTwoBytes (0xfff00f00, 3),
+            new byte[]{(byte) 0xf0, (byte) 0x0f}));
 
-        byte good3[] = {(byte) 0xff, (byte) 0xf0};
-        byte test3[] = Utils.getTwoBytes (0xfff00f00, 4);
-        Assert.assertTrue (good3[0] == test3[0]);
-        Assert.assertTrue (good3[1] == test3[1]);
+        Assert.assertTrue (Arrays.equals (Utils.getTwoBytes (0xfff00f00, 4),
+            new byte[]{(byte) 0xff, (byte) 0xf0}));
 
-        exception.expect (IllegalArgumentException.class);
-        Utils.getTwoBytes (0xfff00f00, 0);
-        Utils.getTwoBytes (0xfff00f00, 5);
+        exception.expect (AssertionError.class);
+        Utils.getTwoBytes (0xfff0f0, 0);
+        Utils.getTwoBytes (0xfff0f0, 5);
     }
 
     @Test
@@ -66,16 +105,16 @@ public class UtilsTest
     @Test
     public void getNybble()
     {
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 1), (byte) 0);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 2), (byte) 0);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 3), (byte) 15);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 4), (byte) 0);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 5), (byte) 0);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 6), (byte) 15);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 7), (byte) 15);
-        Assert.assertEquals (Utils.getNybble (0xfff00f00, 8), (byte) 15);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 1), (byte) 0x0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 2), (byte) 0x0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 3), (byte) 0xf);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 4), (byte) 0x0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 5), (byte) 0x0);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 6), (byte) 0xf);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 7), (byte) 0xf);
+        Assert.assertEquals (Utils.getNybble (0xfff00f00, 8), (byte) 0xf);
 
-        exception.expect (IllegalArgumentException.class);
+        exception.expect (AssertionError.class);
         Utils.getNybble (1, 0);
         Utils.getNybble (1, 9);
     }
@@ -92,9 +131,9 @@ public class UtilsTest
     @Test
     public void twoIntsAddThem()
     {
-        Assert.assertEquals (Utils.addThem (0xffffffff, 0x00000000), 65280);
-        Assert.assertEquals (Utils.addThem (0x00000000, 0xffffffff), 255);
-        Assert.assertEquals (Utils.addThem (0x00000000, 0x00000000), 0);
+        Assert.assertEquals (Utils.addThem (0xffffffff, 0x00000), 65280);
+        Assert.assertEquals (Utils.addThem (0x00000, 0xffffffff), 255);
+        Assert.assertEquals (Utils.addThem (0x00000, 0x00000), 0);
         Assert.assertEquals (Utils.addThem (0xffffffff, 0xffffffff), 65535);
     }
 
@@ -135,7 +174,7 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (Utils.toCS ("this"),
             new byte[]{(byte) 4, 't', 'h', 'i', 's'}));
 
-        exception.expect (IllegalArgumentException.class);
+        exception.expect (AssertionError.class);
         Utils.toCS ("");
         Utils.toCS (null);
     }
@@ -149,7 +188,7 @@ public class UtilsTest
             ("www.foobar.org"), new byte[]
             {3,'w','w','w',6,'f','o','o','b','a','r',3,'o','r','g',0}));
 
-        exception.expect (IllegalArgumentException.class);
+        exception.expect (AssertionError.class);
         Utils.convertString ("");
         Utils.convertString (null);
     }
@@ -167,7 +206,7 @@ public class UtilsTest
             Utils.combine (null, new byte[]{1}),
             new byte[]{1}));
 
-        exception.expect (IllegalArgumentException.class);
+        exception.expect (AssertionError.class);
         Utils.combine (null, null);
     }
 
@@ -183,5 +222,139 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (
             Utils.combine (null, (byte) 2),
             new byte[]{2}));
+    }
+
+    @Test
+    public void trimByteArray()
+    {
+        byte initial[] = {0x001, 0x002, 0x003, 0x004};
+
+        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 1),
+            new byte[]{0x001}));
+        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 2),
+            new byte[]{0x001, 0x002}));
+        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 4),
+            initial));
+
+        exception.expect (AssertionError.class);
+        Utils.trimByteArray (null, 2);
+        Utils.trimByteArray (initial, 0);
+        Utils.trimByteArray (initial, 5);
+    }
+
+    @Test
+    public void IPV6()
+    {
+        // IPv6 unassigned
+        Assert.assertTrue (Arrays.equals (Utils.IPV6 ("::"),
+            new byte[]
+            {
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 
+            }
+        ));
+
+        // System.out.println (Arrays.toString (Utils.IPV6 ("::1")));
+        // IPv6 localhost
+        Assert.assertTrue (Arrays.equals (Utils.IPV6 ("::1"),
+            new byte[]
+            {
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01 
+            }
+        ));
+
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"),
+            new byte[]
+            {
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF,
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF,
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF,
+                (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF 
+            }
+        ));
+
+        // 0's by themselves
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("2001:db8:85a3:0:0:8a2e:370:7334"),
+            new byte[]
+            {
+                (byte) 0x20, (byte) 0x01, (byte) 0x0d, (byte) 0xb8,
+                (byte) 0x85, (byte) 0xa3, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x8a, (byte) 0x2e,
+                (byte) 0x03, (byte) 0x70, (byte) 0x73, (byte) 0x34 
+            }
+        ));
+
+        /*
+        System.out.println (Arrays.toString (Utils.IPV6
+            ("2001:db8:85a3::8a2e:370:7334")));
+        */
+        // less than four hex digits
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("2001:db8:85a3::8a2e:370:7334"),
+            new byte[]
+            {
+                (byte) 0x20, (byte) 0x01, (byte) 0x0d, (byte) 0xb8,
+                (byte) 0x85, (byte) 0xa3, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x8a, (byte) 0x2e,
+                (byte) 0x03, (byte) 0x70, (byte) 0x73, (byte) 0x34 
+            }
+        ));
+
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("2001:0db8::0001"),
+            new byte[]
+            {
+                (byte) 0x20, (byte) 0x01, (byte) 0x0d, (byte) 0xb8,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01
+            }
+        ));
+
+        // System.out.println (Arrays.toString (Utils.IPV6 ("::ffff:c000:0280")));
+        // mapped v4
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("::ffff:c000:0280"),
+            new byte[]
+            {
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xff,
+                (byte) 192,  (byte) 0,    (byte) 2,    (byte) 128
+            }
+        ));
+
+        // mapped v4 again
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("::ffff:192.0.2.128"),
+            new byte[]
+            {
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xff,
+                (byte) 192,  (byte) 0,    (byte) 2,    (byte) 128
+            }
+        ));
+
+        // mapped v4 and again
+        Assert.assertTrue (Arrays.equals (
+            Utils.IPV6 ("::192.0.2.128"),
+            new byte[]
+            {
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 192,  (byte) 0,    (byte) 2,    (byte) 128
+            }
+        ));
+
+
     }
 }

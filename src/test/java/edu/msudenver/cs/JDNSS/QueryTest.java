@@ -20,7 +20,7 @@ public class QueryTest
             "TC: false\tRD: false\n" +
             "RA: false\tAD: false\tCD: false\topcode: 0\n" +
             "rcode: 0\n" +
-            "Name: www.pipes.org Number: 1 Class: 1 Name: A";
+            "Name: www.pipes.org Type: 1 Class: 0";
         Assert.assertEquals (query.toString(), expectedQuery);
     }
 }

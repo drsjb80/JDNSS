@@ -36,7 +36,7 @@ do
 	    DIGARGS="+dnssec $DIGARGS";;
     esac
 
-    JAR='../../../../../../../../target/jdnss-2.0-jar-with-dependencies.jar'
+    JAR='../../../../../../../../target/jdnss-2.0.jar'
     JDNSSARGS="$JDNSSARGS --LogHandler=Console --LogLevel=SEVERE"
     # JDNSSARGS="$JDNSSARGS --LogHandler=Console --LogLevel=FINEST"
     JDNSS="java $DEBUG -jar $JAR  $JDNSSARGS --once=true"

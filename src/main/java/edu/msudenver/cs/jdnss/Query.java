@@ -86,7 +86,7 @@ public class Query
         logger.finest ("\n" + Utils.toString(buffer));
     }
 
-    Query (int id, String[] qnames, int qtypes[], int quclasses[])
+    Query (int id, String[] qnames, int qtypes[], int qclasses[])
     {
         // internal representation
         this.id = id;
@@ -95,9 +95,8 @@ public class Query
         this.qtypes = new int[this.numQuestions];
         this.qclasses = new int[this.numQuestions];
 
-        // external representation
+        // set aside room for the header; it is created later via rebuild()
         buffer = new byte[12];
-        rebuild();
 
         for (int i = 0; i < numQuestions; i++)
         {
@@ -118,26 +117,26 @@ public class Query
      */
     public Query (byte b[])
     {
-        buffer = b;
-        id =                Utils.addThem (buffer[0], buffer[1]);
-        numQuestions =        Utils.addThem (buffer[4], buffer[5]);
-        numAnswers =        Utils.addThem (buffer[6], buffer[7]);
+        buffer =         b;
+        id =             Utils.addThem (buffer[0], buffer[1]);
+        numQuestions =   Utils.addThem (buffer[4], buffer[5]);
+        numAnswers =     Utils.addThem (buffer[6], buffer[7]);
         numAuthorities = Utils.addThem (buffer[8], buffer[9]);
         numAdditionals = Utils.addThem (buffer[10], buffer[11]);
 
         Utils.Assert (numAnswers == 0);
         Utils.Assert (numAuthorities == 0);
 
-        int flags =        Utils.addThem (buffer[2], buffer[3]);
-        QR =                (flags & 0x00008000) != 0;
-        opcode =        (flags & 0x00007800) >> 11;
-        AA =                (flags & 0x00000400) != 0;
-        TC =                (flags & 0x00000200) != 0;
-        RD =                (flags & 0x00000100) != 0;
-        RA =                 (flags & 0x00000080) != 0;
-        AD =                 (flags & 0x00000020) != 0;
-        CD =                 (flags & 0x00000010) != 0;
-        rcode =                flags & 0x0000000f;
+        int flags = Utils.addThem (buffer[2], buffer[3]);
+        QR =        (flags & 0x00008000) != 0;
+        opcode =    (flags & 0x00007800) >> 11;
+        AA =        (flags & 0x00000400) != 0;
+        TC =        (flags & 0x00000200) != 0;
+        RD =        (flags & 0x00000100) != 0;
+        RA =        (flags & 0x00000080) != 0;
+        AD =        (flags & 0x00000020) != 0;
+        CD =        (flags & 0x00000010) != 0;
+        rcode =     flags & 0x0000000f;
 
         qnames = new String[numQuestions];
         qtypes = new int[numQuestions];

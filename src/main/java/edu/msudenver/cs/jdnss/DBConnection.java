@@ -92,7 +92,7 @@ class DBConnection
             int domainId = rs.getInt ("id");
             logger.finest (domainId);
 
-            Utils.Assert (! rs.next());
+            Assertion.Assert (! rs.next());
 
             logger.exiting (s);
             return (new DBZone (s, domainId, this));

@@ -124,8 +124,8 @@ public class Query
         numAuthorities = Utils.addThem (buffer[8], buffer[9]);
         numAdditionals = Utils.addThem (buffer[10], buffer[11]);
 
-        Utils.Assert (numAnswers == 0);
-        Utils.Assert (numAuthorities == 0);
+        Assertion.Assert (numAnswers == 0);
+        Assertion.Assert (numAuthorities == 0);
 
         int flags = Utils.addThem (buffer[2], buffer[3]);
         QR =        (flags & 0x00008000) != 0;
@@ -430,13 +430,13 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            Utils.Assert (false);
+            Assertion.Assert (false);
         }
 
         String s = ((CNAMERR) u.elementAt (0)).getString();
         logger.finer (s);
 
-        Utils.Assert (s != null);
+        Assertion.Assert (s != null);
 
         try
         {
@@ -444,7 +444,7 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            Utils.Assert (false);
+            Assertion.Assert (false);
         }
 
         // yes, so first put in the CNAME

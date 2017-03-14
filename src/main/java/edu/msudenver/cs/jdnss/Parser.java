@@ -245,7 +245,7 @@ public class Parser
         }
 
         logger.severe ("Unknown token on line " + st.lineno() + ": " + a);
-        Utils.Assert (false);
+        Assertion.Assert (false);
         return (NOTOK);
     }
 
@@ -286,7 +286,7 @@ public class Parser
                 return (EOF);
             case StreamTokenizer.TT_NUMBER:
                 // numbers are counted as words...
-                Utils.Assert (false);
+                Assertion.Assert (false);
                 logger.exiting ("NOTOK");
                 return (NOTOK);
             case StreamTokenizer.TT_WORD:
@@ -337,7 +337,7 @@ public class Parser
         // up.
 
             int t = getOneWord();
-        Utils.Assert (t == StreamTokenizer.TT_WORD);
+        Assertion.Assert (t == StreamTokenizer.TT_WORD);
 
         // save the old one so we can get back to it.  if we're called
         // recursively, we're still good to go...
@@ -380,28 +380,28 @@ public class Parser
                 logger.info ("Unknown token at line " + st.lineno()); break;
         }
 
-        Utils.Assert (getNextToken() == DN,
+        Assertion.Assert (getNextToken() == DN,
             "Expecting contact at line " + st.lineno());
         String contact = StringValue;
 
-        Utils.Assert (getNextToken() == LPAREN,
+        Assertion.Assert (getNextToken() == LPAREN,
             "Expecting left paren at line " + st.lineno());
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting serial number at line " + st.lineno());
         serial = intValue;
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting refresh at line " + st.lineno());
         refresh = intValue;
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting retry at line " + st.lineno());
         retry = intValue;
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting expire at line " + st.lineno());
         expire = intValue;
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting minimum at line " + st.lineno());
         minimum = intValue;
-        Utils.Assert (getNextToken() == RPAREN,
+        Assertion.Assert (getNextToken() == RPAREN,
             "Expecting rightparen at line " + st.lineno());
 
         SOAMinimumTTL = minimum;
@@ -432,7 +432,7 @@ public class Parser
     {
         boolean paren = false;
 
-        Utils.Assert (getNextToken() == DN,
+        Assertion.Assert (getNextToken() == DN,
             "Expecting DN at line " + st.lineno());
 
         String nextDomainName = StringValue;
@@ -479,7 +479,7 @@ public class Parser
         }
 
         if (paren)
-            Utils.Assert (getNextToken() != RPAREN,
+            Assertion.Assert (getNextToken() != RPAREN,
                 "Expecting right paren at line " + st.lineno());
 
         zone.add (currentName, new DNSNSECRR (currentName, currentTTL,
@@ -488,20 +488,20 @@ public class Parser
 
     private void doDNSKEY()
     {
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int flags = intValue;
 
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int protocol = intValue;
-        Utils.Assert (protocol == 3, "Protocol != 3");
+        Assertion.Assert (protocol == 3, "Protocol != 3");
 
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int algorithm = intValue;
 
-        Utils.Assert (getNextToken() == LPAREN,
+        Assertion.Assert (getNextToken() == LPAREN,
             "Expecting left paren at line " + st.lineno());
 
         String publicKey = "";
@@ -513,7 +513,7 @@ public class Parser
         }
         inBase64 = false;
 
-        Utils.Assert (tok == RPAREN,
+        Assertion.Assert (tok == RPAREN,
             "Expecting right paren at line " + st.lineno());
 
         zone.add (currentName,
@@ -524,36 +524,36 @@ public class Parser
     private void doRRSIG()
     {
         int typeCovered = (getNextToken());
-        Utils.Assert (isARR (typeCovered));
+        Assertion.Assert (isARR (typeCovered));
 
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int algorithm = intValue;
 
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int labels = intValue;
 
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int originalTTL = intValue;
 
-        Utils.Assert (getNextToken() == DATE,
+        Assertion.Assert (getNextToken() == DATE,
             "Expecting DATE at line " + st.lineno());
         int expiration = intValue;
 
-        Utils.Assert (getNextToken() == LPAREN,
+        Assertion.Assert (getNextToken() == LPAREN,
             "Expecting left paren at line " + st.lineno());
 
-        Utils.Assert (getNextToken() == DATE,
+        Assertion.Assert (getNextToken() == DATE,
             "Expecting DATE at line " + st.lineno());
         int inception = intValue;
 
-        Utils.Assert (getNextToken() == INT,
+        Assertion.Assert (getNextToken() == INT,
             "Expecting number at line " + st.lineno());
         int keyTag = intValue;
 
-        Utils.Assert (getNextToken() == DN,
+        Assertion.Assert (getNextToken() == DN,
             "Expecting DN at line " + st.lineno());
         String signersName = StringValue;
 
@@ -566,7 +566,7 @@ public class Parser
         }
         inBase64 = false;
 
-        Utils.Assert (tok == RPAREN,
+        Assertion.Assert (tok == RPAREN,
             "Expecting right paren at line " + st.lineno());
 
         DNSRRSIGRR d = new DNSRRSIGRR (currentName, currentTTL, typeCovered,
@@ -583,7 +583,7 @@ public class Parser
         {
             case Utils.A:
             {
-                Utils.Assert (getNextToken () == IPV4ADDR,
+                Assertion.Assert (getNextToken () == IPV4ADDR,
                     "Expecting IPV4ADDR at line " + st.lineno());
                 zone.add (currentName,
                     new ARR (currentName, currentTTL, StringValue));
@@ -596,7 +596,7 @@ public class Parser
             }
             case Utils.AAAA:
             {
-                Utils.Assert (getNextToken () == IPV6ADDR,
+                Assertion.Assert (getNextToken () == IPV6ADDR,
                     "Expecting IPV6ADDR at line " + st.lineno());
                 zone.add (currentName,
                     new AAAARR (currentName, currentTTL, StringValue));
@@ -604,7 +604,7 @@ public class Parser
             }
             case Utils.NS:
             {
-                Utils.Assert (getNextToken () == DN,
+                Assertion.Assert (getNextToken () == DN,
                     "Expecting domain name at line " + st.lineno());
                 zone.add (currentName,
                     new NSRR (currentName, currentTTL, StringValue));
@@ -612,7 +612,7 @@ public class Parser
             }
             case Utils.CNAME:
             {
-                Utils.Assert (getNextToken () == DN,
+                Assertion.Assert (getNextToken () == DN,
                     "Expecting domain name at line " + st.lineno());
                 zone.add (currentName,
                     new CNAMERR (currentName, currentTTL, StringValue));
@@ -620,7 +620,7 @@ public class Parser
             }
             case Utils.TXT:
             {
-                Utils.Assert (getNextToken () == STRING,
+                Assertion.Assert (getNextToken () == STRING,
                     "Expecting text at line " + st.lineno());
                 zone.add (currentName,
                     new TXTRR (currentName, currentTTL, StringValue));
@@ -628,10 +628,10 @@ public class Parser
             }
             case Utils.HINFO:
             {
-                Utils.Assert (getNextToken () == STRING,
+                Assertion.Assert (getNextToken () == STRING,
                     "Expecting text at line " + st.lineno());
                 String s = StringValue;
-                Utils.Assert (getNextToken () == STRING,
+                Assertion.Assert (getNextToken () == STRING,
                     "Expecting text at line " + st.lineno());
 
                 zone.add (currentName,
@@ -640,9 +640,9 @@ public class Parser
             }
             case Utils.MX:
             {
-                Utils.Assert (getNextToken () == INT,
+                Assertion.Assert (getNextToken () == INT,
                     "Expecting number at line " + st.lineno());
-                Utils.Assert (getNextToken () == DN,
+                Assertion.Assert (getNextToken () == DN,
                     "Expecting domain at line " + st.lineno());
 
                 zone.add (currentName,
@@ -651,7 +651,7 @@ public class Parser
             }
             case Utils.PTR:
             {
-                Utils.Assert (getNextToken () == DN,
+                Assertion.Assert (getNextToken () == DN,
                     "Expecting domain at line " + st.lineno());
 
                 zone.add (currentName,
@@ -733,7 +733,7 @@ public class Parser
                 if (t == Utils.ORIGIN)
                 {
                     t = getNextToken();
-                    Utils.Assert (t == DN,
+                    Assertion.Assert (t == DN,
                         "Expecting domain at line " + st.lineno());
                     origin = StringValue;
                     t = getNextToken();
@@ -743,7 +743,7 @@ public class Parser
                 if (t == Utils.TTL)
                 {
                     t = getNextToken();
-                    Utils.Assert (t == INT,
+                    Assertion.Assert (t == INT,
                         "Expecting integer at line " + st.lineno());
                     globalTTL = intValue;
                     t = getNextToken();

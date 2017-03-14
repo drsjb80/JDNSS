@@ -88,13 +88,13 @@ public class JDNSS
                 }
                 catch (AssertionError AE2)
                 {
-                    Utils.Assert (false);
+                    Assertion.Assert (false);
                     // return (null);
                 }
             }
 
             // it's not
-            Utils.Assert (false);
+            Assertion.Assert (false);
             // return (null);
         }
             

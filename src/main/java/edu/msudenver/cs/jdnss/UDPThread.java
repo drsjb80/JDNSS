@@ -73,7 +73,7 @@ public class UDPThread extends Thread
             logger.finest (b.length);
 
             DatagramPacket reply = new DatagramPacket (b, b.length,
-            address, port);
+                address, port);
 
             logger.finest ("\n" + Utils.toString (reply.getData()));
             logger.finest (reply.getLength());

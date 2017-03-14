@@ -1,4 +1,4 @@
-java -jar ../../JDNSS-1.6.0.jar \
+java -jar ../../../../../../../../../target/jdnss-2.0.jar \
     --DBClass=com.mysql.jdbc.Driver \
     --DBURL=jdbc:mysql://localhost/JDNSS \
     --DBUser=JDNSS \

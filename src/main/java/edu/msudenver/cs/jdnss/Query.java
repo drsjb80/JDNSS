@@ -225,6 +225,9 @@ public class Query
 
     private void addThem (Vector v, String host, int type)
     {
+        Assertion.Assert (v != null, "v == null");
+        Assertion.Assert (host != null, "host == null");
+
         for (int i = 0; i < v.size(); i++)
         {
             RR rr = (RR) v.elementAt(i);
@@ -285,6 +288,10 @@ public class Query
 
     private void createResponses (Zone zone, Vector v, String name, int which)
     {
+        Assertion.Assert (zone != null, "zone == null");
+        Assertion.Assert (v != null, "v == null");
+        Assertion.Assert (name != null, "name == null");
+
         logger.entering (new Object[]{v, name, new Integer (which)});
 
         for (int i = 0; i < v.size(); i++)
@@ -393,14 +400,14 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            logger.config (Utils.mapTypeToString (type) + " lookup of " +
+            logger.finer (Utils.mapTypeToString (type) + " lookup of " +
                 name + " failed");
 
             rcode = Utils.NAMEERROR;
             return;
         }
 
-        logger.config (Utils.mapTypeToString (type) +
+        logger.finer (Utils.mapTypeToString (type) +
             " lookup of " + name + " failed but " +
             Utils.mapTypeToString (other) + " record found");
 
@@ -409,12 +416,12 @@ public class Query
 
     private void errLookupFailed (int type, String name, int rcode)
     {
-        logger.config ("'" + Utils.mapTypeToString (type) +
+        logger.finer ("'" + Utils.mapTypeToString (type) +
             "' lookup of " + name + " failed");
         this.rcode = rcode;
     }
 
-    private SandV lookupFailed (Vector v, int type, String name, Zone zone,
+    private SandV checkForCNAME (Vector v, int type, String name, Zone zone,
         SOARR SOA)
     {
         logger.entering (v);
@@ -486,7 +493,7 @@ public class Query
             }
             catch (AssertionError AE)
             {
-                logger.config ("Zone lookup of " + name + " failed");
+                logger.finer ("Zone lookup of " + name + " failed");
                 rcode = Utils.REFUSED;
                 AA = false;
                 rebuild();
@@ -502,7 +509,7 @@ public class Query
             }
             catch (AssertionError AE)
             {
-                logger.config ("SOA lookup in " + zone.getName() + " failed");
+                logger.finer ("SOA lookup in " + zone.getName() + " failed");
                 rcode = Utils.SERVFAIL;
                 rebuild();
                 return (buffer);
@@ -518,35 +525,40 @@ public class Query
             }
             catch (AssertionError AE)
             {
+                logger.finer ("Didn't find: " + name);
                 if (type != Utils.AAAA && type != Utils.A)
                 {
+                    logger.finer (name + " not A or AAAA, giving up");
                     errLookupFailed (type, name, Utils.NOERROR);
                     addSOA (zone, SOA);
                     return (buffer);
                 }
                 else
                 {
+                    logger.finer ("Looking for a CNAME for " + name);
                     SandV sandv = null;
-
                     try
                     {
-                        sandv = lookupFailed (v, type, name, zone, SOA);
+                        sandv = checkForCNAME (v, type, name, zone, SOA);
                     }
                     catch (AssertionError AE2)
                     {
+                        logger.finer ("Didn't find a CNAME for " + name);
+                        // look for AAAA if A and vice versa
                         dealWithOther (zone, type, name);
                         addSOA (zone, SOA);
                         return (buffer);
                     }
 
                     v = sandv.getVector();
+                    System.out.println ("v: " + v);
                     name = sandv.getString();
                 }
             }
 
             if (numAdditionals != 0 && dnsService.jargs.RFC2671)
             {
-                logger.config ("Additionals not understood");
+                logger.finer ("Additionals not understood");
                 rcode = Utils.NOTIMPL;
                 rebuild();
                 return (buffer);

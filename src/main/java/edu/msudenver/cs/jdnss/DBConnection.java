@@ -29,7 +29,7 @@ class DBConnection
         {
             Class.forName (DBClass);
             Connection conn = DriverManager.getConnection (DBURL, DBUser,
-            DBPass);
+                DBPass);
             stmt = conn.createStatement();
         }
         catch (ClassNotFoundException cnfe)
@@ -48,7 +48,7 @@ class DBConnection
 
         Vector v = new Vector();
 
-        // first, search for longest...
+        // first, get them all
         try
         {
             ResultSet rs = stmt.executeQuery ("SELECT * FROM domains");
@@ -61,16 +61,12 @@ class DBConnection
         catch (java.sql.SQLException sqle)
         {
             logger.throwing (sqle);
-            logger.exiting (null);
-            return (null);
+            Assertion.Assert (false);
         }
 
-        if (v.size() == 0)
-        {
-            logger.exiting (null);
-            return (null);
-        }
+        Assertion.Assert (v.size() != 0);
 
+        // then, find the longest that matches
         String s = null;
         try
         {
@@ -78,7 +74,7 @@ class DBConnection
         }
         catch (AssertionError AE)
         {
-            throw (AE);
+            throw AE;
         }
         logger.finest (s);
 
@@ -86,7 +82,7 @@ class DBConnection
         try
         {
             ResultSet rs = stmt.executeQuery
-            ("SELECT * FROM domains WHERE name = '" + s + "'");
+                ("SELECT * FROM domains WHERE name = '" + s + "'");
 
             rs.next();
             int domainId = rs.getInt ("id");
@@ -101,7 +97,8 @@ class DBConnection
         {
             logger.throwing (sqle);
         }
-        logger.exiting (null);
+
+        Assertion.Assert (false, "DBConnection failed");
         return (null);
     }
 
@@ -116,10 +113,10 @@ class DBConnection
             String stype = Utils.mapTypeToString (type);
             logger.finest (stype);
             Vector ret = new Vector();
-            ResultSet rs = stmt.executeQuery
-            ("SELECT * FROM records where domain_id = " + domainId +
-            " AND name = \"" + name + "\"" +
-            " AND type = \"" + stype + "\"");
+            ResultSet rs = stmt.executeQuery (
+                "SELECT * FROM records where domain_id = " + domainId +
+                " AND name = \"" + name + "\"" +
+                " AND type = \"" + stype + "\"");
 
             while (rs.next())
             {
@@ -185,17 +182,20 @@ class DBConnection
                     {
                         logger.warning ("requested type " + type +
                         " for " + name + " not found");
-                        return (null);
+                        Assertion.Assert (false);
                     }
                 }
             }
 
-            return (ret.size() == 0 ? null : ret);
+            Assertion.Assert (ret.size() != 0);
+            return (ret);
         }
         catch (java.sql.SQLException sqle)
         {
-            logger.throwing (sqle);
+            Assertion.Assert (false);
         }
+
+        Assertion.Assert (false);
         return (null);
     }
 }

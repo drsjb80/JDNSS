@@ -88,12 +88,14 @@ public class JDNSS
                 }
                 catch (AssertionError AE2)
                 {
-                    return (null);
+                    Utils.Assert (false);
+                    // return (null);
                 }
             }
 
             // it's not
-            return (null);
+            Utils.Assert (false);
+            // return (null);
         }
             
         return ((Zone) bindZones.get (longest));

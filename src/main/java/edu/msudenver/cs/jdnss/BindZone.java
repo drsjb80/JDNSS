@@ -186,6 +186,7 @@ class BindZone implements Zone
         }
 
         logger.exiting  (v);
+        Utils.Assert (v != null);
         return (v);
     }
 }

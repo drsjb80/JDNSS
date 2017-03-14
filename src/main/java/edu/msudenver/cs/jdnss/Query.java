@@ -240,20 +240,25 @@ public class Query
      */
     private void createAdditional (Zone zone, String host)
     {
-        Vector v = zone.get (Utils.A, host);
-        logger.finest (v);
-
-        if (v != null)
+        Vector v = null;
+        try
         {
+            v = zone.get (Utils.A, host);
             addThem (v, host, Utils.A);
         }
-
-        v = zone.get (Utils.AAAA, host);
-        logger.finest (v);
-
-        if (v != null)
+        catch (AssertionError AE1)
         {
+            // try the AAAA
+        }
+
+        try
+        {
+            v = zone.get (Utils.AAAA, host);
             addThem (v, host, Utils.AAAA);
+        }
+        catch (AssertionError AE2)
+        {
+            // maybe we found an A
         }
     }
 
@@ -381,22 +386,25 @@ public class Query
     {
         int other = type == Utils.A ? Utils.AAAA : Utils.A;
 
-        Vector v = zone.get (other, name);
-        if (v != null)
+        Vector v = null;
+        try
         {
-            logger.config (Utils.mapTypeToString (type) +
-                " lookup of " + name + " failed but " +
-                Utils.mapTypeToString (other) + " record found");
-
-            rcode = Utils.NOERROR;
+            v = zone.get (other, name);
         }
-        else
+        catch (AssertionError AE)
         {
             logger.config (Utils.mapTypeToString (type) + " lookup of " +
                 name + " failed");
 
             rcode = Utils.NAMEERROR;
+            return;
         }
+
+        logger.config (Utils.mapTypeToString (type) +
+            " lookup of " + name + " failed but " +
+            Utils.mapTypeToString (other) + " record found");
+
+        rcode = Utils.NOERROR;
     }
 
     private void errLookupFailed (int type, String name, int rcode)
@@ -415,39 +423,40 @@ public class Query
         logger.entering (zone);
 
         // is there an associated CNAME?
-        Vector u = zone.get (Utils.CNAME, name);
-        logger.finer (u);
-
-        if (u == null)
+        Vector u = null;
+        try
+        {
+            u = zone.get (Utils.CNAME, name);
+        }
+        catch (AssertionError AE)
         {
             return (null);
         }
-        else
+
+        String s = ((CNAMERR) u.elementAt (0)).getString();
+        logger.finer (s);
+
+        if (s == null)
         {
-            String s = ((CNAMERR) u.elementAt (0)).getString();
-            logger.finer (s);
-
-            if (s == null)
-            {
-                return (null);
-            }
-
-            // there is a CNAME, is it of the correct type?
-            v = zone.get (type, s); logger.finer (v);
-            if (v != null)
-            {
-                // yes, so first put in the CNAME
-                createResponses (zone, u, name, Utils.CNAME);
-
-                // then continue the lookup on the original type
-                // with the new name
-                return (new SandV (s, v));
-            }
-            else
-            {
-                return (null);
-            }
+            return (null);
         }
+
+        // there is a CNAME, is it of the correct type?
+        try
+        {
+            v = zone.get (type, s);
+        }
+        catch (AssertionError AE)
+        {
+            return (null);
+        }
+
+        // yes, so first put in the CNAME
+        createResponses (zone, u, name, Utils.CNAME);
+
+        // then continue the lookup on the original type
+        // with the new name
+        return (new SandV (s, v));
     }
 
     /**
@@ -474,9 +483,12 @@ public class Query
             logger.finest (name);
             logger.finest (type);
 
-            Zone zone = dnsService.getZone (name);
-            logger.finest (zone);
-            if (zone == null)
+            Zone zone = null;
+            try
+            {
+                zone = dnsService.getZone (name);
+            }
+            catch (AssertionError AE)
             {
                 logger.config ("Zone lookup of " + name + " failed");
                 rcode = Utils.REFUSED;
@@ -484,10 +496,15 @@ public class Query
                 rebuild();
                 return (buffer);
             }
+            logger.finest (zone);
 
             // always need to get the SOA to find the default minimum
-            Vector w = zone.get (Utils.SOA, zone.getName());
-            if (w == null)
+            Vector w = null;
+            try
+            {
+                w = zone.get (Utils.SOA, zone.getName());
+            }
+            catch (AssertionError AE)
             {
                 logger.config ("SOA lookup in " + zone.getName() + " failed");
                 rcode = Utils.SERVFAIL;
@@ -498,10 +515,12 @@ public class Query
             SOARR SOA = (SOARR) w.elementAt(0);
             minimum = SOA.getMinimum();
 
-            Vector v = zone.get (type, name);
-            logger.config ("v == " + v);
-
-            if (v == null)
+            Vector v = null;
+            try
+            {
+                v = zone.get (type, name);
+            }
+            catch (AssertionError AE2)
             {
                 if (type != Utils.AAAA && type != Utils.A)
                 {

@@ -430,25 +430,21 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            return (null);
+            Utils.Assert (false);
         }
 
         String s = ((CNAMERR) u.elementAt (0)).getString();
         logger.finer (s);
 
-        if (s == null)
-        {
-            return (null);
-        }
+        Utils.Assert (s != null);
 
-        // there is a CNAME, is it of the correct type?
         try
         {
             v = zone.get (type, s);
         }
         catch (AssertionError AE)
         {
-            return (null);
+            Utils.Assert (false);
         }
 
         // yes, so first put in the CNAME
@@ -520,7 +516,7 @@ public class Query
             {
                 v = zone.get (type, name);
             }
-            catch (AssertionError AE2)
+            catch (AssertionError AE)
             {
                 if (type != Utils.AAAA && type != Utils.A)
                 {
@@ -530,20 +526,21 @@ public class Query
                 }
                 else
                 {
-                    SandV sandv = lookupFailed (v, type, name, zone, SOA);
+                    SandV sandv = null;
 
-                    // if it really failed
-                    if (sandv == null)
+                    try
+                    {
+                        sandv = lookupFailed (v, type, name, zone, SOA);
+                    }
+                    catch (AssertionError AE2)
                     {
                         dealWithOther (zone, type, name);
                         addSOA (zone, SOA);
                         return (buffer);
                     }
-                    else
-                    {
-                        v = sandv.getVector();
-                        name = sandv.getString();
-                    }
+
+                    v = sandv.getVector();
+                    name = sandv.getString();
                 }
             }
 

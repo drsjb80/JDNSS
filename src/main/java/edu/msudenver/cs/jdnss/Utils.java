@@ -135,11 +135,15 @@ public class Utils
 
     /**
      * Ignoring case, find the String in the Enumeration that
-     * 1) ends with s, and
-     * 2) is the longest that does.
+     * matches the end of s, and is the longest that does so.
      */
     public static String findLongest (Enumeration e, String s)
     {
+        Assert (e != null);
+        Assert (s != null);
+        Assert (! e.equals (""));
+        Assert (! s.equals (""));
+
         logger.entering (s);
 
         String longest = null;
@@ -147,6 +151,7 @@ public class Utils
         while (e.hasMoreElements())
         {
             String next = (String) e.nextElement();
+            logger.fine (next);
 
             if (s.toLowerCase().endsWith (next.toLowerCase()))
             {
@@ -157,6 +162,7 @@ public class Utils
             }
         }
 
+        Assert (longest != null);
         logger.exiting (longest);
         return (longest);
     }

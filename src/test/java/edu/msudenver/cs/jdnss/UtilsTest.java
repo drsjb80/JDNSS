@@ -1,6 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
 import java.util.Arrays;
+import java.util.Vector;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Rule;
@@ -240,6 +241,44 @@ public class UtilsTest
         Utils.trimByteArray (null, 2);
         Utils.trimByteArray (initial, 0);
         Utils.trimByteArray (initial, 5);
+    }
+
+    @Test
+    public void findLongest ()
+    {
+        /*
+        ** Say we have a bunch of domains that end similarly. We need to
+        ** find the one that is the longest match for a requested domain.
+        */
+
+        Vector<String> v = new Vector<String>();
+
+        v.add ("b.c.d.e");
+        Assert.assertTrue (
+            Utils.findLongest (v.elements(), "a.b.c.d.e").equals("b.c.d.e"));
+
+        v = new Vector<String>();
+        v.add ("d.e");
+        v.add ("b.c.d.e");
+        Assert.assertTrue (
+            Utils.findLongest (v.elements(), "z.d.e").equals("d.e"));
+        Assert.assertTrue (
+            Utils.findLongest (v.elements(), "z.c.d.e").equals("d.e"));
+        Assert.assertTrue (
+            Utils.findLongest (v.elements(), "a.b.c.d.e").equals("b.c.d.e"));
+
+        exception.expect (AssertionError.class);
+
+        v = new Vector<String>();
+        v.add ("");
+        Utils.findLongest (null, "string");
+        Utils.findLongest (v.elements(), "string");
+
+        v = new Vector<String>();
+        v.add ("foo");
+        Utils.findLongest (v.elements(), "bar");
+        Utils.findLongest (v.elements(), null);
+        Utils.findLongest (v.elements(), "");
     }
 
     @Test

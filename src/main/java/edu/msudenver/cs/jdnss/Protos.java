@@ -2,6 +2,7 @@ package edu.msudenver.cs.jdnss;
 
 import java.net.*;
 import java.io.*;
+import java.lang.AssertionError;
 import edu.msudenver.cs.javaln.JavaLN;
 
 /**
@@ -31,15 +32,21 @@ public abstract class Protos extends Thread
         {
             s.P();
 
-            Thread t = doit();	// call down to derived class
-            if (t != null)
+            Thread t = null;
+            try
             {
-                t.start();
+                t = doit();	// call down to derived class
             }
-
+            catch (AssertionError AE)
+            {
+                s.V();
+                continue;
+            }
+                
+            t.start();
             s.V();
 
-            if (JDNSS.jargs.once && t != null)
+            if (JDNSS.jargs.once)
             {
                 try
                 {
@@ -49,7 +56,7 @@ public abstract class Protos extends Thread
                 {
                     logger.throwing (e);
                 }
-                logger.exiting ();
+                logger.exiting (0);
                 System.exit (0);
             }
         }
@@ -124,16 +131,16 @@ class UDP extends Protos
             q = new Query (Utils.trimByteArray
                 (packet.getData(), packet.getLength()));
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             logger.throwing (e);
             logger.exiting ("null");
             return (null);
         }
-
-        if (q == null)
+        catch (AssertionError AE)
         {
-            logger.finest ("Query error, exiting");
+            logger.throwing (AE);
+            logger.exiting ("null");
             return (null);
         }
 

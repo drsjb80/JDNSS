@@ -71,7 +71,15 @@ class DBConnection
             return (null);
         }
 
-        String s = Utils.findLongest (v.elements(), name);
+        String s = null;
+        try
+        {
+            s = Utils.findLongest (v.elements(), name);
+        }
+        catch (AssertionError AE)
+        {
+            throw (AE);
+        }
         logger.finest (s);
 
         // then, populate a DBZone with what we found.

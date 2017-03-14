@@ -68,21 +68,35 @@ public class JDNSS
     {
         logger.entering (name);
 
-        String longest = Utils.findLongest (bindZones.keys(), name);
+        String longest = null;
 
-        if (longest != null)
+        // first, see if it's in the files
+        try
         {
-            return ((Zone) bindZones.get (longest));
+            longest = Utils.findLongest (bindZones.keys(), name);
         }
-
-        if (DBConnection != null)
+        catch (AssertionError AE)
         {
-            DBZone d = DBConnection.getZone (name);
-            if (d != null)
-            return ((Zone) d);
-        }
+            // see if we have a DB connection and try there
+            if (DBConnection != null)
+            {
+                DBZone d = null;
+                try
+                {
+                    d = DBConnection.getZone (name);
+                    return ((Zone) d);
+                }
+                catch (AssertionError AE2)
+                {
+                    return (null);
+                }
+            }
 
-        return (null);
+            // it's not
+            return (null);
+        }
+            
+        return ((Zone) bindZones.get (longest));
     }
 
     public void start()

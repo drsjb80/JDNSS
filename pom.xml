@@ -127,7 +127,7 @@
       <id>beatys</id>
       <name>Steve Beaty</name>
       <email>beatys@msudenver.edu</email>
-      <url>http://pipes.org/beatysmall.jpg</url>
+      <url>http://weba.msudenver.edu/searchchannel/jsp/directoryprofile/profile.jsp?uName=beaty</url>
       <organization>MSU Denver Computer Science</organization>
       <organizationUrl>http://cs.msudenver.edu</organizationUrl>
       <roles>
@@ -136,7 +136,7 @@
       </roles>
       <timezone>America/Denver</timezone>
       <properties>
-        <picUrl>http://www.msudenver.edu/directoryprofile/Data/beatys/beatys.jpg</picUrl>
+        <picUrl>http://pipes.org/beatysmall.jpg</picUrl>
       </properties>
     </developer>
   </developers>

@@ -7,6 +7,8 @@ package edu.msudenver.cs.jdnss;
  */
 
 import edu.msudenver.cs.javaln.*;
+import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
 /*
 **                                        1  1  1  1  1  1
@@ -37,7 +39,6 @@ public abstract class RR
     private int rrtype;
     private int rrclass = 1;        // IN
     private int TTL;
-    private JavaLN logger = JDNSS.logger;
 
     public RR (String rrname, int rrtype, int TTL)
     {
@@ -73,6 +74,12 @@ public abstract class RR
         RR rr = (RR) o;
         return (rr.rrname.equals (this.rrname) && rr.rrclass == rrclass &&
             rr.rrtype == rrtype && rr.TTL == TTL);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 
     public int getType() { return (rrtype); }
@@ -157,8 +164,9 @@ class SOARR extends RR
             }
 
             SOARR soarr = (SOARR) o;
-            return (soarr.domain == domain && soarr.server == server &&
-                soarr.contact == contact && soarr.serial == serial &&
+            return (soarr.domain.equals (domain) && 
+                soarr.server.equals (server) &&
+                soarr.contact.equals (contact) && soarr.serial == serial &&
                 soarr.refresh == refresh && soarr.retry == retry &&
                 soarr.expire == expire && soarr.minimum == minimum);
         }
@@ -166,6 +174,11 @@ class SOARR extends RR
         return (false);
     }
 
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
+    }
 
     SOARR (String domain, String server, String contact, int serial,
         int refresh, int retry, int expire, int minimum, int TTL)
@@ -243,10 +256,16 @@ class HINFORR extends RR
             }
 
             HINFORR hinforr = (HINFORR) o;
-            return (hinforr.CPU == CPU && hinforr.OS == OS);
+            return (hinforr.CPU.equals (CPU) && hinforr.OS.equals (OS));
         }
 
         return (false);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 
     HINFORR (String name, int TTL, String CPU, String OS)
@@ -283,10 +302,16 @@ class MXRR extends RR
             }
 
             MXRR mxrr = (MXRR) o;
-            return (mxrr.host == host && mxrr.preference == preference);
+            return (mxrr.host.equals (host) && mxrr.preference == preference);
         }
 
         return (false);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 
     public String getHost() { return (host); }
@@ -337,6 +362,12 @@ abstract class STRINGRR extends RR
         }
 
         return (false);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 
     public String getString() { return (string); }
@@ -412,6 +443,12 @@ abstract class ADDRRR extends RR
         return (false);
     }
 
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
+    }
+
     public String getAddress() { return (address); }
 
     public String toString()
@@ -466,7 +503,7 @@ class DNSKEYRR extends RR
         a = Utils.combine (a, Utils.getTwoBytes (flags, 2));
         a = Utils.combine (a, Utils.getByte (protocol, 1));
         a = Utils.combine (a, Utils.getByte (algorithm, 1));
-        a = Utils.combine (a, publicKey.getBytes());
+        a = Utils.combine (a, publicKey.getBytes(StandardCharsets.US_ASCII));
         return (a);
     }
 
@@ -487,6 +524,12 @@ class DNSKEYRR extends RR
         }
 
         return (false);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 }
 
@@ -514,7 +557,6 @@ class DNSRRSIGRR extends RR
         this.originalTTL = originalTTL;
         this.expiration = expiration;
         this.inception = inception;
-        this.keyTag = keyTag;
         this.signersName = signersName;
         this.signature = signature;
     }
@@ -529,7 +571,7 @@ class DNSRRSIGRR extends RR
         a = Utils.combine (a, Utils.getBytes (expiration));
         a = Utils.combine (a, Utils.getBytes (inception));
         a = Utils.combine (a, Utils.getTwoBytes (keyTag, 2));
-        a = Utils.combine (a, signersName.getBytes());
+        a = Utils.combine (a, signersName.getBytes(StandardCharsets.US_ASCII));
         a = Utils.combine (a, signature.getBytes());
         return (a);
     }
@@ -557,6 +599,12 @@ class DNSRRSIGRR extends RR
         }
 
         return (false);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 
 
@@ -607,9 +655,15 @@ class DNSNSECRR extends RR
 
             DNSNSECRR dnsnsecrr = (DNSNSECRR) o;
             return (dnsnsecrr.nextDomainName.equals (nextDomainName) &&
-                dnsnsecrr.typeBitMaps.equals (typeBitMaps));
+                Arrays.equals (dnsnsecrr.typeBitMaps, typeBitMaps));
         }
 
         return (false);
+    }
+
+    public int hashCode ()
+    {
+        Assertion.Assert (false);
+        return (42);
     }
 }

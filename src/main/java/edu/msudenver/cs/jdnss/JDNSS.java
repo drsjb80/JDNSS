@@ -105,9 +105,9 @@ public class JDNSS
         boolean tcp = jargs.TCP;
         boolean mc = jargs.MC;
 
-        logger.finest (new Boolean (udp));
-        logger.finest (new Boolean (tcp));
-        logger.finest (new Boolean (mc));
+        logger.finest (Boolean.valueOf (udp));
+        logger.finest (Boolean.valueOf (tcp));
+        logger.finest (Boolean.valueOf (mc));
 
         for (int i = 0; i < 3; i++)
         {

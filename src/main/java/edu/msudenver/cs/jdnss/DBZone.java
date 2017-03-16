@@ -18,7 +18,6 @@ class DBZone implements Zone
     private static JavaLN logger = JDNSS.logger;
     private String zoneName;
     private int domainId;
-    private int serial;
     private DBConnection dbConnection;
 
     // com.mysql.jdbc.Driver

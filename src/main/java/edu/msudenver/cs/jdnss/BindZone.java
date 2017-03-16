@@ -136,7 +136,7 @@ class BindZone implements Zone
     {
         logger.entering (new Object[]{name, rr});
 
-        if ((rr instanceof SOARR) && name != this.name)
+        if ((rr instanceof SOARR) && ! name.equals(this.name))
         {
             this.name = name;
         }
@@ -173,7 +173,7 @@ class BindZone implements Zone
      */
     public Vector get (int type, String name)
     {
-        logger.entering (new Object[]{new Integer (type), name});
+        logger.entering (new Object[]{Integer.valueOf (type), name});
 
         Hashtable h = getTable (type);
         logger.finest (h);

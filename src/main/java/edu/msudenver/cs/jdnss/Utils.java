@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
 import edu.msudenver.cs.javaln.JavaLN;
 
@@ -50,9 +51,9 @@ public class Utils
     public static final int NOTIMPL     = 4;
     public static final int REFUSED     = 5;
 
-    public static HashMap<String, Integer> StringToType =
+    private static HashMap<String, Integer> StringToType =
         new HashMap<String, Integer>();
-    public static HashMap<Integer, String> TypeToString =
+    private static HashMap<Integer, String> TypeToString =
         new HashMap<Integer, String>();
 
     static
@@ -113,7 +114,6 @@ public class Utils
     {
         Assertion.Assert (e != null);
         Assertion.Assert (s != null);
-        Assertion.Assert (! e.equals (""));
         Assertion.Assert (! s.equals (""));
 
         logger.entering (s);
@@ -307,7 +307,7 @@ public class Utils
 
         byte a[] = new byte[1];
         a[0] = getByte (s.length(), 1);
-        return (combine (a, s.getBytes()));
+        return (combine (a, s.getBytes(StandardCharsets.US_ASCII)));
     }
 
     /**
@@ -333,7 +333,7 @@ public class Utils
             a[pointer++] = (byte) l;
 
             // what characters?
-            byte c[] = b[i].getBytes();
+            byte c[] = b[i].getBytes(StandardCharsets.US_ASCII);
             System.arraycopy (c, 0, a, pointer, l);
 
             pointer += l;

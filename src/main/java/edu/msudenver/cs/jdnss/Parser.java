@@ -49,8 +49,6 @@ public class Parser
     private int globalTTL = -1;
     private int currentTTL = -1;
 
-    private int currentClass;
-
     private StreamTokenizer st;
     private Hashtable tokens;
 
@@ -77,24 +75,24 @@ public class Parser
         initTokenizer (st);
 
         tokens = new Hashtable();
-        tokens.put ("SOA", new Integer (Utils.SOA));
-        tokens.put ("IN", new Integer (IN));
-        tokens.put ("MX", new Integer (Utils.MX));
-        tokens.put ("NS", new Integer (Utils.NS));
-        tokens.put ("A", new Integer (Utils.A));
-        tokens.put ("AAAA", new Integer (Utils.AAAA));
-        tokens.put ("A6", new Integer (Utils.A6));
-        tokens.put ("CNAME", new Integer (Utils.CNAME));
-        tokens.put ("PTR", new Integer (Utils.PTR));
-        tokens.put ("TXT", new Integer (Utils.TXT));
-        tokens.put ("HINFO", new Integer (Utils.HINFO));
-        tokens.put ("RRSIG", new Integer (Utils.RRSIG));
-        tokens.put ("NSEC", new Integer (Utils.NSEC));
-        tokens.put ("DNSKEY", new Integer (Utils.DNSKEY));
-        tokens.put ("DS", new Integer (Utils.DS));
-        tokens.put ("$INCLUDE", new Integer (Utils.INCLUDE));
-        tokens.put ("$ORIGIN", new Integer (Utils.ORIGIN));
-        tokens.put ("$TTL", new Integer (Utils.TTL));
+        tokens.put ("SOA", Integer.valueOf (Utils.SOA));
+        tokens.put ("IN", Integer.valueOf (IN));
+        tokens.put ("MX", Integer.valueOf (Utils.MX));
+        tokens.put ("NS", Integer.valueOf (Utils.NS));
+        tokens.put ("A", Integer.valueOf (Utils.A));
+        tokens.put ("AAAA", Integer.valueOf (Utils.AAAA));
+        tokens.put ("A6", Integer.valueOf (Utils.A6));
+        tokens.put ("CNAME", Integer.valueOf (Utils.CNAME));
+        tokens.put ("PTR", Integer.valueOf (Utils.PTR));
+        tokens.put ("TXT", Integer.valueOf (Utils.TXT));
+        tokens.put ("HINFO", Integer.valueOf (Utils.HINFO));
+        tokens.put ("RRSIG", Integer.valueOf (Utils.RRSIG));
+        tokens.put ("NSEC", Integer.valueOf (Utils.NSEC));
+        tokens.put ("DNSKEY", Integer.valueOf (Utils.DNSKEY));
+        tokens.put ("DS", Integer.valueOf (Utils.DS));
+        tokens.put ("$INCLUDE", Integer.valueOf (Utils.INCLUDE));
+        tokens.put ("$ORIGIN", Integer.valueOf (Utils.ORIGIN));
+        tokens.put ("$TTL", Integer.valueOf (Utils.TTL));
 
         origin = zone.getName();
     }
@@ -713,7 +711,6 @@ public class Parser
     void RRs()
     {
         currentName = origin;
-        currentClass = 0;
 
         int t = getNextToken();
 
@@ -782,8 +779,6 @@ public class Parser
                         }
                         case IN :
                         {
-                            currentClass = t;
-
                             t = getNextToken ();
 
                             if (t == INT)

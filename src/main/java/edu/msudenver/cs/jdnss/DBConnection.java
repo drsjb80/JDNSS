@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 
 class DBConnection
 {
+    private Connection conn;
     private Statement stmt;
     private static JavaLN logger = JDNSS.logger;
 
@@ -25,20 +26,42 @@ class DBConnection
         DBUser = DBUser == null ? "" : DBUser;
         DBPass = DBPass == null ? "" : DBPass;
 
+        // load up the class
         try
         {
             Class.forName (DBClass);
-            Connection conn = DriverManager.getConnection (DBURL, DBUser,
-                DBPass);
-            stmt = conn.createStatement();
         }
         catch (ClassNotFoundException cnfe)
         {
             logger.throwing (cnfe);
         }
+
+        try
+        {
+            conn = DriverManager.getConnection (DBURL, DBUser, DBPass);
+        }
         catch (java.sql.SQLException sqle)
         {
             logger.throwing (sqle);
+            Assertion.Assert (false);
+        }
+
+        try
+        {
+            stmt = conn.createStatement();
+        }
+        catch (java.sql.SQLException sqle)
+        {
+            try
+            {
+                stmt.close();
+                conn.close();
+            }
+            catch (Exception e)
+            {
+                logger.throwing (sqle);
+                Assertion.Assert (false);
+            }
         }
     }
 
@@ -49,9 +72,10 @@ class DBConnection
         Vector v = new Vector();
 
         // first, get them all
+        ResultSet rs = null;
         try
         {
-            ResultSet rs = stmt.executeQuery ("SELECT * FROM domains");
+            rs = stmt.executeQuery ("SELECT * FROM domains");
 
             while (rs.next())
             {
@@ -60,8 +84,16 @@ class DBConnection
         }
         catch (java.sql.SQLException sqle)
         {
-            logger.throwing (sqle);
-            Assertion.Assert (false);
+            try
+            {
+                stmt.close();
+                conn.close();
+            }
+            catch (Exception e)
+            {
+                logger.throwing (sqle);
+                Assertion.Assert (false);
+            }
         }
 
         Assertion.Assert (v.size() != 0);
@@ -81,7 +113,7 @@ class DBConnection
         // then, populate a DBZone with what we found.
         try
         {
-            ResultSet rs = stmt.executeQuery
+            rs = stmt.executeQuery
                 ("SELECT * FROM domains WHERE name = '" + s + "'");
 
             rs.next();
@@ -95,7 +127,17 @@ class DBConnection
         }
         catch (java.sql.SQLException sqle)
         {
-            logger.throwing (sqle);
+            try
+            {
+                rs.close();
+                stmt.close();
+                conn.close();
+            }
+            catch (Exception e)
+            {
+                logger.throwing (sqle);
+                Assertion.Assert (false);
+            }
         }
 
         Assertion.Assert (false, "DBConnection failed");
@@ -192,6 +234,7 @@ class DBConnection
         }
         catch (java.sql.SQLException sqle)
         {
+            logger.throwing (sqle);
             Assertion.Assert (false);
         }
 

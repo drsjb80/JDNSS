@@ -7,6 +7,7 @@ package edu.msudenver.cs.jdnss;
 
 import edu.msudenver.cs.javaln.JavaLN;
 import java.util.Vector;
+import java.util.Arrays;
 import java.net.DatagramPacket;
 
 public class Query
@@ -110,14 +111,17 @@ public class Query
         }
     }
 
-    public byte[] getBuffer() { return (buffer); }
+    public byte[] getBuffer()
+    {
+        return (Arrays.copyOf (buffer, buffer.length));
+    }
 
     /**
      * creates a Query from a packet
      */
     public Query (byte b[])
     {
-        buffer =         b;
+        buffer =         Arrays.copyOf (b, b.length);
         id =             Utils.addThem (buffer[0], buffer[1]);
         numQuestions =   Utils.addThem (buffer[4], buffer[5]);
         numAnswers =     Utils.addThem (buffer[6], buffer[7]);
@@ -292,7 +296,7 @@ public class Query
         Assertion.Assert (v != null, "v == null");
         Assertion.Assert (name != null, "name == null");
 
-        logger.entering (new Object[]{v, name, new Integer (which)});
+        logger.entering (new Object[]{v, name, Integer.valueOf (which)});
 
         for (int i = 0; i < v.size(); i++)
         {
@@ -497,7 +501,8 @@ public class Query
                 rcode = Utils.REFUSED;
                 AA = false;
                 rebuild();
-                return (buffer);
+                return (Arrays.copyOf (buffer, buffer.length));
+
             }
             logger.finest (zone);
 
@@ -512,7 +517,7 @@ public class Query
                 logger.finer ("SOA lookup in " + zone.getName() + " failed");
                 rcode = Utils.SERVFAIL;
                 rebuild();
-                return (buffer);
+                return (Arrays.copyOf (buffer, buffer.length));
             }
 
             SOARR SOA = (SOARR) w.elementAt(0);
@@ -531,7 +536,7 @@ public class Query
                     logger.finer (name + " not A or AAAA, giving up");
                     errLookupFailed (type, name, Utils.NOERROR);
                     addSOA (zone, SOA);
-                    return (buffer);
+                    return (Arrays.copyOf (buffer, buffer.length));
                 }
                 else
                 {
@@ -547,7 +552,7 @@ public class Query
                         // look for AAAA if A and vice versa
                         dealWithOther (zone, type, name);
                         addSOA (zone, SOA);
-                        return (buffer);
+                        return (Arrays.copyOf (buffer, buffer.length));
                     }
 
                     v = sandv.getVector();
@@ -561,7 +566,7 @@ public class Query
                 logger.finer ("Additionals not understood");
                 rcode = Utils.NOTIMPL;
                 rebuild();
-                return (buffer);
+                return (Arrays.copyOf (buffer, buffer.length));
             }
 
             createResponses (zone, v, name, type);
@@ -574,6 +579,6 @@ public class Query
 
         addAdditionals();
         rebuild();
-        return (buffer);
+        return (Arrays.copyOf (buffer, buffer.length));
     }
 }

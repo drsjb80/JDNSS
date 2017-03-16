@@ -1,6 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
 import edu.msudenver.cs.javaln.JavaLN;
+import java.util.Arrays;
 
 public class RRs
 {
@@ -20,7 +21,7 @@ public class RRs
     public RRs (byte buffer[], int numQuestions, int numAnswers,
     int numAuthorities, int numAdditionals)
     {
-        this.buffer = buffer;
+        this.buffer = Arrays.copyOf (buffer, buffer.length);
         this.numQuestions = numQuestions;
         this.numAnswers = numAnswers;
         this.numAuthorities = numAuthorities;

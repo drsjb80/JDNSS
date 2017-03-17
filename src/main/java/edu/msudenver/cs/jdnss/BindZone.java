@@ -20,18 +20,20 @@ class BindZone implements Zone
     ** in the single table...
     */
 
-    private Hashtable hA;
-    private Hashtable hAAAA;
-    private Hashtable hNS;
-    private Hashtable hMX;
-    private Hashtable hCNAME;
-    private Hashtable hPTR;
-    private Hashtable hTXT;
-    private Hashtable hHINFO;
-    private Hashtable hSOA;
-    private Hashtable hDNSKEY;
-    private Hashtable hDNSRRSIG;
-    private Hashtable hDNSNSEC;
+    private Hashtable<String, Vector> hA = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hAAAA = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hNS = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hMX = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hCNAME = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hPTR = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hTXT = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hHINFO = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hSOA = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hDNSKEY = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hDNSRRSIG = new Hashtable<String, Vector>();
+    private Hashtable<String, Vector> hDNSNSEC = new Hashtable<String, Vector>();
+    private Hashtable<Integer, Hashtable> tableOfTables =
+        new Hashtable<Integer, Hashtable>();
 
     private JavaLN logger = JDNSS.logger;
 
@@ -39,24 +41,23 @@ class BindZone implements Zone
     {
         this.name = name;
 
-        hA = new Hashtable();
-        hAAAA = new Hashtable();
-        hNS = new Hashtable();
-        hMX = new Hashtable();
-        hCNAME = new Hashtable();
-        hPTR = new Hashtable();
-        hTXT = new Hashtable();
-        hHINFO = new Hashtable();
-        hSOA = new Hashtable();
-        hDNSKEY = new Hashtable();
-        hDNSRRSIG = new Hashtable();
-        hDNSNSEC = new Hashtable();
+        tableOfTables.put (Utils.A, hA);
+        tableOfTables.put (Utils.AAAA, hAAAA);
+        tableOfTables.put (Utils.NS, hNS);
+        tableOfTables.put (Utils.MX, hMX);
+        tableOfTables.put (Utils.CNAME, hCNAME);
+        tableOfTables.put (Utils.PTR, hPTR);
+        tableOfTables.put (Utils.TXT, hTXT);
+        tableOfTables.put (Utils.HINFO, hHINFO);
+        tableOfTables.put (Utils.SOA, hSOA);
+        tableOfTables.put (Utils.DNSKEY, hDNSKEY);
+        tableOfTables.put (Utils.RRSIG, hDNSRRSIG);
     }
 
     /**
      * @return the domain name
      */
-    public String getName() { return (name); }
+    public String getName () { return (name); }
 
     /**
      * Create a printable String
@@ -66,11 +67,11 @@ class BindZone implements Zone
     private String dumphash (Hashtable h)
     {
         String s = "";
-        Enumeration e = h.keys();
+        final Enumeration e = h.keys();
 
         while (e.hasMoreElements())
         {
-            Object o = e.nextElement();
+            final Object o = e.nextElement();
             s += o + ": " + h.get (o) + " ";
         }
         return s;
@@ -105,27 +106,16 @@ class BindZone implements Zone
     {
         logger.entering (type);
 
-        switch (type)
+        Hashtable ret = tableOfTables.get (type);
+
+        if (ret == null)
         {
-            case Utils.A:        return (hA);
-            case Utils.AAAA:        return (hAAAA);
-            case Utils.NS:        return (hNS);
-            case Utils.MX:        return (hMX);
-            case Utils.CNAME:        return (hCNAME);
-            case Utils.PTR:        return (hPTR);
-            case Utils.TXT:        return (hTXT);
-            case Utils.HINFO:        return (hHINFO);
-            case Utils.SOA:        return (hSOA);
-            case Utils.NSEC:        return (hDNSNSEC);
-            case Utils.RRSIG:        return (hDNSRRSIG);
-            case Utils.DNSKEY:        return (hDNSKEY);
-            default:
-            {
-                logger.config ("type not found: " + type);
-                logger.exiting ("null");
-                return (null);
-            }
+            logger.config ("type not found: " + type);
+            logger.exiting ("null");
+            return (null);
         }
+
+        return (ret);
     }
 
     /**

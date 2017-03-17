@@ -556,7 +556,6 @@ public class Query
                     }
 
                     v = sandv.getVector();
-                    System.out.println ("v: " + v);
                     name = sandv.getString();
                 }
             }

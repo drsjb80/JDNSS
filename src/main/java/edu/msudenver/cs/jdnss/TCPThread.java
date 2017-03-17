@@ -42,11 +42,11 @@ public class TCPThread extends Thread
             // in TCP, the first two bytes signify the length of the request
             byte buffer[] = new byte[2];
 
-            Assertion.Assert (is.read (buffer, 0, 2) == 2);
+            Assertion.aver (is.read (buffer, 0, 2) == 2);
 
             byte query[] = new byte [Utils.addThem (buffer[0], buffer[1])];
 
-            Assertion.Assert (is.read (query) == query.length);
+            Assertion.aver (is.read (query) == query.length);
 
             Query q = new Query (query);
             byte b[] = q.makeResponses (dnsService, false);

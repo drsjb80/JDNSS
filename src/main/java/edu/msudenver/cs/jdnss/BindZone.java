@@ -4,9 +4,10 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: BindZone.java,v 1.1 2011/03/03 22:35:14 drb80 Exp $
  */
 
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
+
 import edu.msudenver.cs.javaln.JavaLN;
 
 class BindZone implements Zone
@@ -186,7 +187,7 @@ class BindZone implements Zone
         }
 
         logger.exiting  (v);
-        Assertion.Assert (v != null);
+        Assertion.aver (v != null);
         return (v);
     }
 }

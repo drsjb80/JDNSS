@@ -43,7 +43,7 @@ class DBConnection
         catch (java.sql.SQLException sqle)
         {
             logger.throwing (sqle);
-            Assertion.Assert (false);
+            Assertion.aver (false);
         }
 
         try
@@ -60,7 +60,7 @@ class DBConnection
             catch (Exception e)
             {
                 logger.throwing (sqle);
-                Assertion.Assert (false);
+                Assertion.aver (false);
             }
         }
     }
@@ -92,11 +92,11 @@ class DBConnection
             catch (Exception e)
             {
                 logger.throwing (sqle);
-                Assertion.Assert (false);
+                Assertion.aver (false);
             }
         }
 
-        Assertion.Assert (v.size() != 0);
+        Assertion.aver (v.size() != 0);
 
         // then, find the longest that matches
         String s = null;
@@ -120,7 +120,7 @@ class DBConnection
             int domainId = rs.getInt ("id");
             logger.finest (domainId);
 
-            Assertion.Assert (! rs.next());
+            Assertion.aver (! rs.next());
 
             logger.exiting (s);
             return (new DBZone (s, domainId, this));
@@ -136,11 +136,11 @@ class DBConnection
             catch (Exception e)
             {
                 logger.throwing (sqle);
-                Assertion.Assert (false);
+                Assertion.aver (false);
             }
         }
 
-        Assertion.Assert (false, "DBConnection failed");
+        Assertion.aver (false, "DBConnection failed");
         return (null);
     }
 
@@ -224,21 +224,21 @@ class DBConnection
                     {
                         logger.warning ("requested type " + type +
                         " for " + name + " not found");
-                        Assertion.Assert (false);
+                        Assertion.aver (false);
                     }
                 }
             }
 
-            Assertion.Assert (ret.size() != 0);
+            Assertion.aver (ret.size() != 0);
             return (ret);
         }
         catch (java.sql.SQLException sqle)
         {
             logger.throwing (sqle);
-            Assertion.Assert (false);
+            Assertion.aver (false);
         }
 
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (null);
     }
 }

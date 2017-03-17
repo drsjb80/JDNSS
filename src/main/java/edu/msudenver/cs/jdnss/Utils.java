@@ -101,7 +101,7 @@ public class Utils
     {
         String ret = TypeToString.get(i);
 
-        Assertion.Assert (ret != null, "Couldn't find type: " + i);
+        Assertion.aver (ret != null, "Couldn't find type: " + i);
 
         return (ret);
     }
@@ -112,9 +112,9 @@ public class Utils
      */
     public static String findLongest (Enumeration e, String s)
     {
-        Assertion.Assert (e != null);
-        Assertion.Assert (s != null);
-        Assertion.Assert (! s.equals (""));
+        Assertion.aver (e != null);
+        Assertion.aver (s != null);
+        Assertion.aver (! s.equals (""));
 
         logger.entering (s);
 
@@ -134,7 +134,7 @@ public class Utils
             }
         }
 
-        Assertion.Assert (longest != null);
+        Assertion.aver (longest != null);
         logger.exiting (longest);
         return (longest);
     }
@@ -178,7 +178,7 @@ public class Utils
      */
     public static byte getByte (int from, int which)
     {
-        Assertion.Assert (which >= 1 && which <= 4);
+        Assertion.aver (which >= 1 && which <= 4);
 
         int shift = (which - 1) * 8;
         return ((byte)((from >>> shift) & 0xff));
@@ -192,7 +192,7 @@ public class Utils
      */
     public static byte[] getTwoBytes (int from, int which)
     {
-        Assertion.Assert (which > 1 && which <= 4);
+        Assertion.aver (which > 1 && which <= 4);
 
         byte ret[] = new byte[2];
         ret[0] = getByte (from, which);
@@ -223,7 +223,7 @@ public class Utils
      */
     public static byte getNybble (int from, int which)
     {
-        Assertion.Assert (which >= 1 && which <= 8);
+        Assertion.aver (which >= 1 && which <= 8);
 
         int shift = (which - 1) * 4;
         return ((byte) ((from >>> shift) & 0x0f));
@@ -303,7 +303,7 @@ public class Utils
      */
     public static byte[] toCS (String s)
     {
-        Assertion.Assert (s != null && !s.equals (""));
+        Assertion.aver (s != null && !s.equals (""));
 
         byte a[] = new byte[1];
         a[0] = getByte (s.length(), 1);
@@ -318,7 +318,7 @@ public class Utils
      */
     public static byte[] convertString (String s)
     {
-        Assertion.Assert (s != null && !s.equals (""));
+        Assertion.aver (s != null && !s.equals (""));
 
         // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
@@ -352,7 +352,7 @@ public class Utils
      */
     public static byte[] combine (byte one[], byte two[])
     {
-        Assertion.Assert (one != null || two != null);
+        Assertion.aver (one != null || two != null);
 
         if (one == null)
         {
@@ -387,9 +387,9 @@ public class Utils
 
     public static byte[] trimByteArray (byte[] old, int length)
     {
-        Assertion.Assert (old != null, "Byte array is null");
-        Assertion.Assert (length > 0, length + " is invalid");
-        Assertion.Assert (length <= old.length, length + " is invalid");
+        Assertion.aver (old != null, "Byte array is null");
+        Assertion.aver (length > 0, length + " is invalid");
+        Assertion.aver (length <= old.length, length + " is invalid");
 
         byte ret[] = new byte[length];
         System.arraycopy (old, 0, ret, 0, length);
@@ -401,7 +401,7 @@ public class Utils
      */
     public static String reverseIP (String s)
     {
-        Assertion.Assert (s != null);
+        Assertion.aver (s != null);
 
         String a[] = s.split ("\\.");
 
@@ -427,7 +427,7 @@ public class Utils
      */
     public static String reverse (String s)
     {
-        Assertion.Assert (s != null);
+        Assertion.aver (s != null);
 
         String r = "";
 
@@ -448,8 +448,8 @@ public class Utils
       */
     public static int count (String s, String c)
     {
-        Assertion.Assert (s != null);
-        Assertion.Assert (c != null);
+        Assertion.aver (s != null);
+        Assertion.aver (c != null);
 
         if (s.equals ("")) return (0);
         if (c.equals ("")) return (0);

@@ -128,8 +128,8 @@ public class Query
         numAuthorities = Utils.addThem (buffer[8], buffer[9]);
         numAdditionals = Utils.addThem (buffer[10], buffer[11]);
 
-        Assertion.Assert (numAnswers == 0);
-        Assertion.Assert (numAuthorities == 0);
+        Assertion.aver (numAnswers == 0);
+        Assertion.aver (numAuthorities == 0);
 
         int flags = Utils.addThem (buffer[2], buffer[3]);
         QR =        (flags & 0x00008000) != 0;
@@ -229,8 +229,8 @@ public class Query
 
     private void addThem (Vector v, String host, int type)
     {
-        Assertion.Assert (v != null, "v == null");
-        Assertion.Assert (host != null, "host == null");
+        Assertion.aver (v != null, "v == null");
+        Assertion.aver (host != null, "host == null");
 
         for (int i = 0; i < v.size(); i++)
         {
@@ -292,9 +292,9 @@ public class Query
 
     private void createResponses (Zone zone, Vector v, String name, int which)
     {
-        Assertion.Assert (zone != null, "zone == null");
-        Assertion.Assert (v != null, "v == null");
-        Assertion.Assert (name != null, "name == null");
+        Assertion.aver (zone != null, "zone == null");
+        Assertion.aver (v != null, "v == null");
+        Assertion.aver (name != null, "name == null");
 
         logger.entering (new Object[]{v, name, Integer.valueOf (which)});
 
@@ -441,13 +441,13 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            Assertion.Assert (false);
+            Assertion.aver (false);
         }
 
         String s = ((CNAMERR) u.elementAt (0)).getString();
         logger.finer (s);
 
-        Assertion.Assert (s != null);
+        Assertion.aver (s != null);
 
         try
         {
@@ -455,7 +455,7 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            Assertion.Assert (false);
+            Assertion.aver (false);
         }
 
         // yes, so first put in the CNAME

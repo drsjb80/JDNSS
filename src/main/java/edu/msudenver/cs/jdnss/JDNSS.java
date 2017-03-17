@@ -88,12 +88,12 @@ public class JDNSS
                 }
                 catch (AssertionError AE2)
                 {
-                    Assertion.Assert (false);
+                    Assertion.aver (false);
                 }
             }
 
             // it's not
-            Assertion.Assert (false);
+            Assertion.aver (false);
         }
             
         return ((Zone) bindZones.get (longest));

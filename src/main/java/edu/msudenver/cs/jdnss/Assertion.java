@@ -1,19 +1,18 @@
 package edu.msudenver.cs.jdnss;
-import java.lang.Exception;
 
 class AssertionException extends Exception
 {
-    public AssertionException (String message)
+    AssertionException (final String message)
     {
         super (message);
     }
 
-    public AssertionException (String message, Throwable cause) 
+    AssertionException (final String message, final Throwable cause) 
     {
         super (message, cause);
     }
 
-    public AssertionException (Throwable cause) 
+    AssertionException (final Throwable cause) 
     {
         super (cause);
     }
@@ -26,23 +25,23 @@ class Assertion
      *
      * @param assertion        what to test
      */
-    public static void Assert (boolean assertion)
+    public static void aver (final boolean assertion)
     {
         if (!assertion) throw new AssertionError ("Assertion failed");
     }
 
-    public static void Assert (boolean assertion, String message)
+    public static void aver (final boolean assertion, final String message)
     {
         if (!assertion) throw new AssertionError (message);
     }
 
-    public static void Assert (boolean assertion, String message,
-        Throwable cause)
+    public static void aver (final boolean assertion, final String message,
+        final Throwable cause)
     {
         if (!assertion) throw new AssertionError (message, cause);
     }
 
-    public static void Assert (boolean assertion, Throwable cause)
+    public static void aver (final boolean assertion, final Throwable cause)
     {
         if (!assertion) throw new AssertionError (cause);
     }

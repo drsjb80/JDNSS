@@ -78,7 +78,7 @@ public abstract class RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -176,7 +176,7 @@ class SOARR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -264,7 +264,7 @@ class HINFORR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -310,7 +310,7 @@ class MXRR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -366,7 +366,7 @@ abstract class STRINGRR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -445,7 +445,7 @@ abstract class ADDRRR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -528,7 +528,7 @@ class DNSKEYRR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 }
@@ -603,7 +603,7 @@ class DNSRRSIGRR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 
@@ -663,7 +663,7 @@ class DNSNSECRR extends RR
 
     public int hashCode ()
     {
-        Assertion.Assert (false);
+        Assertion.aver (false);
         return (42);
     }
 }

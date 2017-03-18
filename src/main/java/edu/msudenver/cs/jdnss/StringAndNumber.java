@@ -1,20 +1,20 @@
 package edu.msudenver.cs.jdnss;
 
-public class SandN
+public class StringAndNumber
 {
     private String string;
     private int number;
 
-    SandN (String string, int number)
+    StringAndNumber(final String s, final int n)
     {
-        this.string = string;
-        this.number = number;
+        this.string = s;
+        this.number = n;
     }
 
-    public String getString() { return (string); }
-    public int getNumber() { return (number); }
+    public String getString() { return string; }
+    public int getNumber() { return number; }
     public String toString()
     {
-        return ("string = " + string + ", number = " + number);
+        return "string = " + string + ", number = " + number;
     }
 }

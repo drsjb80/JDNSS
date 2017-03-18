@@ -5,20 +5,20 @@ import edu.msudenver.cs.javaln.JavaLN;
 
 class TestSem extends Thread
 {
-    private static Semaphore s = new Semaphore (5);
+    private static Semaphore s = new Semaphore(5);
 
     public void run()
     {
-        System.out.println (this + " before P()");
+        System.out.println(this + " before P()");
         s.P();
-        System.out.println (this + " after P()");
+        System.out.println(this + " after P()");
 
-        try { Thread.sleep (10 * 1000); }
+        try { Thread.sleep(10 * 1000); }
         catch (InterruptedException e) { e.printStackTrace(); }
 
-        System.out.println (this + " before V()");
+        System.out.println(this + " before V()");
         s.V();
-        System.out.println (this + " after V()");
+        System.out.println(this + " after V()");
     }
 }
 
@@ -26,9 +26,9 @@ public class Semaphore
 {
     private int total;
     private int count = 0;
-    private JavaLN logger = JDNSS.logger;
+    private JavaLN logger = JDNSS.getLogger();
 
-    public Semaphore (int total)
+    public Semaphore(int total)
     {
         this.total = total;
     }
@@ -36,11 +36,11 @@ public class Semaphore
     public synchronized void P()
     {
         String name = Thread.currentThread().getName();
-        logger.finest ("P: count = " + count + " " +  name);
+        logger.finest("P: count = " + count + " " +  name);
 
         while (count >= total)
         {
-            logger.finest (name + " blocked");
+            logger.finest(name + " blocked");
 
             try
             {
@@ -48,10 +48,10 @@ public class Semaphore
             }
             catch (Exception e)
             {
-                logger.throwing (e);
+                logger.throwing(e);
             }
 
-            logger.finest (name + " unblocked");
+            logger.finest(name + " unblocked");
         }
 
         count++;
@@ -59,7 +59,7 @@ public class Semaphore
 
     public synchronized void V()
     {
-        logger.finest ("V: count = " + count + " " +
+        logger.finest("V: count = " + count + " " +
         Thread.currentThread().getName());
         count--;
         if (count > 0)
@@ -68,7 +68,7 @@ public class Semaphore
         }
     }
 
-    public static void main (String args[])
+    public static void main(String args[])
     {
         for (int i = 0; i < 10; i++)
         {

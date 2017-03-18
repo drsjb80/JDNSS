@@ -76,8 +76,8 @@
         <module name="IllegalToken"/>
         <module name="IllegalTokenText"/>
         <module name="IllegalType"/>
-        <!-- not doing this <module name="ImportControl"/> -->
-        <!-- haven't configured this yet <module name="ImportOrder"/> -->
+        <module name="ImportControl"/>
+        <module name="ImportOrder"/>
         <module name="Indentation"/>
         <module name="InnerAssignment"/>
         <module name="InnerTypeLast"/>
@@ -101,9 +101,7 @@
         <module name="MethodCount"/>
         <module name="MethodLength"/>
         <module name="MethodName"/>
-        <module name="MethodParamPad">
-            <property name="option" value="space"/>
-        </module>
+        <module name="MethodParamPad"/>
         <module name="MethodTypeParameterName"/>
         <module name="MissingCtor"/>
         <module name="MissingDeprecated"/>
@@ -146,12 +144,14 @@
         <module name="RegexpSinglelineJava"/>
         <module name="RequireThis"/>
         <module name="ReturnCount"/>
-        <module name="RightCurly"/>
+        <module name="RightCurly">
+            <property name="option" value="alone"/>
+        </module>
         <module name="SeparatorWrap"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="SingleLineJavadoc"/>
-        <!-- not yet <module name="SingleSpaceSeparator"/> -->
+        <module name="SingleSpaceSeparator"/>
         <module name="StaticVariableName"/>
         <module name="StringLiteralEquality"/>
         <module name="SummaryJavadoc"/>

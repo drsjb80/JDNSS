@@ -14,19 +14,19 @@ public class Version
         {
             Properties properties = new Properties();
             InputStream in = 
-                getClass().getResourceAsStream ("/version.properties");
+                getClass().getResourceAsStream("/version.properties");
 
             properties.load(in);
             in.close();
-            return (properties.getProperty("version"));
+            return properties.getProperty("version");
         }
         catch (java.io.FileNotFoundException FNFE)
         {
-            return ("unknown");
+            return "unknown";
         }
         catch (java.io.IOException IOE)
         {
-            return ("unknown");
+            return "unknown";
         }
     }
 }

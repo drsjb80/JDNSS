@@ -12,14 +12,14 @@ import edu.msudenver.cs.javaln.JavaLN;
 public class TCPThread extends Thread
 {
     private final Socket socket;
-    private final JavaLN logger = JDNSS.logger;
+    private final JavaLN logger = JDNSS.getLogger();
     private final JDNSS dnsService;
 
     /**
      * @param socket	the socket to talk to
      * @param dnsService the JDNSS service to use for zone info
      */
-    public TCPThread (Socket socket, JDNSS dnsService)
+    public TCPThread(Socket socket, JDNSS dnsService)
     {
         logger.entering(new Object[]{socket, dnsService});
 
@@ -42,28 +42,28 @@ public class TCPThread extends Thread
             // in TCP, the first two bytes signify the length of the request
             byte buffer[] = new byte[2];
 
-            Assertion.aver (is.read (buffer, 0, 2) == 2);
+            Assertion.aver(is.read(buffer, 0, 2) == 2);
 
-            byte query[] = new byte [Utils.addThem (buffer[0], buffer[1])];
+            byte query[] = new byte [Utils.addThem(buffer[0], buffer[1])];
 
-            Assertion.aver (is.read (query) == query.length);
+            Assertion.aver(is.read(query) == query.length);
 
-            Query q = new Query (query);
-            byte b[] = q.makeResponses (dnsService, false);
+            Query q = new Query(query);
+            byte b[] = q.makeResponses(dnsService, false);
 
             int count = b.length;
-            buffer[0] = Utils.getByte (count, 2);
-            buffer[1] = Utils.getByte (count, 1);
+            buffer[0] = Utils.getByte(count, 2);
+            buffer[1] = Utils.getByte(count, 1);
 
-            os.write (Utils.combine (buffer, b));
+            os.write(Utils.combine(buffer, b));
 
-            is.close ();
+            is.close();
             os.close();
-            socket.close ();
+            socket.close();
         }
         catch (Throwable t)
         {
-            logger.throwing (t);
+            logger.throwing(t);
         }
     }
 }

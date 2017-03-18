@@ -1,13 +1,21 @@
 package edu.msudenver.cs.jdnss;
 
-import java.net.*;
-import java.io.*;
+import java.io.IOException;
 import java.lang.AssertionError;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import edu.msudenver.cs.javaln.JavaLN;
 
 /**
- * This class implements threading and thread pools (semaphores) for each
- * of the three protocols (UDP, TCP, and MC).  It is here as escentially a
+ * This class implements threading and thread pools(semaphores) for each
+ * of the three protocols(UDP, TCP, and MC).  It is here as escentially a
  * refactor of the previous three disparate classes that looked very
  * similar.  There is a run method in this class that calls "doit" routines
  * in the subclasses.  Those in turn create UDPThreads and TCPThreads that
@@ -20,13 +28,13 @@ import edu.msudenver.cs.javaln.JavaLN;
 public abstract class Protos extends Thread
 {
     protected JDNSS dnsService;
-    protected JavaLN logger = JDNSS.logger;
+    protected JavaLN logger = JDNSS.getLogger();
 
     public void run()
     {
         logger.entering();
 
-        Semaphore s = new Semaphore (JDNSS.jargs.threads);
+        Semaphore s = new Semaphore(JDNSS.getJdnssArgs().threads);
 
         while (true)
         {
@@ -46,7 +54,7 @@ public abstract class Protos extends Thread
             t.start();
             s.V();
 
-            if (JDNSS.jargs.once)
+            if (JDNSS.getJdnssArgs().once)
             {
                 try
                 {
@@ -54,10 +62,10 @@ public abstract class Protos extends Thread
                 }
                 catch (InterruptedException e)
                 {
-                    logger.throwing (e);
+                    logger.throwing(e);
                 }
-                logger.exiting (0);
-                System.exit (0);
+                logger.exiting(0);
+                System.exit(0);
             }
         }
     }
@@ -72,38 +80,38 @@ class UDP extends Protos
 {
     protected DatagramSocket dsocket;
 
-    public UDP () {}	// for MC
+    public UDP() {}	// for MC
 
-    public UDP (JDNSS dnsService) throws SocketException
+    public UDP(JDNSS dnsService) throws SocketException
     {
-        logger.entering (dnsService);
+        logger.entering(dnsService);
         this.dnsService = dnsService;
 
-        int port = JDNSS.jargs.port;
-        String ipaddress = JDNSS.jargs.IPaddress;
+        int port = JDNSS.getJdnssArgs().port;
+        String ipaddress = JDNSS.getJdnssArgs().IPaddress;
 
-        logger.finest (port);
-        logger.finest (ipaddress);
+        logger.finest(port);
+        logger.finest(ipaddress);
 
         if (ipaddress != null)
         {
             try
             {
-                dsocket = new DatagramSocket (port,
-                InetAddress.getByName (ipaddress));
+                dsocket = new DatagramSocket(port,
+                InetAddress.getByName(ipaddress));
             }
             catch (UnknownHostException uhe)
             {
-                logger.throwing (uhe);
+                logger.throwing(uhe);
             }
         }
         else
         {
-            dsocket = new DatagramSocket (port);
+            dsocket = new DatagramSocket(port);
         }
 
-        logger.finest (dsocket);
-        logger.exiting ();
+        logger.finest(dsocket);
+        logger.exiting();
     }
 
     /**
@@ -111,58 +119,58 @@ class UDP extends Protos
      */
     public Thread doit()
     {
-        logger.entering ();
+        logger.entering();
 
         /*
         "Multicast DNS Messages carried by UDP may be up to the IP MTU of the
-        physical interface, less the space required for the IP header (20
-        bytes for IPv4; 40 bytes for IPv6) and the UDP header (8 bytes)."
+        physical interface, less the space required for the IP header(20
+        bytes for IPv4; 40 bytes for IPv6) and the UDP header(8 bytes)."
         */
 
         int size = this instanceof MC ? 1500 : 512;
 
         byte[] buffer = new byte[size];
-        DatagramPacket packet = new DatagramPacket (buffer, buffer.length);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         Query q = null;
 
         try
         {
-            dsocket.receive (packet);
-            q = new Query (Utils.trimByteArray
-                (packet.getData(), packet.getLength()));
+            dsocket.receive(packet);
+            q = new Query(Utils.trimByteArray
+               (packet.getData(), packet.getLength()));
         }
         catch (IOException e)
         {
-            logger.throwing (e);
-            logger.exiting ("null");
-            return (null);
+            logger.throwing(e);
+            logger.exiting("null");
+            return null;
         }
         catch (AssertionError AE)
         {
-            logger.throwing (AE);
-            logger.exiting ("null");
-            return (null);
+            logger.throwing(AE);
+            logger.exiting("null");
+            return null;
         }
 
         if (q.getQR() == true)
         {
-            logger.finest ("Response, exiting");
-            return (null);
+            logger.finest("Response, exiting");
+            return null;
         }
 
-        Thread t = new UDPThread (q, dsocket, packet.getPort(),
-        packet.getAddress(), dnsService);
+        Thread t = new UDPThread(q, dsocket, packet.getPort(),
+            packet.getAddress(), dnsService);
 
-        logger.exiting (t);
-        return (t);
+        logger.exiting(t);
+        return t;
     }
 }
 
 class MC extends UDP
 {
-    public MC (JDNSS dnsService) throws SocketException
+    public MC(JDNSS dnsService) throws SocketException
     {
-        logger.entering (dnsService);
+        logger.entering(dnsService);
         this.dnsService = dnsService;
 
         MulticastSocket msocket = null;
@@ -170,45 +178,45 @@ class MC extends UDP
         /**
         * Here is the difference for MC -- we need to join a group.
         */
-        int port = JDNSS.jargs.MCport;
-        String address = JDNSS.jargs.MCaddress;
+        int port = JDNSS.getJdnssArgs().MCport;
+        String address = JDNSS.getJdnssArgs().MCaddress;
 
-        logger.finest (port);
-        logger.finest (address);
+        logger.finest(port);
+        logger.finest(address);
 
         try
         {
-            msocket = new MulticastSocket (port);
+            msocket = new MulticastSocket(port);
         }
         catch (IOException ioe)
         {
-            logger.throwing (ioe);
-            logger.exiting ();
+            logger.throwing(ioe);
+            logger.exiting();
             return;
         }
 
         try
         {
-            msocket.joinGroup (InetAddress.getByName (address));
-            msocket.setTimeToLive (255);
+            msocket.joinGroup(InetAddress.getByName(address));
+            msocket.setTimeToLive(255);
         }
         catch (UnknownHostException uhe)
         {
-            logger.throwing (uhe);
-            logger.exiting ();
+            logger.throwing(uhe);
+            logger.exiting();
             return;
         }
         catch (IOException ioe)
         {
-            logger.throwing (ioe);
-            logger.exiting ();
+            logger.throwing(ioe);
+            logger.exiting();
             return;
         }
 
         dsocket = msocket;
 
-        logger.finest (dsocket);
-        logger.exiting ();
+        logger.finest(dsocket);
+        logger.exiting();
     }
 }
 
@@ -216,31 +224,31 @@ class TCP extends Protos
 {
     private ServerSocket ssocket;
 
-    public TCP (JDNSS dnsService) throws UnknownHostException, IOException
+    public TCP(JDNSS dnsService) throws UnknownHostException, IOException
     {
         this.dnsService = dnsService;
-        logger.entering (dnsService);
+        logger.entering(dnsService);
 
-        int port = JDNSS.jargs.port;
-        int backlog = JDNSS.jargs.backlog;
-        String ipaddress = JDNSS.jargs.IPaddress;
+        int port = JDNSS.getJdnssArgs().port;
+        int backlog = JDNSS.getJdnssArgs().backlog;
+        String ipaddress = JDNSS.getJdnssArgs().IPaddress;
 
-        logger.finest (port);
-        logger.finest (backlog);
-        logger.finest (ipaddress);
+        logger.finest(port);
+        logger.finest(backlog);
+        logger.finest(ipaddress);
 
         if (ipaddress != null)
         {
             ssocket = new ServerSocket
-            (port, backlog, InetAddress.getByName (ipaddress));
+           (port, backlog, InetAddress.getByName(ipaddress));
         }
         else if (backlog != 0)
         {
-            ssocket = new ServerSocket (port, backlog);
+            ssocket = new ServerSocket(port, backlog);
         }
         else
         {
-            ssocket = new ServerSocket (port);
+            ssocket = new ServerSocket(port);
         }
 
         logger.exiting();
@@ -252,13 +260,13 @@ class TCP extends Protos
 
         Socket socket = null;
 
-        try { socket = ssocket.accept (); }
-        catch (IOException ioe) { logger.throwing (ioe);}
+        try { socket = ssocket.accept(); }
+        catch (IOException ioe) { logger.throwing(ioe);}
 
-        logger.finest ("Received TCP packet");
+        logger.finest("Received TCP packet");
 
-        Thread t = new TCPThread (socket, dnsService);
-        logger.exiting (t);
-        return (t);
+        Thread t = new TCPThread(socket, dnsService);
+        logger.exiting(t);
+        return t;
     }
 }

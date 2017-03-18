@@ -19,7 +19,7 @@ import edu.msudenver.cs.javaln.JavaLN;
 
 public class Utils
 {
-    private static JavaLN logger = JDNSS.logger;
+    private static JavaLN logger = JDNSS.getLogger();
 
     /** The request/respose numbers */
     public static final int A       = 1;
@@ -58,74 +58,74 @@ public class Utils
 
     static
     {
-        StringToType.put ("A", A);
-        StringToType.put ("NS", NS);
-        StringToType.put ("CNAME", CNAME);
-        StringToType.put ("SOA", SOA);
-        StringToType.put ("PTR", PTR);
-        StringToType.put ("HINFO", HINFO);
-        StringToType.put ("MX", MX);
-        StringToType.put ("TXT", TXT);
-        StringToType.put ("AAAA", AAAA);
-        StringToType.put ("A6", A6);
-        StringToType.put ("DNAME", DNAME);
-        StringToType.put ("OPT", OPT);
-        StringToType.put ("DS", DS);
-        StringToType.put ("RRSIG", RRSIG);
-        StringToType.put ("NSEC", NSEC);
-        StringToType.put ("DNSKEY", DNSKEY);
-        StringToType.put ("INCLUDE", INCLUDE);
-        StringToType.put ("ORIGIN", ORIGIN);
-        StringToType.put ("TTL", TTL);
+        StringToType.put("A", A);
+        StringToType.put("NS", NS);
+        StringToType.put("CNAME", CNAME);
+        StringToType.put("SOA", SOA);
+        StringToType.put("PTR", PTR);
+        StringToType.put("HINFO", HINFO);
+        StringToType.put("MX", MX);
+        StringToType.put("TXT", TXT);
+        StringToType.put("AAAA", AAAA);
+        StringToType.put("A6", A6);
+        StringToType.put("DNAME", DNAME);
+        StringToType.put("OPT", OPT);
+        StringToType.put("DS", DS);
+        StringToType.put("RRSIG", RRSIG);
+        StringToType.put("NSEC", NSEC);
+        StringToType.put("DNSKEY", DNSKEY);
+        StringToType.put("INCLUDE", INCLUDE);
+        StringToType.put("ORIGIN", ORIGIN);
+        StringToType.put("TTL", TTL);
 
         // swap the keys and values
         for (Map.Entry<String, Integer> entry : StringToType.entrySet())
         {
-            TypeToString.put (entry.getValue(), entry.getKey());
+            TypeToString.put(entry.getValue(), entry.getKey());
         }
     }
 
-    public static int mapStringToType (String s)
+    public static int mapStringToType(String s)
     {
         try
         {
-            return (StringToType.get(s.toUpperCase()));
+            return StringToType.get(s.toUpperCase());
         }
         catch (java.lang.NullPointerException NPE)
         {
-            return (0);
+            return 0;
         }
     }
 
-    public static String mapTypeToString (int i)
+    public static String mapTypeToString(int i)
     {
         String ret = TypeToString.get(i);
 
-        Assertion.aver (ret != null, "Couldn't find type: " + i);
+        Assertion.aver(ret != null, "Couldn't find type: " + i);
 
-        return (ret);
+        return ret;
     }
 
     /**
      * Ignoring case, find the String in the Enumeration that
      * matches the end of s, and is the longest that does so.
      */
-    public static String findLongest (Enumeration e, String s)
+    public static String findLongest(Enumeration e, String s)
     {
-        Assertion.aver (e != null);
-        Assertion.aver (s != null);
-        Assertion.aver (! s.equals (""));
+        Assertion.aver(e != null);
+        Assertion.aver(s != null);
+        Assertion.aver(! s.equals(""));
 
-        logger.entering (s);
+        logger.entering(s);
 
         String longest = null;
 
         while (e.hasMoreElements())
         {
-            String next = (String) e.nextElement();
-            logger.fine (next);
+            String next =(String) e.nextElement();
+            logger.fine(next);
 
-            if (s.toLowerCase().endsWith (next.toLowerCase()))
+            if (s.toLowerCase().endsWith(next.toLowerCase()))
             {
                 if (longest == null || next.length() > longest.length())
                 {
@@ -134,9 +134,9 @@ public class Utils
             }
         }
 
-        Assertion.aver (longest != null);
-        logger.exiting (longest);
-        return (longest);
+        Assertion.aver(longest != null);
+        logger.exiting(longest);
+        return longest;
     }
 
     /**
@@ -144,13 +144,13 @@ public class Utils
      *
      * @param buffer    what to format
      * @return          a String with eight bytes per line in the form
-     *                  character (or dot if not a character) followed by
+     *                  character(or dot if not a character) followed by
      *                  the an integer representation.
      */
-    public static String toString (byte buffer[])
+    public static String toString(byte buffer[])
     {
         String s = "";
-        DecimalFormat df = new DecimalFormat ("000");
+        DecimalFormat df = new DecimalFormat("000");
 
         for (int i = 0; i < buffer.length; i++)
         {
@@ -158,30 +158,30 @@ public class Utils
             {
                 // if (i != 0 && i % 16 == 0) s += "\n";
                 if (i != 0) s += "\n";
-                s += df.format (i) + ": ";
+                s += df.format(i) + ": ";
             }
 
-            char c = (char) buffer[i];
-            s += (c >= 33 && c <= 126) ? c + " " : ". ";
+            char c =(char) buffer[i];
+            s +=(c >= 33 && c <= 126) ? c + " " : ". ";
 
-            s += df.format ((int) (buffer[i] & 0xFF)) + " ";
+            s += df.format((int)(buffer[i] & 0xFF)) + " ";
         }
 
-        return (s);
+        return s;
     }
 
     /**
      * Get one byte from an integer
      * @param from        the integer to retrive from
-     * @param which        which byte (1 = lowest, 4 = highest)
+     * @param which        which byte(1 = lowest, 4 = highest)
      * @return                 the requested byte
      */
-    public static byte getByte (int from, int which)
+    public static byte getByte(int from, int which)
     {
-        Assertion.aver (which >= 1 && which <= 4);
+        Assertion.aver(which >= 1 && which <= 4);
 
-        int shift = (which - 1) * 8;
-        return ((byte)((from >>> shift) & 0xff));
+        int shift =(which - 1) * 8;
+        return (byte)((from >>> shift) & 0xff);
     }
 
     /**
@@ -190,14 +190,14 @@ public class Utils
      * @param which        which byte to start with
      * @return                 the requested byte array
      */
-    public static byte[] getTwoBytes (int from, int which)
+    public static byte[] getTwoBytes(int from, int which)
     {
-        Assertion.aver (which > 1 && which <= 4);
+        Assertion.aver(which > 1 && which <= 4);
 
         byte ret[] = new byte[2];
-        ret[0] = getByte (from, which);
-        ret[1] = getByte (from, which-1);
-        return (ret);
+        ret[0] = getByte(from, which);
+        ret[1] = getByte(from, which-1);
+        return ret;
     }
 
     /**
@@ -205,28 +205,28 @@ public class Utils
      * @param from        the integer to retrive from
      * @return                 the requested byte array
      */
-    public static byte[] getBytes (int from)
+    public static byte[] getBytes(int from)
     {
         byte ret[] = new byte[4];
-        ret[0] = getByte (from, 4);
-        ret[1] = getByte (from, 3);
-        ret[2] = getByte (from, 2);
-        ret[3] = getByte (from, 1);
-        return (ret);
+        ret[0] = getByte(from, 4);
+        ret[1] = getByte(from, 3);
+        ret[2] = getByte(from, 2);
+        ret[3] = getByte(from, 1);
+        return ret;
     }
 
     /**
      * Get one nybble from an integer
      * @param from        the integer to retrive from
-     * @param which        which nybble (1 = lowest, 8 = highest)
+     * @param which        which nybble(1 = lowest, 8 = highest)
      * @return                 the requested nybble
      */
-    public static byte getNybble (int from, int which)
+    public static byte getNybble(int from, int which)
     {
-        Assertion.aver (which >= 1 && which <= 8);
+        Assertion.aver(which >= 1 && which <= 8);
 
-        int shift = (which - 1) * 4;
-        return ((byte) ((from >>> shift) & 0x0f));
+        int shift =(which - 1) * 4;
+        return (byte)((from >>> shift) & 0x0f);
     }
 
     /**
@@ -236,9 +236,9 @@ public class Utils
      * @param b        the other one
      * @return        the sum
      */
-    public static int addThem (byte a, byte b)
+    public static int addThem(byte a, byte b)
     {
-        return (((a & 0xff) << 8) + (b & 0xff));
+        return ((a & 0xff) << 8) +(b & 0xff);
     }
 
     /**
@@ -250,14 +250,14 @@ public class Utils
      * @param d        the other other other one
      * @return        the sum
      */
-    public static int addThem (byte a, byte b, byte c, byte d)
+    public static int addThem(byte a, byte b, byte c, byte d)
     {
         return
-        (
-            ((a & 0xff) << 24) +
-            ((b & 0xff) << 16) +
-            ((c & 0xff) << 8) +
-             (d & 0xff)
+      (
+          ((a & 0xff) << 24) +
+          ((b & 0xff) << 16) +
+          ((c & 0xff) << 8) +
+           (d & 0xff)
         );
     }
 
@@ -268,12 +268,12 @@ public class Utils
      * @param b        the other one
      * @return        the sum
      */
-    public static int addThem (int a, int b)
+    public static int addThem(int a, int b)
     {
         return
-        (
-            ((a & 0x000000ff) << 8) +
-            (b & 0x000000ff)
+      (
+          ((a & 0x000000ff) << 8) +
+          (b & 0x000000ff)
         );
     }
 
@@ -283,17 +283,17 @@ public class Utils
      * @param s        the dotted IPV4 address
      * @return        4 byte array of the address
      */
-    public static byte[] IPV4 (String s)
+    public static byte[] IPV4(String s)
     {
-        String a[] = s.split ("\\.");
+        String a[] = s.split("\\.");
         byte r[] = new byte[4];
 
         for (int i = 0; i < a.length; i++)
         {
-            r[i] = (byte) Integer.parseInt (a[i]);
+            r[i] =(byte) Integer.parseInt(a[i]);
         }
 
-        return (r);
+        return r;
     }
 
     /**
@@ -301,13 +301,13 @@ public class Utils
      * @param s        the original String
      * @return        the converted form in bytes
      */
-    public static byte[] toCS (String s)
+    public static byte[] toCS(String s)
     {
-        Assertion.aver (s != null && !s.equals (""));
+        Assertion.aver(s != null && !s.equals(""));
 
         byte a[] = new byte[1];
-        a[0] = getByte (s.length(), 1);
-        return (combine (a, s.getBytes(StandardCharsets.US_ASCII)));
+        a[0] = getByte(s.length(), 1);
+        return combine(a, s.getBytes(StandardCharsets.US_ASCII));
     }
 
     /**
@@ -316,31 +316,31 @@ public class Utils
      * @param s        the original String
      * @return        the converted form in bytes
      */
-    public static byte[] convertString (String s)
+    public static byte[] convertString(String s)
     {
-        Assertion.aver (s != null && !s.equals (""));
+        Assertion.aver(s != null && !s.equals(""));
 
         // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
         int pointer = 0;
 
-        String b[] = s.split ("\\.");
+        String b[] = s.split("\\.");
 
         for (int i = 0; i < b.length; i++)
         {
             // how long?
             int l = b[i].length();
-            a[pointer++] = (byte) l;
+            a[pointer++] =(byte) l;
 
             // what characters?
             byte c[] = b[i].getBytes(StandardCharsets.US_ASCII);
-            System.arraycopy (c, 0, a, pointer, l);
+            System.arraycopy(c, 0, a, pointer, l);
 
             pointer += l;
         }
         a[pointer] = 0;
 
-        return (a);
+        return a;
     }
 
     /**
@@ -350,74 +350,74 @@ public class Utils
      * @param two        the other one
      * @return                byte array made from one and two
      */
-    public static byte[] combine (byte one[], byte two[])
+    public static byte[] combine(byte one[], byte two[])
     {
-        Assertion.aver (one != null || two != null);
+        Assertion.aver(one != null || two != null);
 
         if (one == null)
         {
-            return (two);
+            return two;
         }
         if (two == null)
         {
-            return (one);
+            return one;
         }
 
         byte[] temp = new byte[one.length + two.length];
-        System.arraycopy (one, 0, temp, 0, one.length);
-        System.arraycopy (two, 0, temp, one.length, two.length);
-        return (temp);
+        System.arraycopy(one, 0, temp, 0, one.length);
+        System.arraycopy(two, 0, temp, one.length, two.length);
+        return temp;
     }
 
-    public static byte[] combine (byte one[], byte two)
+    public static byte[] combine(byte one[], byte two)
     {
         byte[] a = new byte[1];
         a[0] = two;
 
         if (one == null)
         {
-            return (a);
+            return a;
         }
 
         byte[] temp = new byte[one.length + 1];
-        System.arraycopy (one, 0, temp, 0, one.length);
-        System.arraycopy (a, 0, temp, one.length, 1);
-        return (temp);
+        System.arraycopy(one, 0, temp, 0, one.length);
+        System.arraycopy(a, 0, temp, one.length, 1);
+        return temp;
     }
 
-    public static byte[] trimByteArray (byte[] old, int length)
+    public static byte[] trimByteArray(byte[] old, int length)
     {
-        Assertion.aver (old != null, "Byte array is null");
-        Assertion.aver (length > 0, length + " is invalid");
-        Assertion.aver (length <= old.length, length + " is invalid");
+        Assertion.aver(old != null, "Byte array is null");
+        Assertion.aver(length > 0, length + " is invalid");
+        Assertion.aver(length <= old.length, length + " is invalid");
 
         byte ret[] = new byte[length];
-        System.arraycopy (old, 0, ret, 0, length);
-        return (ret);
+        System.arraycopy(old, 0, ret, 0, length);
+        return ret;
     }
 
     /**
      *  split the sting using the dots and reassemble backwards.
      */
-    public static String reverseIP (String s)
+    public static String reverseIP(String s)
     {
-        Assertion.aver (s != null);
+        Assertion.aver(s != null);
 
-        String a[] = s.split ("\\.");
+        String a[] = s.split("\\.");
 
         // all dots
         if (a.length == 0) return s;
 
         String ret = "";
 
-        for (int i = (a.length-1); i > 0; i--)
+        for (int i =(a.length-1); i > 0; i--)
         {
             ret += a[i] + ".";
         }
 
         ret += a[0];
 
-        return (ret);
+        return ret;
     }
 
     /**
@@ -425,18 +425,18 @@ public class Utils
      * @param s        String to reverse
      * @return        The reversed string
      */
-    public static String reverse (String s)
+    public static String reverse(String s)
     {
-        Assertion.aver (s != null);
+        Assertion.aver(s != null);
 
         String r = "";
 
         for (int i = s.length() - 1; i >= 0; i--)
         {
-            r += s.charAt (i);
+            r += s.charAt(i);
         }
 
-        return (r);
+        return r;
     }
 
     /**
@@ -446,24 +446,24 @@ public class Utils
       * @param c        what to search for
       * @return        the number of matches
       */
-    public static int count (String s, String c)
+    public static int count(String s, String c)
     {
-        Assertion.aver (s != null);
-        Assertion.aver (c != null);
+        Assertion.aver(s != null);
+        Assertion.aver(c != null);
 
-        if (s.equals ("")) return (0);
-        if (c.equals ("")) return (0);
+        if (s.equals("")) return 0;
+        if (c.equals("")) return 0;
 
         int count = 0;
         int where = 0;
 
-        while ((where = s.indexOf (c, where)) != -1)
+        while ((where = s.indexOf(c, where)) != -1)
         {
             where++;
             count++;
         }
 
-        return (count);
+        return count;
     }
 
     /**
@@ -471,68 +471,68 @@ public class Utils
      *
      * @return        the final answer
      */
-    private static byte[] dodots (String s)
+    private static byte[] dodots(String s)
     {
         // split at the v6/v4 boundary
-        int splitat = s.lastIndexOf (":");
-        String colons = s.substring (0, splitat);
-        String dots = s.substring (splitat + 1);
+        int splitat = s.lastIndexOf(":");
+        String colons = s.substring(0, splitat);
+        String dots = s.substring(splitat + 1);
 
-        if (colons.equals (":"))
+        if (colons.equals(":"))
         {
             colons = "::";
         }
 
-        return (combine (docolons (colons, 12), IPV4 (dots)));
+        return combine(docolons(colons, 12), IPV4(dots));
     }
 
     /**
      * Do all the v6 conversion
      *
      * @param s                the v6 String
-     * @param length        how long the String is (16 for v6, 12 for v6/v4)
+     * @param length        how long the String is(16 for v6, 12 for v6/v4)
      * @return                the conversoin
      */
-    private static byte[] docolons (String s, int length)
+    private static byte[] docolons(String s, int length)
     {
-        int numColons = count (s, ":");
-        // System.out.println ("numColons = " + numColons);
+        int numColons = count(s, ":");
+        // System.out.println("numColons = " + numColons);
         byte ret[] = new byte[length];
 
         // nothing but colons, IPv6 unspecified
-        if (s.equals ("::"))
+        if (s.equals("::"))
         {
             for (int i = 0; i < length; i++)
             {
                 ret[i] = 0;
             }
 
-            return (ret);
+            return ret;
         }
 
-        String split[] = s.split ("\\:");
-        // System.out.println ("split.length = " + split.length);
+        String split[] = s.split("\\:");
+        // System.out.println("split.length = " + split.length);
 
         /*
-        ** so, there should be eight total two-byte strings (six for v6 ->
+        ** so, there should be eight total two-byte strings(six for v6 ->
         ** v4). subtract how many there really are and multiply by two.
         */
-        int len = ((length / 2) - split.length + 1) * 2;
+        int len =((length / 2) - split.length + 1) * 2;
         int i = 0;
 
-        if (s.startsWith ("::"))
+        if (s.startsWith("::"))
         {
             len += 2;
             i = 1;
         }
 
-        // System.out.println ("len = " + len);
+        // System.out.println("len = " + len);
 
         int where = 0;
         for (; i <= numColons; i++)
         {
             // if this is where things are missing, fill in zeros
-            if (split[i].equals (""))
+            if (split[i].equals(""))
             {
                 for (int j = 0; j < len; j++)
                 {
@@ -541,12 +541,12 @@ public class Utils
             }
             else
             {
-                int conv = Integer.parseInt (split[i], 16);
-                ret[where++] = getByte (conv, 2);
-                ret[where++] = getByte (conv, 1);
+                int conv = Integer.parseInt(split[i], 16);
+                ret[where++] = getByte(conv, 2);
+                ret[where++] = getByte(conv, 1);
             }
         }
-        return (ret);
+        return ret;
     }
 
     /**
@@ -555,18 +555,18 @@ public class Utils
      * @param s        the IPv6 String
      * @return        the IPv6 bytes
      */
-    public static byte[] IPV6 (String s)
+    public static byte[] IPV6(String s)
     {
         // if this is an v6t/v4 address
-        if (count (s, ".") > 0)
+        if (count(s, ".") > 0)
         {
-            return (dodots (s));
+            return dodots(s);
         }
 
-        return (docolons (s, 16));
+        return docolons(s, 16);
     }
 
-    public static String toString (DatagramPacket dgp)
+    public static String toString(DatagramPacket dgp)
     {
         String s = "";
 
@@ -575,19 +575,19 @@ public class Utils
         s += "getOffset() = " + dgp.getOffset() + "\n";
         s += "getPort() = " + dgp.getPort() + "\n";
         s += "getSocketAddress() = " + dgp.getSocketAddress() + "\n";
-        s += "getData() = " + Utils.toString (dgp.getData());
+        s += "getData() = " + Utils.toString(dgp.getData());
 
-        return (s);
+        return s;
     }
 
-    public static SandN parseName (int start, byte buffer[])
+    public static StringAndNumber parseName(int start, byte buffer[])
     {
-        logger.entering (start);
+        logger.entering(start);
 
         if (start >= buffer.length)
         {
-            logger.warning ("Illegal name");
-            return (null);
+            logger.warning("Illegal name");
+            return null;
         }
 
         int current = start;
@@ -596,19 +596,19 @@ public class Utils
         // if the first thing is a compression
         if ((buffer[current] & 0xc0) == 0xc0)
         {
-            int tmp = addThem (buffer[current] & 0x3f, buffer[current + 1]);
-            logger.finest (tmp);
+            int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
+            logger.finest(tmp);
 
             if (tmp >= start)
             {
-                logger.warning ("Illegal name");
-                return (null);
+                logger.warning("Illegal name");
+                return null;
             }
 
-            SandN sn = parseName (tmp, buffer);
+            StringAndNumber sn = parseName(tmp, buffer);
             if (sn == null)
             {
-                return (null);        // error already flagged
+                return null;        // error already flagged
             }
 
             name += sn.getString();
@@ -619,15 +619,15 @@ public class Utils
 
         if (length == 0)
         {
-            return (new SandN ("", 0));
+            return new StringAndNumber("", 0);
         }
 
         while (length > 0)
         {
             for (int i = 1; i <= length; i++)
             {
-                char c = (char) buffer[current];
-                logger.finest ("Adding " + c);
+                char c =(char) buffer[current];
+                logger.finest("Adding " + c);
                 name += c;
                 current++;
             }
@@ -638,19 +638,19 @@ public class Utils
             {
                 name += ".";
 
-                int tmp = addThem (buffer[current] & 0x3f, buffer[current + 1]);
-                logger.finest (tmp);
+                int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
+                logger.finest(tmp);
 
                 if (tmp >= start)
                 {
-                    logger.warning ("Illegal name");
-                    return (null);
+                    logger.warning("Illegal name");
+                    return null;
                 }
 
-                SandN sn = parseName (tmp, buffer);
+                StringAndNumber sn = parseName(tmp, buffer);
                 if (sn == null)
                 {
-                    return (null);        // error already flagged
+                    return null;        // error already flagged
                 }
 
                 name += sn.getString();
@@ -665,8 +665,8 @@ public class Utils
             }
         }
 
-        SandN sn = new SandN (name, current);
-        logger.exiting (sn);
-        return (sn);
+        StringAndNumber sn = new StringAndNumber(name, current);
+        logger.exiting(sn);
+        return sn;
     }
 }

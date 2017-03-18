@@ -7,24 +7,24 @@ class Assertion
      *
      * @param assertion        what to test
      */
-    public static void aver (final boolean assertion)
+    public static void aver(final boolean assertion)
     {
-        if (!assertion) throw new AssertionError ("Assertion failed");
+        if (!assertion) throw new AssertionError("Assertion failed");
     }
 
-    public static void aver (final boolean assertion, final String message)
+    public static void aver(final boolean assertion, final String message)
     {
-        if (!assertion) throw new AssertionError (message);
+        if (!assertion) throw new AssertionError(message);
     }
 
-    public static void aver (final boolean assertion, final String message,
+    public static void aver(final boolean assertion, final String message,
         final Throwable cause)
     {
-        if (!assertion) throw new AssertionError (message, cause);
+        if (!assertion) throw new AssertionError(message, cause);
     }
 
-    public static void aver (final boolean assertion, final Throwable cause)
+    public static void aver(final boolean assertion, final Throwable cause)
     {
-        if (!assertion) throw new AssertionError (cause);
+        if (!assertion) throw new AssertionError(cause);
     }
 }

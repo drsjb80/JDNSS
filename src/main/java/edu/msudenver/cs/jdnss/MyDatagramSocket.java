@@ -1,8 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
-/* MyDatagramSocket.java */
-import java.net.*;
-import java.io.*;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 
 /**
  * A very simple class that extends DatagramSocket in order to create a
@@ -14,9 +13,9 @@ import java.io.*;
 
 public class MyDatagramSocket extends DatagramSocket
 {
-    public MyDatagramSocket() throws java.net.SocketException { super(); }
+    public MyDatagramSocket() throws SocketException { super(); }
 
-    public MyDatagramSocket(int i) throws java.net.SocketException { super(i); }
+    public MyDatagramSocket(final int i) throws SocketException { super(i); }
 
     /**
      * The reason for this class's exsistence.
@@ -28,8 +27,7 @@ public class MyDatagramSocket extends DatagramSocket
         try
         {
             s += "getBroadcast() = " + getBroadcast() + "\n";
-            s += "getLocalAddress = " + getLocalAddress().getHostAddress() +
-	        "\n";
+            s += "getLocalAddress = " + getLocalAddress().getHostAddress() + "\n";
             s += "getLocalPort() = " + getLocalPort() + "\n";
             s += "getReceiveBufferSize() = " + getReceiveBufferSize() + "\n";
             s += "getReuseAddress() = " + getReuseAddress() + "\n";
@@ -42,6 +40,6 @@ public class MyDatagramSocket extends DatagramSocket
         }
         catch (SocketException e) { e.printStackTrace(); }
 
-        return (s);
+        return s;
     }
 }

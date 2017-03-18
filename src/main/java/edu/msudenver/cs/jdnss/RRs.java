@@ -7,7 +7,7 @@ public class RRs
 {
     private int location;
     private byte buffer[];
-    private JavaLN logger = JDNSS.logger;
+    private JavaLN logger = JDNSS.getLogger();
     private int numQuestions;
     private int numAnswers;
     private int numAuthorities;
@@ -18,10 +18,10 @@ public class RRs
     private RR authorities[];
     private RR additionals[];
 
-    public RRs (byte buffer[], int numQuestions, int numAnswers,
+    public RRs(byte buffer[], int numQuestions, int numAnswers,
     int numAuthorities, int numAdditionals)
     {
-        this.buffer = Arrays.copyOf (buffer, buffer.length);
+        this.buffer = Arrays.copyOf(buffer, buffer.length);
         this.numQuestions = numQuestions;
         this.numAnswers = numAnswers;
         this.numAuthorities = numAuthorities;
@@ -35,14 +35,14 @@ public class RRs
         parseQuestions();
     }
 
-    private void parseQuestions ()
+    private void parseQuestions()
     {
         logger.entering();
 
         /*
         The question section is used to carry the "question" in most queries,
         i.e., the parameters that define what is being asked.  The section
-        contains QDCOUNT (usually 1) entries, each of the following format:
+        contains QDCOUNT(usually 1) entries, each of the following format:
 
         1  1  1  1  1  1
         0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -59,18 +59,18 @@ public class RRs
 
         for (int i = 0; i < numQuestions; i++)
         {
-            SandN sn = Utils.parseName (location, buffer);
+            StringAndNumber sn = Utils.parseName(location, buffer);
             if (sn != null)
             {
                 location = sn.getNumber();
                 int type =
-                Utils.addThem (buffer[location], buffer[location + 1]);
+                Utils.addThem(buffer[location], buffer[location + 1]);
                 location += 2;
                 int junk =
-                Utils.addThem (buffer[location], buffer[location + 1]);
+                Utils.addThem(buffer[location], buffer[location + 1]);
                 location += 2;
 
-                questions[i] = new QRR (sn.getString(), type);
+                questions[i] = new QRR(sn.getString(), type);
             }
             else
             {
@@ -79,7 +79,7 @@ public class RRs
         }
     }
 
-    public void parseAnswers (int location)
+    public void parseAnswers(int location)
     {
         logger.entering();
 
@@ -114,25 +114,25 @@ public class RRs
         for (int i = 0; i < numAnswers; i++)
         {
             name[i] = "";
-            location = parseName (location, i);
-            type[i] = Utils.addThem (buffer[location], buffer[location + 1]);
+            location = parseName(location, i);
+            type[i] = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
-            qclass[i] = Utils.addThem (buffer[location], buffer[location + 1]);
+            qclass[i] = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
         }
         */
     }
 
-    private String refactor (String title, RR rrs[])
+    private String refactor(String title, RR rrs[])
     {
         String s = title + "\n";
 
         for (int i = 0; i < rrs.length; i++)
         {
-            s += rrs[i] + (i < rrs.length-1 ? "\n" : "");
+            s += rrs[i] +(i < rrs.length-1 ? "\n" : "");
         }
 
-        return (s);
+        return s;
     }
 
     public String toString()
@@ -141,21 +141,21 @@ public class RRs
 
         if (numQuestions > 0)
         {
-            s += refactor ("Questions:", questions);
+            s += refactor("Questions:", questions);
         }
         if (numAnswers > 0)
         {
-            s += refactor ("Answers:", answers);
+            s += refactor("Answers:", answers);
         }
         if (numAuthorities > 0)
         {
-            s += refactor ("Authorities:", authorities);
+            s += refactor("Authorities:", authorities);
         }
         if (numAdditionals > 0)
         {
-            s += refactor ("Additional:", additionals);
+            s += refactor("Additional:", additionals);
         }
 
-        return (s);
+        return s;
     }
 }

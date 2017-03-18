@@ -40,61 +40,61 @@ public abstract class RR
     private int rrclass = 1;        // IN
     private int TTL;
 
-    public RR (String rrname, int rrtype, int TTL)
+    public RR(String rrname, int rrtype, int TTL)
     {
         this.rrname = rrname;
         this.rrtype = rrtype;
         this.TTL = TTL;
     }
 
-    public RR (byte[] bytes)
+    public RR(byte[] bytes)
     {
         int location = 0;
 
-        SandN sn = Utils.parseName (location, bytes);
+        StringAndNumber sn = Utils.parseName(location, bytes);
         if (sn != null)
         {
             location = sn.getNumber();
             this.rrname = sn.getString();
         }
 
-        this.rrtype = Utils.addThem (bytes[location++], bytes[location++]);
-        this.rrclass = Utils.addThem (bytes[location++], bytes[location++]);
-        this.TTL = Utils.addThem (bytes[location++], bytes[location++],
+        this.rrtype = Utils.addThem(bytes[location++], bytes[location++]);
+        this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
+        this.TTL = Utils.addThem(bytes[location++], bytes[location++],
             bytes[location++], bytes[location++]);
     }
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (! (o instanceof RR))
+        if (!(o instanceof RR))
         {
-            return (false);
+            return false;
         }
 
-        RR rr = (RR) o;
-        return (rr.rrname.equals (this.rrname) && rr.rrclass == rrclass &&
+        RR rr =(RR) o;
+        return(rr.rrname.equals(this.rrname) && rr.rrclass == rrclass &&
             rr.rrtype == rrtype && rr.TTL == TTL);
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
-    public int getType() { return (rrtype); }
-    public String getName() { return (rrname); }
+    public int getType() { return rrtype; }
+    public String getName() { return rrname; }
 
     /**
      * converts all the internal data to a byte array
      * @return the resource record to put in the response
      */
-    public byte[] getBytes (String question, int TTLminimum)
+    public byte[] getBytes(String question, int TTLminimum)
     {
         int type = getType();
         int ttl = TTL == 0 ? TTLminimum : TTL;
 
-        byte name[] = Utils.convertString (question);
+        byte name[] = Utils.convertString(question);
 
         byte rdata[] = getBytes();
         int rdatalen = rdata.length;
@@ -102,31 +102,31 @@ public abstract class RR
         int count = name.length + 2 + 2 + 4 + 2 + rdatalen;
 
         byte a[] = new byte[count];
-        System.arraycopy (name, 0, a, 0, name.length);
+        System.arraycopy(name, 0, a, 0, name.length);
 
         int where = name.length;
 
-        a[where++] = Utils.getByte (type, 2);
-        a[where++] = Utils.getByte (type, 1);
-        a[where++] = Utils.getByte (rrclass, 2);
-        a[where++] = Utils.getByte (rrclass, 1);
-        a[where++] = Utils.getByte (ttl, 4);
-        a[where++] = Utils.getByte (ttl, 3);
-        a[where++] = Utils.getByte (ttl, 2);
-        a[where++] = Utils.getByte (ttl, 1);
-        a[where++] = Utils.getByte (rdatalen, 2);
-        a[where++] = Utils.getByte (rdatalen, 1);
-        System.arraycopy (rdata, 0, a, where, rdata.length);
+        a[where++] = Utils.getByte(type, 2);
+        a[where++] = Utils.getByte(type, 1);
+        a[where++] = Utils.getByte(rrclass, 2);
+        a[where++] = Utils.getByte(rrclass, 1);
+        a[where++] = Utils.getByte(ttl, 4);
+        a[where++] = Utils.getByte(ttl, 3);
+        a[where++] = Utils.getByte(ttl, 2);
+        a[where++] = Utils.getByte(ttl, 1);
+        a[where++] = Utils.getByte(rdatalen, 2);
+        a[where++] = Utils.getByte(rdatalen, 1);
+        System.arraycopy(rdata, 0, a, where, rdata.length);
 
-        return (a);
+        return a;
     }
 
     protected abstract byte[] getBytes();
 
     public String toString()
     {
-        return ("name = " + rrname + ", type = " +
-            Utils.mapTypeToString (rrtype) + ", TTL = " + TTL);
+        return("name = " + rrname + ", type = " +
+            Utils.mapTypeToString(rrtype) + ", TTL = " + TTL);
     }
 }
 
@@ -135,12 +135,12 @@ public abstract class RR
  */
 class QRR extends RR
 {
-    public QRR (String rrname, int rrtype)
+    public QRR(String rrname, int rrtype)
     {
-        super (rrname, rrtype, 0);
+        super(rrname, rrtype, 0);
     }
 
-    protected byte[] getBytes() { return (new byte[0]); }
+    protected byte[] getBytes() { return new byte[0]; }
 }
 
 class SOARR extends RR
@@ -154,36 +154,36 @@ class SOARR extends RR
     private int expire;
     private int minimum;
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof SOARR))
+            if (!(o instanceof SOARR))
             {
-                return (false);
+                return false;
             }
 
-            SOARR soarr = (SOARR) o;
-            return (soarr.domain.equals (domain) && 
-                soarr.server.equals (server) &&
-                soarr.contact.equals (contact) && soarr.serial == serial &&
+            SOARR soarr =(SOARR) o;
+            return(soarr.domain.equals(domain) && 
+                soarr.server.equals(server) &&
+                soarr.contact.equals(contact) && soarr.serial == serial &&
                 soarr.refresh == refresh && soarr.retry == retry &&
                 soarr.expire == expire && soarr.minimum == minimum);
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
-    SOARR (String domain, String server, String contact, int serial,
+    SOARR(String domain, String server, String contact, int serial,
         int refresh, int retry, int expire, int minimum, int TTL)
     {
-        super (domain, Utils.SOA, TTL);
+        super(domain, Utils.SOA, TTL);
 
         this.domain = domain;
         this.server = server;
@@ -212,7 +212,7 @@ class SOARR extends RR
     ** this however does not say what SHOULD be sent as the TTL...
     */
 
-    public int getMinimum() { return (minimum); }
+    public int getMinimum() { return minimum; }
 
     public String toString()
     {
@@ -226,19 +226,19 @@ class SOARR extends RR
         s += ", expire = " + expire;
         s += ", minimum = " + minimum;
         s += ", " + super.toString();
-        return (s);
+        return s;
     }
 
     protected byte[] getBytes()
     {
-        byte a[] = Utils.convertString (server);
-        a = Utils.combine (a, Utils.convertString (contact));
-        a = Utils.combine (a, Utils.getBytes (serial));
-        a = Utils.combine (a, Utils.getBytes (refresh));
-        a = Utils.combine (a, Utils.getBytes (retry));
-        a = Utils.combine (a, Utils.getBytes (expire));
-        a = Utils.combine (a, Utils.getBytes (minimum));
-        return (a);
+        byte a[] = Utils.convertString(server);
+        a = Utils.combine(a, Utils.convertString(contact));
+        a = Utils.combine(a, Utils.getBytes(serial));
+        a = Utils.combine(a, Utils.getBytes(refresh));
+        a = Utils.combine(a, Utils.getBytes(retry));
+        a = Utils.combine(a, Utils.getBytes(expire));
+        a = Utils.combine(a, Utils.getBytes(minimum));
+        return a;
     }
 }
 
@@ -246,44 +246,44 @@ class HINFORR extends RR
 {
     private String CPU, OS;
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof HINFORR))
+            if (!(o instanceof HINFORR))
             {
-                return (false);
+                return false;
             }
 
-            HINFORR hinforr = (HINFORR) o;
-            return (hinforr.CPU.equals (CPU) && hinforr.OS.equals (OS));
+            HINFORR hinforr =(HINFORR) o;
+            return hinforr.CPU.equals(CPU) && hinforr.OS.equals(OS);
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
-    HINFORR (String name, int TTL, String CPU, String OS)
+    HINFORR(String name, int TTL, String CPU, String OS)
     {
-        super (name, Utils.HINFO, TTL);
+        super(name, Utils.HINFO, TTL);
         this.CPU = CPU;
         this.OS = OS;
     }
 
     public String toString()
     {
-        return ("HINFO: CPU = " + CPU + ", OS = " + OS + ", " +
+        return("HINFO: CPU = " + CPU + ", OS = " + OS + ", " +
             super.toString());
     }
 
     protected byte[] getBytes()
     {
-        return (Utils.combine (Utils.toCS (CPU), Utils.toCS (OS)));
+        return Utils.combine(Utils.toCS(CPU), Utils.toCS(OS));
     }
 }
 
@@ -292,50 +292,50 @@ class MXRR extends RR
     private String host;
     private int preference;
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof MXRR))
+            if (!(o instanceof MXRR))
             {
-                return (false);
+                return false;
             }
 
-            MXRR mxrr = (MXRR) o;
-            return (mxrr.host.equals (host) && mxrr.preference == preference);
+            MXRR mxrr =(MXRR) o;
+            return mxrr.host.equals(host) && mxrr.preference == preference;
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
-    public String getHost() { return (host); }
+    public String getHost() { return host; }
 
-    MXRR (String name, int TTL, String host, int preference)
+    MXRR(String name, int TTL, String host, int preference)
     {
-        super (name, Utils.MX, TTL);
+        super(name, Utils.MX, TTL);
         this.host = host;
         this.preference = preference;
     }
 
     public String toString()
     {
-        return ("MX: host = " + host + ", preference = " + preference +
+        return("MX: host = " + host + ", preference = " + preference +
             ", " + super.toString());
     }
 
     protected byte[] getBytes()
     {
         byte c[] = new byte[2];
-        c[0] = Utils.getByte (preference, 2);
-        c[1] = Utils.getByte (preference, 1);
+        c[0] = Utils.getByte(preference, 2);
+        c[1] = Utils.getByte(preference, 1);
 
-        return (Utils.combine (c, Utils.convertString (host)));
+        return Utils.combine(c, Utils.convertString(host));
     }
 }
 
@@ -343,77 +343,77 @@ abstract class STRINGRR extends RR
 {
     protected String string;
 
-    STRINGRR (String name, int type, int TTL)
+    STRINGRR(String name, int type, int TTL)
     {
-        super (name, type, TTL);
+        super(name, type, TTL);
     }
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof STRINGRR))
+            if (!(o instanceof STRINGRR))
             {
-                return (false);
+                return false;
             }
 
-            STRINGRR stringrr = (STRINGRR) o;
-            return (stringrr.string.equals (string));
+            STRINGRR stringrr =(STRINGRR) o;
+            return stringrr.string.equals(string);
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
-    public String getString() { return (string); }
+    public String getString() { return string; }
 
     public String toString()
     {
-        return ("STRING: string = " + string + ", " + super.toString());
+        return "STRING: string = " + string + ", " + super.toString();
     }
 
-    protected byte[] getBytes() { return (Utils.convertString (string)); }
+    protected byte[] getBytes() { return Utils.convertString(string); }
 }
 
 class TXTRR extends STRINGRR
 {
-    TXTRR (String name, int TTL, String text)
+    TXTRR(String name, int TTL, String text)
     {
-        super (name, Utils.TXT, TTL);
+        super(name, Utils.TXT, TTL);
         this.string = text;
     }
 
-    protected byte[] getBytes() { return (Utils.toCS (string)); }
+    protected byte[] getBytes() { return Utils.toCS(string); }
 }
 
 class NSRR extends STRINGRR
 {
-    NSRR (String domain, int TTL, String nameserver)
+    NSRR(String domain, int TTL, String nameserver)
     {
-        super (domain, Utils.NS, TTL);
+        super(domain, Utils.NS, TTL);
         this.string = nameserver;
     }
 }
 
 class CNAMERR extends STRINGRR
 {
-    CNAMERR (String alias, int TTL, String canonical)
+    CNAMERR(String alias, int TTL, String canonical)
     {
-        super (alias, Utils.CNAME, TTL);
+        super(alias, Utils.CNAME, TTL);
         this.string = canonical;
     }
 }
 
 class PTRRR extends STRINGRR
 {
-    PTRRR (String address, int TTL, String host)
+    PTRRR(String address, int TTL, String host)
     {
-        super (address, Utils.PTR, TTL);
+        super(address, Utils.PTR, TTL);
         this.string = host;
     }
 }
@@ -422,61 +422,61 @@ abstract class ADDRRR extends RR
 {
     protected String address;
 
-    ADDRRR (String name, int type, int TTL)
+    ADDRRR(String name, int type, int TTL)
     {
-        super (name, type, TTL);
+        super(name, type, TTL);
     }
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof ADDRRR))
+            if (!(o instanceof ADDRRR))
             {
-                return (false);
+                return false;
             }
 
-            ADDRRR addrrr = (ADDRRR) o;
-            return (addrrr.address.equals (address));
+            ADDRRR addrrr =(ADDRRR) o;
+            return addrrr.address.equals(address);
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
-    public String getAddress() { return (address); }
+    public String getAddress() { return address; }
 
     public String toString()
     {
-        return ("ADDR: address = " + address + ", " + super.toString());
+        return "ADDR: address = " + address + ", " + super.toString();
     }
 }
 
 class ARR extends ADDRRR
 {
-    ARR (String name, int TTL, String address)
+    ARR(String name, int TTL, String address)
     {
-        super (name, Utils.A, TTL);
+        super(name, Utils.A, TTL);
         this.address = address;
     }
 
-    protected byte[] getBytes() { return (Utils.IPV4 (address)); }
+    protected byte[] getBytes() { return Utils.IPV4(address); }
 }
 
 class AAAARR extends ADDRRR
 {
-    AAAARR (String name, int TTL, String address)
+    AAAARR(String name, int TTL, String address)
     {
-        super (name, Utils.AAAA, TTL);
+        super(name, Utils.AAAA, TTL);
         this.address = address;
     }
 
-    protected byte[] getBytes() { return (Utils.IPV6 (address)); }
+    protected byte[] getBytes() { return Utils.IPV6(address); }
 }
 
 class DNSKEYRR extends RR
@@ -486,10 +486,10 @@ class DNSKEYRR extends RR
     private int algorithm;
     private String publicKey;
 
-    DNSKEYRR (String domain, int TTL, int flags, int protocol, int algorithm,
+    DNSKEYRR(String domain, int TTL, int flags, int protocol, int algorithm,
         String publicKey)
     {
-        super (domain, Utils.DNSKEY, TTL);
+        super(domain, Utils.DNSKEY, TTL);
 
         this.flags = flags;
         this.protocol = protocol;
@@ -500,36 +500,36 @@ class DNSKEYRR extends RR
     protected byte[] getBytes()
     {
         byte a[] = new byte[0];
-        a = Utils.combine (a, Utils.getTwoBytes (flags, 2));
-        a = Utils.combine (a, Utils.getByte (protocol, 1));
-        a = Utils.combine (a, Utils.getByte (algorithm, 1));
-        a = Utils.combine (a, publicKey.getBytes(StandardCharsets.US_ASCII));
-        return (a);
+        a = Utils.combine(a, Utils.getTwoBytes(flags, 2));
+        a = Utils.combine(a, Utils.getByte(protocol, 1));
+        a = Utils.combine(a, Utils.getByte(algorithm, 1));
+        a = Utils.combine(a, publicKey.getBytes(StandardCharsets.US_ASCII));
+        return a;
     }
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof DNSKEYRR))
+            if (!(o instanceof DNSKEYRR))
             {
-                return (false);
+                return false;
             }
 
-            DNSKEYRR dnskeyrr = (DNSKEYRR) o;
-            return (dnskeyrr.flags == flags &&
+            DNSKEYRR dnskeyrr =(DNSKEYRR) o;
+            return(dnskeyrr.flags == flags &&
                 dnskeyrr.protocol == protocol &&
                 dnskeyrr.algorithm == algorithm &&
-                dnskeyrr.publicKey.equals (publicKey));
+                dnskeyrr.publicKey.equals(publicKey));
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 }
 
@@ -545,11 +545,11 @@ class DNSRRSIGRR extends RR
     private String signersName;
     private String signature;
 
-    DNSRRSIGRR (String domain, int TTL, int typeCovered, int algorithm,
+    DNSRRSIGRR(String domain, int TTL, int typeCovered, int algorithm,
         int labels, int originalTTL, int expiration, int inception,
         String signersName, String signature)
     {
-        super (domain, Utils.RRSIG, TTL);
+        super(domain, Utils.RRSIG, TTL);
 
         this.typeCovered = typeCovered;
         this.algorithm = algorithm;
@@ -564,53 +564,53 @@ class DNSRRSIGRR extends RR
     protected byte[] getBytes()
     {
         byte a[] = new byte[0];
-        a = Utils.combine (a, Utils.getTwoBytes (typeCovered, 2));
-        a = Utils.combine (a, Utils.getByte (algorithm, 1));
-        a = Utils.combine (a, Utils.getByte (labels, 1));
-        a = Utils.combine (a, Utils.getBytes (originalTTL));
-        a = Utils.combine (a, Utils.getBytes (expiration));
-        a = Utils.combine (a, Utils.getBytes (inception));
-        a = Utils.combine (a, Utils.getTwoBytes (keyTag, 2));
-        a = Utils.combine (a, signersName.getBytes(StandardCharsets.US_ASCII));
-        a = Utils.combine (a, signature.getBytes());
-        return (a);
+        a = Utils.combine(a, Utils.getTwoBytes(typeCovered, 2));
+        a = Utils.combine(a, Utils.getByte(algorithm, 1));
+        a = Utils.combine(a, Utils.getByte(labels, 1));
+        a = Utils.combine(a, Utils.getBytes(originalTTL));
+        a = Utils.combine(a, Utils.getBytes(expiration));
+        a = Utils.combine(a, Utils.getBytes(inception));
+        a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
+        a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
+        a = Utils.combine(a, signature.getBytes());
+        return a;
     }
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof DNSRRSIGRR))
+            if (!(o instanceof DNSRRSIGRR))
             {
-                return (false);
+                return false;
             }
 
-            DNSRRSIGRR dnsrrsigrr = (DNSRRSIGRR) o;
+            DNSRRSIGRR dnsrrsigrr =(DNSRRSIGRR) o;
 
-            return (dnsrrsigrr.typeCovered == typeCovered &&
+            return(dnsrrsigrr.typeCovered == typeCovered &&
                 dnsrrsigrr.algorithm == algorithm &&
                 dnsrrsigrr.labels == labels &&
                 dnsrrsigrr.originalTTL == originalTTL &&
                 dnsrrsigrr.expiration == expiration &&
                 dnsrrsigrr.inception == inception &&
                 dnsrrsigrr.keyTag == keyTag &&
-                dnsrrsigrr.signersName.equals (signersName) &&
-                dnsrrsigrr.signature.equals (signature));
+                dnsrrsigrr.signersName.equals(signersName) &&
+                dnsrrsigrr.signature.equals(signature));
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 
 
     public String toString()
     {
-        return ("DNSRRSIGRR: " +
+        return("DNSRRSIGRR: " +
         " typeCovered = " + typeCovered +
         ", algorithm = " + algorithm +
         ", labels = " + labels +
@@ -628,10 +628,10 @@ class DNSNSECRR extends RR
     private String nextDomainName;
     private byte[] typeBitMaps;
 
-    DNSNSECRR (String domain, int TTL, String nextDomainName,
+    DNSNSECRR(String domain, int TTL, String nextDomainName,
         byte[] typeBitMaps)
     {
-        super (domain, Utils.NSEC, TTL);
+        super(domain, Utils.NSEC, TTL);
 
         this.nextDomainName = nextDomainName;
         this.typeBitMaps = typeBitMaps;
@@ -639,31 +639,31 @@ class DNSNSECRR extends RR
 
     protected byte[] getBytes()
     {
-        byte a[] = Utils.convertString (nextDomainName);
-        a = Utils.combine (a, typeBitMaps);
-        return (a);
+        byte a[] = Utils.convertString(nextDomainName);
+        a = Utils.combine(a, typeBitMaps);
+        return a;
     }
 
-    public boolean equals (Object o)
+    public boolean equals(Object o)
     {
-        if (super.equals (o))
+        if (super.equals(o))
         {
-            if (! (o instanceof DNSNSECRR))
+            if (!(o instanceof DNSNSECRR))
             {
-                return (false);
+                return false;
             }
 
-            DNSNSECRR dnsnsecrr = (DNSNSECRR) o;
-            return (dnsnsecrr.nextDomainName.equals (nextDomainName) &&
-                Arrays.equals (dnsnsecrr.typeBitMaps, typeBitMaps));
+            DNSNSECRR dnsnsecrr =(DNSNSECRR) o;
+            return(dnsnsecrr.nextDomainName.equals(nextDomainName) &&
+                Arrays.equals(dnsnsecrr.typeBitMaps, typeBitMaps));
         }
 
-        return (false);
+        return false;
     }
 
-    public int hashCode ()
+    public int hashCode()
     {
-        Assertion.aver (false);
-        return (42);
+        Assertion.aver(false);
+        return 42;
     }
 }

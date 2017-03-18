@@ -35,36 +35,39 @@ class BindZone implements Zone
     private Hashtable<Integer, Hashtable> tableOfTables =
         new Hashtable<Integer, Hashtable>();
 
-    private JavaLN logger = JDNSS.logger;
+    private JavaLN logger = JDNSS.getLogger();
 
-    public BindZone (String name)
+    public BindZone(final String name)
     {
         this.name = name;
 
-        tableOfTables.put (Utils.A, hA);
-        tableOfTables.put (Utils.AAAA, hAAAA);
-        tableOfTables.put (Utils.NS, hNS);
-        tableOfTables.put (Utils.MX, hMX);
-        tableOfTables.put (Utils.CNAME, hCNAME);
-        tableOfTables.put (Utils.PTR, hPTR);
-        tableOfTables.put (Utils.TXT, hTXT);
-        tableOfTables.put (Utils.HINFO, hHINFO);
-        tableOfTables.put (Utils.SOA, hSOA);
-        tableOfTables.put (Utils.DNSKEY, hDNSKEY);
-        tableOfTables.put (Utils.RRSIG, hDNSRRSIG);
+        tableOfTables.put(Utils.A, hA);
+        tableOfTables.put(Utils.AAAA, hAAAA);
+        tableOfTables.put(Utils.NS, hNS);
+        tableOfTables.put(Utils.MX, hMX);
+        tableOfTables.put(Utils.CNAME, hCNAME);
+        tableOfTables.put(Utils.PTR, hPTR);
+        tableOfTables.put(Utils.TXT, hTXT);
+        tableOfTables.put(Utils.HINFO, hHINFO);
+        tableOfTables.put(Utils.SOA, hSOA);
+        tableOfTables.put(Utils.DNSKEY, hDNSKEY);
+        tableOfTables.put(Utils.RRSIG, hDNSRRSIG);
     }
 
     /**
      * @return the domain name
      */
-    public String getName () { return (name); }
+    public String getName()
+    {
+        return name;
+    }
 
     /**
-     * Create a printable String
+     * Create a printable String.
      * @param h        a Hashtable
      * @return        the contents in String form
      */
-    private String dumphash (Hashtable h)
+    private String dumphash(final Hashtable h)
     {
         String s = "";
         final Enumeration e = h.keys();
@@ -72,112 +75,113 @@ class BindZone implements Zone
         while (e.hasMoreElements())
         {
             final Object o = e.nextElement();
-            s += o + ": " + h.get (o) + " ";
+            s += o + ": " + h.get(o) + " ";
         }
         return s;
     }
 
     /**
-     * A printable version of the Zone
+     * A printable version of the Zone.
      * @return the string
      */
-    public String toString ()
+    public String toString()
     {
         String s = "---- Zone " + name + " -----" + '\n';
 
-        s += "SOA: " + dumphash (hSOA) + "\n";
-        s += "A: " + dumphash (hA) + "\n";
-        s += "AAAA: " + dumphash (hAAAA) + "\n";
-        s += "CNAME: " + dumphash (hCNAME) + "\n";
-        s += "MX: " + dumphash (hMX) + "\n";
-        s += "NS: " + dumphash (hNS) + "\n";
-        s += "PTR: " + dumphash (hPTR) + "\n";
-        s += "TXT: " + dumphash (hTXT) + "\n";
-        s += "HINFO: " + dumphash (hHINFO) + "\n";
-        s += "DNSKEY: " + dumphash (hDNSKEY) + "\n";
-        s += "DNSRRSIG: " + dumphash (hDNSRRSIG) + "\n";
-        s += "DNSNSEC: " + dumphash (hDNSNSEC) + "\n";
+        s += "SOA: " + dumphash(hSOA) + "\n";
+        s += "A: " + dumphash(hA) + "\n";
+        s += "AAAA: " + dumphash(hAAAA) + "\n";
+        s += "CNAME: " + dumphash(hCNAME) + "\n";
+        s += "MX: " + dumphash(hMX) + "\n";
+        s += "NS: " + dumphash(hNS) + "\n";
+        s += "PTR: " + dumphash(hPTR) + "\n";
+        s += "TXT: " + dumphash(hTXT) + "\n";
+        s += "HINFO: " + dumphash(hHINFO) + "\n";
+        s += "DNSKEY: " + dumphash(hDNSKEY) + "\n";
+        s += "DNSRRSIG: " + dumphash(hDNSRRSIG) + "\n";
+        s += "DNSNSEC: " + dumphash(hDNSNSEC) + "\n";
         s += "--------";
 
-        return (s);
+        return s;
     }
 
-    private Hashtable getTable (int type)
+    private Hashtable<String, Vector> getTable(final int type)
     {
-        logger.entering (type);
+        logger.entering(type);
 
-        Hashtable ret = tableOfTables.get (type);
+        final Hashtable ret = tableOfTables.get(type);
 
         if (ret == null)
         {
-            logger.config ("type not found: " + type);
-            logger.exiting ("null");
-            return (null);
+            logger.config("type not found: " + type);
+            logger.exiting("null");
+            return null;
         }
 
-        return (ret);
+        return ret;
     }
 
     /**
-     * Add an address to a name.  There may be multiple addresses per name
+     * Add an address to a name.  There may be multiple addresses per name.
      * @param name        the name
      * @param rr        the resource record
      */
-    public void add (String name, RR rr)
+    public void add(final String name, final RR rr)
     {
-        logger.entering (new Object[]{name, rr});
+        logger.entering(new Object[]{name, rr});
 
         if ((rr instanceof SOARR) && ! name.equals(this.name))
         {
             this.name = name;
         }
 
-        Hashtable h = getTable (rr.getType());
-        Vector value;
+        Hashtable<String, Vector> h = getTable(rr.getType());
 
-        logger.finest (h.get (name));
+        logger.finest(h.get(name));
+
+        Vector value = h.get(name);
 
         /*
         ** if there isn't already a entry
         */
-        if ((value = (Vector) h.get (name)) == null)
+        if (value == null)
         {
             value = new Vector();
-            h.put (name, value);
-            value.add (rr);
+            h.put(name, value);
+            value.add(rr);
         }
-        else if (! value.contains (rr))
+        else if (! value.contains(rr))
         {
-            value.add (rr);
+            value.add(rr);
         }
         else
         {
-            logger.info (rr + " already present");
+            logger.info(rr + " already present");
         }
     }
 
     /**
-     * Get the Vector for a particular name
+     * Get the Vector for a particular name.
      * @param type        the query type
      * @param name        the name
      * @return a Vector with the appropriate addresses for the given name
      */
-    public Vector get (int type, String name)
+    public Vector get(final int type, final String name)
     {
-        logger.entering (new Object[]{Integer.valueOf (type), name});
+        logger.entering(new Object[]{Integer.valueOf(type), name});
 
-        Hashtable h = getTable (type);
-        logger.finest (h);
+        final Hashtable<String, Vector> h = getTable(type);
+        logger.finest(h);
 
         Vector v = null;
 
         if (h != null)
         {
-            v = (Vector) h.get (name);
+            v = h.get(name);
         }
 
-        logger.exiting  (v);
-        Assertion.aver (v != null);
-        return (v);
+        logger.exiting (v);
+        Assertion.aver(v != null);
+        return v;
     }
 }

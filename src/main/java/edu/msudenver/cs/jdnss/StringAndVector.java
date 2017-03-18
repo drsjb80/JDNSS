@@ -2,17 +2,17 @@ package edu.msudenver.cs.jdnss;
 
 import java.util.Vector;
 
-public class SandV
+public class StringAndVector
 {
     private String string;
-    private Vector v;
+    private Vector vector;
 
-    SandV (String string, Vector v)
+    StringAndVector(final String s, final Vector v)
     {
-        this.string = string;
-        this.v = v;
+        this.string = s;
+        this.vector = v;
     }
 
-    public String getString() { return (string); }
-    public Vector getVector() { return (v); }
+    public String getString() { return string; }
+    public Vector getVector() { return vector; }
 }

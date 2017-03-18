@@ -1,61 +1,44 @@
 package edu.msudenver.cs.jdnss;
 
-import java.net.*;
-import java.io.*;
-import java.util.Hashtable;
-import java.util.Enumeration;
-
-import edu.msudenver.cs.javaln.*;
-import edu.msudenver.cs.javaln.syslog.*;
+import edu.msudenver.cs.javaln.JavaLN;
+import edu.msudenver.cs.javaln.LineNumberFormatter;
+import edu.msudenver.cs.javaln.syslog.CLIHandler;
+import edu.msudenver.cs.javaln.syslog.SyslogdHandler;
+import edu.msudenver.cs.javaln.syslog.UNIXDomainHandler;
 import edu.msudenver.cs.jclo.JCLO;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.Hashtable;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.ConsoleHandler;
-
-class JDNSSArgs
-{
-    boolean once = false;
-    int port = 53;
-    int threads = 10;
-    boolean TCP = true;
-    boolean UDP = true;
-    boolean MC = false;
-    int MCport = 5353;
-    String MCaddress = "224.0.0.251";
-    boolean version;
-    String IPaddress;
-    int backlog;
-
-    // i'm going to make an assumption that not everyone who uses this will
-    // be intimately familiar with Java logging and therefore won't want to
-    // use the usual -Djava...
-    String LogHandler;	// Syslogd, CLI, UNIXDomain, Console
-    String LogLevel;	// SEVERE WARNING INFO CONFIG FINE FINER FINEST
-                        // default: INFO
-
-    String SyslogdHost = "localhost";
-    int SyslogdPort = 514;
-
-    boolean help;
-
-    boolean RFC2671;
-
-    String DBClass;
-    String DBURL;
-    String DBUser;
-    String DBPass;
-
-    String additional[];
-}
 
 public class JDNSS
 {
-    static JDNSSArgs jargs;
+    // a few AOP singletons
+    private static jdnssArgs jargs;
+    public static jdnssArgs getJdnssArgs()
+    {
+        return jargs;
+    }
+
+    private static JavaLN logger = new JavaLN();
+    public static JavaLN getLogger()
+    {
+        return logger;
+    }
+
+    private static DBConnection DBConnection;
+    public static DBConnection getDBConnection()
+    {
+        return DBConnection;
+    }
+
     private Hashtable bindZones = new Hashtable();
-    static JavaLN logger = new JavaLN();
-    DBConnection DBConnection;
-    // DBZone DBZone;
 
     /**
      * Finds the Zone associated with the domain name passed in
@@ -64,16 +47,16 @@ public class JDNSS
      * @return		the associated Zone
      * @see Zone
      */
-    public Zone getZone (String name)
+    public Zone getZone(String name)
     {
-        logger.entering (name);
+        logger.entering(name);
 
         String longest = null;
 
         // first, see if it's in the files
         try
         {
-            longest = Utils.findLongest (bindZones.keys(), name);
+            longest = Utils.findLongest(bindZones.keys(), name);
         }
         catch (AssertionError AE)
         {
@@ -83,20 +66,20 @@ public class JDNSS
                 DBZone d = null;
                 try
                 {
-                    d = DBConnection.getZone (name);
-                    return ((Zone) d);
+                    d = DBConnection.getZone(name);
+                    return (Zone) d;
                 }
                 catch (AssertionError AE2)
                 {
-                    Assertion.aver (false);
+                    Assertion.aver(false);
                 }
             }
 
             // it's not
-            Assertion.aver (false);
+            Assertion.aver(false);
         }
             
-        return ((Zone) bindZones.get (longest));
+        return (Zone) bindZones.get(longest);
     }
 
     public void start()
@@ -105,9 +88,9 @@ public class JDNSS
         boolean tcp = jargs.TCP;
         boolean mc = jargs.MC;
 
-        logger.finest (Boolean.valueOf (udp));
-        logger.finest (Boolean.valueOf (tcp));
-        logger.finest (Boolean.valueOf (mc));
+        logger.finest(Boolean.valueOf(udp));
+        logger.finest(Boolean.valueOf(tcp));
+        logger.finest(Boolean.valueOf(mc));
 
         for (int i = 0; i < 3; i++)
         {
@@ -117,28 +100,28 @@ public class JDNSS
             {
                 if (i == 0 && udp)
                 {
-                    proto = new UDP (this);
+                    proto = new UDP(this);
                 }
                 if (i == 1 && tcp)
                 {
-                    proto = new TCP (this);
+                    proto = new TCP(this);
                 }
                 if (i == 2 && mc)
                 {
-                    proto = new MC (this);
+                    proto = new MC(this);
                 }
             }
             catch (SocketException se)
             {
-                // logger.throwing (se);
-                logger.severe (se);
-                System.exit (1);
+                // logger.throwing(se);
+                logger.severe(se);
+                System.exit(1);
             }
             catch (IOException ioe)
             {
-                // logger.throwing (ioe);
-                logger.severe (ioe);
-                System.exit (1);
+                // logger.throwing(ioe);
+                logger.severe(ioe);
+                System.exit(1);
             }
 
             if (proto != null)
@@ -151,14 +134,14 @@ public class JDNSS
     private void setupLogging()
     {
         /*
-        String lc = System.getProperty ("java.util.logging.config.class");
-        String lf = System.getProperty ("java.util.logging.config.file");
+        String lc = System.getProperty("java.util.logging.config.class");
+        String lf = System.getProperty("java.util.logging.config.file");
 
-        logger.finest (lc);
-        logger.finest (lf);
+        logger.finest(lc);
+        logger.finest(lf);
         */
 
-        logger.setThrowingLevel (Level.SEVERE);
+        logger.setThrowingLevel(Level.SEVERE);
         String SyslogdHost = jargs.SyslogdHost;
         int SyslogdPort = jargs.SyslogdPort;
         Handler newHandler = null;
@@ -166,73 +149,73 @@ public class JDNSS
         String handler = jargs.LogHandler;
         if (handler != null)
         {
-            if (handler.equals ("Syslogd"))
+            if ("Syslogd".equals(handler))
             {
-                newHandler = new SyslogdHandler (SyslogdHost, SyslogdPort);
+                newHandler = new SyslogdHandler(SyslogdHost, SyslogdPort);
             }
-            else if (handler.equals ("CLI"))
+            else if ("CLI".equals(handler))
             {
                 newHandler = new CLIHandler();
             }
-            else if (handler.equals ("UNIXDomain"))
+            else if ("UNIXDomain".equals(handler))
             {
                 newHandler = new UNIXDomainHandler();
             }
-            else if (handler.equals ("Console"))
+            else if ("Console".equals(handler))
             {
                 newHandler = new ConsoleHandler();
-                newHandler.setFormatter (new LineNumberFormatter());
+                newHandler.setFormatter(new LineNumberFormatter());
             }
             else
             {
-                logger.info ("Invalid --LogHandler specified, using syslogd");
-                newHandler = new SyslogdHandler (SyslogdHost, SyslogdPort);
+                logger.info("Invalid --LogHandler specified, using syslogd");
+                newHandler = new SyslogdHandler(SyslogdHost, SyslogdPort);
             }
         }
         else
         {
-            newHandler = new SyslogdHandler (SyslogdHost, SyslogdPort);
+            newHandler = new SyslogdHandler(SyslogdHost, SyslogdPort);
         }
 
         if (newHandler != null)
         {
-            logger.addHandler (newHandler);
-            logger.setUseParentHandlers (false);
+            logger.addHandler(newHandler);
+            logger.setUseParentHandlers(false);
         }
 
         String level = jargs.LogLevel;
         if (level != null)
         {
-            Level l = Level.parse (level);
-            logger.setLevel (l);
+            Level l = Level.parse(level);
+            logger.setLevel(l);
 
             Handler handlers[] = logger.getHandlers();
 
             for (int i = 0; i < handlers.length; i++)
             {
-                handlers[i].setLevel (l);
+                handlers[i].setLevel(l);
             }
         }
     }
 
-    private void doargs ()
+    private void doargs()
     {
         setupLogging();
 
         logger.entering();
-        logger.finest (jargs.toString());
+        logger.finest(jargs.toString());
 
         if (jargs.version)
         {
-            logger.severe (new Version().getVersion());
-            System.exit (0);
+            logger.severe(new Version().getVersion());
+            System.exit(0);
         }
 
-        logger.info ("Starting JDNSS version " + new Version().getVersion());
+        logger.info("Starting JDNSS version " + new Version().getVersion());
 
         if (jargs.DBClass != null && jargs.DBURL != null)
         {
-            DBConnection = new DBConnection (jargs.DBClass, jargs.DBURL,
+            DBConnection = new DBConnection(jargs.DBClass, jargs.DBURL,
                 jargs.DBUser, jargs.DBPass);
         }
 
@@ -247,31 +230,31 @@ public class JDNSS
         {
             try
             {
-                String name = new File (additional[i]).getName();
+                String name = new File(additional[i]).getName();
 
-                logger.info ("Parsing: " + additional[i]);
+                logger.info("Parsing: " + additional[i]);
 
-                if (name.endsWith (".db"))
+                if (name.endsWith(".db"))
                 {
-                    name = name.replaceFirst ("\\.db$", "");
-                    if (Character.isDigit (name.charAt (0)))
+                    name = name.replaceFirst("\\.db$", "");
+                    if (Character.isDigit(name.charAt(0)))
                     {
-                        name = Utils.reverseIP (name);
+                        name = Utils.reverseIP(name);
                         name = name + ".in-addr.arpa";
                     }
                 }
 
-                BindZone zone = new BindZone (name);
-                new Parser (new FileInputStream (additional[i]), zone).RRs();
-                logger.finest (zone);
+                BindZone zone = new BindZone(name);
+                new Parser(new FileInputStream(additional[i]), zone).RRs();
+                logger.finest(zone);
 
                 // the name of the zone can change while parsing, so use
                 // the name from the zone
-                bindZones.put (zone.getName(), zone);
+                bindZones.put(zone.getName(), zone);
             }
             catch (FileNotFoundException e)
             {
-                logger.warning ("Couldn't open file " + additional[i] +
+                logger.warning("Couldn't open file " + additional[i] +
                 '\n' + e);
             }
         }
@@ -284,22 +267,22 @@ public class JDNSS
     {
         JDNSS dnsService = new JDNSS();
 
-        jargs = new JDNSSArgs();
-        JCLO jclo = new JCLO (dnsService.jargs);
-        jclo.parse (args);
+        jargs = new jdnssArgs();
+        JCLO jclo = new JCLO(dnsService.jargs);
+        jclo.parse(args);
 
         if (jargs.help)
         {
-            System.out.println (jclo.usage());
-            System.exit (0);
+            System.out.println(jclo.usage());
+            System.exit(0);
         }
 
-        dnsService.doargs ();
+        dnsService.doargs();
 
         if (dnsService.bindZones.size() == 0 && dnsService.DBConnection == null)
         {
-            dnsService.logger.severe ("No zone files, exiting.");
-            System.exit (1);
+            dnsService.logger.severe("No zone files, exiting.");
+            System.exit(1);
         }
 
         dnsService.start();

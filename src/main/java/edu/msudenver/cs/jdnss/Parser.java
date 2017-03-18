@@ -68,7 +68,7 @@ public class Parser
      */
     public Parser(InputStream in, BindZone zone)
     {
-            this.zone = zone;
+        this.zone = zone;
 
         /*
         ** set up the tokenizer
@@ -126,6 +126,7 @@ public class Parser
         st.slashStarComments(true);
     }
 
+    @SuppressWarnings("magicnumber")
     private int matcher(String a)
     {
         logger.entering(a);
@@ -201,14 +202,14 @@ public class Parser
         */
         if (a.matches("\\d+[MHDW]"))
         {
-            intValue = Integer.parseInt(a.substring(0, a.length()-1));
+            intValue = Integer.parseInt(a.substring(0, a.length() - 1));
 
             char c = a.charAt(a.length()-1);
             switch (c)
             {
-                case 'W': intValue *= 7;        // fall through
-                case 'D': intValue *= 24;        // fall through
-                case 'H': intValue *= 60;        // fall through
+                case 'W': intValue *= 7;    // fall through
+                case 'D': intValue *= 24;   // fall through
+                case 'H': intValue *= 60;   // fall through
                 case 'M': intValue *= 60;
             }
 
@@ -301,12 +302,12 @@ public class Parser
                 Integer i =(Integer) tokens.get(a);
                 if (i != null)
                 {
-                    int j = i.intValue();
+                    final int j = i.intValue();
                     logger.exiting(j);
                     return j;
                 }
 
-                int k = matcher(a);
+                final int k = matcher(a);
                 logger.exiting(k);
                 return k;
             }
@@ -337,7 +338,7 @@ public class Parser
         // do this at a low level so that the rest of parsing isn't messed
         // up.
 
-            int t = getOneWord();
+        int t = getOneWord();
         Assertion.aver(t == StreamTokenizer.TT_WORD);
 
         // save the old one so we can get back to it.  if we're called
@@ -369,7 +370,6 @@ public class Parser
 
     private void doSOA()
     {
-        int serial, refresh, retry, expire, minimum;
         String server = "";
 
         origin = currentName;
@@ -389,19 +389,19 @@ public class Parser
             "Expecting left paren at line " + st.lineno());
         Assertion.aver(getNextToken() == INT,
             "Expecting serial number at line " + st.lineno());
-        serial = intValue;
+        int serial = intValue;
         Assertion.aver(getNextToken() == INT,
             "Expecting refresh at line " + st.lineno());
-        refresh = intValue;
+        int refresh = intValue;
         Assertion.aver(getNextToken() == INT,
             "Expecting retry at line " + st.lineno());
-        retry = intValue;
+        int retry = intValue;
         Assertion.aver(getNextToken() == INT,
             "Expecting expire at line " + st.lineno());
-        expire = intValue;
+        int expire = intValue;
         Assertion.aver(getNextToken() == INT,
             "Expecting minimum at line " + st.lineno());
-        minimum = intValue;
+        int minimum = intValue;
         Assertion.aver(getNextToken() == RPAREN,
             "Expecting rightparen at line " + st.lineno());
 
@@ -457,7 +457,7 @@ public class Parser
         logger.finer("size = " + size);
         byte[] b = new byte[2 + size];
         b[0] = 0;
-        b[1] =(byte) size;
+        b[1] = (byte) size;
 
         for (int i = 0; i < size; i++)
         {
@@ -576,7 +576,7 @@ public class Parser
         zone.add(currentName, d);
     }
 
-    private void switches(int t)
+    private void switches(final int t)
     {
         logger.entering(t);
 
@@ -889,18 +889,5 @@ public class Parser
             logger.throwing(IAE);
             logger.severe("Skipping: " + zone.getName());
         }
-    }
-
-    /**
-     * For testing -- creates an instance of Parser and
-     * parses for the domain "mpcs.org"
-     */
-    public static void main(String args[]) throws FileNotFoundException
-    {
-        /*
-        BindZone zone = new BindZone("scopesconf.org");
-        new Parser(new FileInputStream("scopesconf.org"), zone);
-        System.out.println(zone);
-        */
     }
 }

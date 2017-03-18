@@ -18,6 +18,7 @@
     <module name="RegexpSingleline"/>
     <module name="Translation"/>
     <module name="UniqueProperties"/>
+    <module name="SuppressWarningsFilter" />
 
     <module name="TreeWalker">
         <module name="AbbreviationAsWordInName"/>
@@ -83,12 +84,16 @@
         <module name="InnerTypeLast"/>
         <module name="InterfaceIsType"/>
         <module name="InterfaceTypeParameterName"/>
-        <module name="JavadocMethod"/>
+        <module name="JavadocMethod">
+            <property name="scope" value="package"/>
+        </module>
         <module name="JavadocParagraph"/>
         <module name="JavadocStyle"/>
         <module name="JavadocTagContinuationIndentation"/>
         <module name="JavadocType"/>
-        <module name="JavadocVariable"/>
+        <module name="JavadocVariable">
+            <property name="scope" value="package"/>
+        </module>
         <module name="JavaNCSS"/>
         <module name="LeftCurly">
             <property name="option" value="nl"/>
@@ -158,6 +163,7 @@
         <module name="SuperClone"/>
         <module name="SuperFinalize"/>
         <module name="SuppressWarnings"/>
+        <module name="SuppressWarningsHolder" />
         <module name="ThrowsCount"/>
         <module name="TodoComment"/>
         <module name="TrailingComment"/>

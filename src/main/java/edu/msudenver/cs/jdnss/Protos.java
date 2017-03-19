@@ -43,9 +43,14 @@ public abstract class Protos extends Thread
             Thread t = null;
             try
             {
-                t = doit();	// call down to derived class
+                t = doit();             // call down to derived class
             }
-            catch (AssertionError AE)
+            catch (AssertionError AE)   // already dealt with below
+            {
+                s.V();
+                continue;
+            }
+            catch (IOException ioe)     // already dealt with below
             {
                 s.V();
                 continue;
@@ -70,7 +75,7 @@ public abstract class Protos extends Thread
         }
     }
 
-    public abstract Thread doit();
+    public abstract Thread doit() throws IOException, AssertionError;
 }
 
 /**
@@ -82,7 +87,7 @@ class UDP extends Protos
 
     public UDP() {}	// for MC
 
-    public UDP(JDNSS dnsService) throws SocketException
+    public UDP(JDNSS dnsService) throws SocketException, UnknownHostException
     {
         logger.entering(dnsService);
         this.dnsService = dnsService;
@@ -93,21 +98,27 @@ class UDP extends Protos
         logger.finest(port);
         logger.finest(ipaddress);
 
-        if (ipaddress != null)
+        try
         {
-            try
+            if (ipaddress != null)
             {
                 dsocket = new DatagramSocket(port,
-                InetAddress.getByName(ipaddress));
+                    InetAddress.getByName(ipaddress));
             }
-            catch (UnknownHostException uhe)
+            else
             {
-                logger.throwing(uhe);
+                dsocket = new DatagramSocket(port);
             }
         }
-        else
+        catch (UnknownHostException uhe)
         {
-            dsocket = new DatagramSocket(port);
+            logger.throwing(uhe);
+            throw uhe;
+        }
+        catch (SocketException se)
+        {
+            logger.throwing(se);
+            throw se;
         }
 
         logger.finest(dsocket);
@@ -117,7 +128,7 @@ class UDP extends Protos
     /**
      * This method is used by both UDP and MC
      */
-    public Thread doit()
+    public Thread doit() throws IOException, AssertionError
     {
         logger.entering();
 
@@ -142,14 +153,12 @@ class UDP extends Protos
         catch (IOException e)
         {
             logger.throwing(e);
-            logger.exiting("null");
-            return null;
+            throw e;
         }
-        catch (AssertionError AE)
+        catch (AssertionError ae)
         {
-            logger.throwing(AE);
-            logger.exiting("null");
-            return null;
+            logger.throwing(ae);
+            throw ae;
         }
 
         if (q.getQR() == true)
@@ -168,7 +177,8 @@ class UDP extends Protos
 
 class MC extends UDP
 {
-    public MC(JDNSS dnsService) throws SocketException
+    public MC(JDNSS dnsService) throws SocketException, UnknownHostException,
+        IOException
     {
         logger.entering(dnsService);
         this.dnsService = dnsService;
@@ -191,8 +201,7 @@ class MC extends UDP
         catch (IOException ioe)
         {
             logger.throwing(ioe);
-            logger.exiting();
-            return;
+            throw ioe;
         }
 
         try
@@ -203,14 +212,12 @@ class MC extends UDP
         catch (UnknownHostException uhe)
         {
             logger.throwing(uhe);
-            logger.exiting();
-            return;
+            throw uhe;
         }
         catch (IOException ioe)
         {
             logger.throwing(ioe);
-            logger.exiting();
-            return;
+            throw ioe;
         }
 
         dsocket = msocket;
@@ -239,8 +246,8 @@ class TCP extends Protos
 
         if (ipaddress != null)
         {
-            ssocket = new ServerSocket
-           (port, backlog, InetAddress.getByName(ipaddress));
+            ssocket = new ServerSocket (port, backlog,
+                InetAddress.getByName(ipaddress));
         }
         else if (backlog != 0)
         {
@@ -254,14 +261,21 @@ class TCP extends Protos
         logger.exiting();
     }
 
-    public Thread doit()
+    public Thread doit() throws IOException
     {
         logger.entering();
 
         Socket socket = null;
 
-        try { socket = ssocket.accept(); }
-        catch (IOException ioe) { logger.throwing(ioe);}
+        try
+        {
+            socket = ssocket.accept();
+        }
+        catch (IOException ioe)
+        {
+            logger.throwing(ioe);
+            throw ioe;
+        }
 
         logger.finest("Received TCP packet");
 

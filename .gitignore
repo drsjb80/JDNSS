@@ -5,3 +5,5 @@ dependency-reduced-pom.xml
 # IntelliJ IDEA Ultimate
 .idea/
 jdnss.iml
+*.DS_Store
+.gitignore

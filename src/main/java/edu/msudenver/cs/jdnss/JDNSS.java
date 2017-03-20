@@ -34,7 +34,7 @@ public class JDNSS
         return jargs;
     }
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger("JDNSS");
     public static Logger getLogger()
     {
         return logger;

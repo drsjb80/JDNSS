@@ -1,7 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
-import java.util.logging.Logger;
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 class TestSem extends Thread
 {
@@ -26,7 +26,7 @@ public class Semaphore
 {
     private int total;
     private int count = 0;
-    private JavaLN logger = JDNSS.getLogger();
+    private Logger logger = JDNSS.getLogger();
 
     public Semaphore(int total)
     {
@@ -36,11 +36,11 @@ public class Semaphore
     public synchronized void P()
     {
         String name = Thread.currentThread().getName();
-        logger.finest("P: count = " + count + " " +  name);
+        // logger.trace("P: count = " + count + " " +  name);
 
         while (count >= total)
         {
-            logger.finest(name + " blocked");
+            // logger.trace(name + " blocked");
 
             try
             {
@@ -48,10 +48,10 @@ public class Semaphore
             }
             catch (Exception e)
             {
-                logger.throwing(e);
+                // logger.catching(e);
             }
 
-            logger.finest(name + " unblocked");
+            // logger.trace(name + " unblocked");
         }
 
         count++;
@@ -59,8 +59,8 @@ public class Semaphore
 
     public synchronized void V()
     {
-        logger.finest("V: count = " + count + " " +
-        Thread.currentThread().getName());
+        // logger.trace("V: count = " + count + " " +
+        // Thread.currentThread().getName());
         count--;
         if (count > 0)
         {

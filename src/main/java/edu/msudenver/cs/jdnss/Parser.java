@@ -11,7 +11,8 @@ import java.util.BitSet;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 // IPV6 addresses: http://www.faqs.org/rfcs/rfc1884.html
 // IPV6 DNS: http://www.faqs.org/rfcs/rfc1886.html
@@ -57,7 +58,7 @@ public class Parser
 
     private BindZone zone;
 
-    private JavaLN logger = JDNSS.getLogger();
+    private Logger logger = JDNSS.getLogger();
     
     private boolean inBase64 = false;
 
@@ -129,7 +130,7 @@ public class Parser
     @SuppressWarnings("magicnumber")
     private int matcher(String a)
     {
-        logger.entering(a);
+        logger.traceEntry(new ObjectMessage(a));
 
         /*
         ** \\d matches digits
@@ -137,7 +138,7 @@ public class Parser
         if (a.matches("(\\d+\\.){3}+\\d+"))
         {
             StringValue = a;
-            logger.exiting("IPV4ADDR");
+            logger.traceExit("IPV4ADDR");
             return IPV4ADDR;
         }
 
@@ -151,8 +152,8 @@ public class Parser
         {
             StringValue = a.replaceFirst("(\\:0+)+", ":");
             StringValue = StringValue.replaceFirst("^0+\\:", ":");
-            logger.finest(StringValue);
-            logger.exiting("IPV6ADDR");
+            logger.trace(StringValue);
+            logger.traceExit("IPV6ADDR");
             return IPV6ADDR;
         }
 
@@ -162,8 +163,8 @@ public class Parser
             b.matches("(\\d+\\.){32}+ip6\\.int\\."))
         {
             StringValue = b.replaceFirst("\\.$", "");
-            logger.finest(StringValue);
-            logger.exiting("INADDR");
+            logger.trace(StringValue);
+            logger.traceExit("INADDR");
             return INADDR;
         }
 
@@ -182,15 +183,15 @@ public class Parser
                 Integer.parseInt(minute), Integer.parseInt(second));
             intValue =(int) c.getTime().getTime();
 
-            logger.exiting("DATE");
+            logger.traceExit("DATE");
             return DATE;
         }
 
         if (a.matches("\\d+"))
         {
             intValue = Integer.parseInt(a);
-            logger.finest(intValue);
-            logger.exiting("INT");
+            logger.trace(intValue);
+            logger.traceExit("INT");
             return INT;
         }
 
@@ -213,8 +214,8 @@ public class Parser
                 case 'M': intValue *= 60;
             }
 
-            logger.finest(intValue);
-            logger.exiting("INT");
+            logger.trace(intValue);
+            logger.traceExit("INT");
             return INT;
         }
 
@@ -223,8 +224,8 @@ public class Parser
         {
             // remove the dot
             StringValue = a.replaceFirst("\\.$", "");
-            logger.finest(StringValue);
-            logger.exiting("DN");
+            logger.trace(StringValue);
+            logger.traceExit("DN");
             return DN;
         }
 
@@ -232,8 +233,8 @@ public class Parser
         if (! inBase64 && a.matches("[-a-zA-Z0-9_]+(\\.[-a-zA-Z0-9_]+)*"))
         {
             StringValue = a + "." + origin;
-            logger.finest(StringValue);
-            logger.exiting("PQDN");
+            logger.trace(StringValue);
+            logger.traceExit("PQDN");
             return DN;
         }
 
@@ -241,12 +242,12 @@ public class Parser
         if (inBase64)
         {
             StringValue = a.trim();
-            logger.finest(StringValue);
-            logger.exiting("BASE64");
+            logger.trace(StringValue);
+            logger.traceExit("BASE64");
             return BASE64;
         }
 
-        logger.severe("Unknown token on line " + st.lineno() + ": " + a);
+        logger.fatal("Unknown token on line " + st.lineno() + ": " + a);
         Assertion.aver(false);
         return NOTOK;
     }
@@ -263,38 +264,38 @@ public class Parser
         {
             logger.info("Error while reading token on line " +
                  st.lineno() + ": " + e);
-            logger.exiting("NOTOK");
+            logger.traceExit("NOTOK");
             return NOTOK;
         }
 
-        logger.exiting(t);
+        logger.traceExit(t);
         return t;
     }
 
     private int getNextToken()
     {
         int t = getOneWord();
-        logger.finest("t = " + t);
+        logger.trace("t = " + t);
 
         switch (t)
         {
             case '"' :
                 StringValue = st.sval;
-                logger.finest(StringValue);
-                logger.exiting("STRING");
+                logger.trace(StringValue);
+                logger.traceExit("STRING");
                 return STRING;
             case StreamTokenizer.TT_EOF:
-                logger.exiting("EOF");
+                logger.traceExit("EOF");
                 return EOF;
             case StreamTokenizer.TT_NUMBER:
                 // numbers are counted as words...
                 Assertion.aver(false);
-                logger.exiting("NOTOK");
+                logger.traceExit("NOTOK");
                 return NOTOK;
             case StreamTokenizer.TT_WORD:
             {
                 String a = st.sval;
-                logger.finest("a = " + a);
+                logger.trace("a = " + a);
 
                 /*
                 ** is it in the tokens hash?
@@ -303,37 +304,37 @@ public class Parser
                 if (i != null)
                 {
                     final int j = i.intValue();
-                    logger.exiting(j);
+                    logger.traceExit(j);
                     return j;
                 }
 
                 final int k = matcher(a);
-                logger.exiting(k);
+                logger.traceExit(k);
                 return k;
             }
             case '@':
             {
                 StringValue = origin;
-                logger.finest(StringValue);
-                logger.exiting("AT");
+                logger.trace(StringValue);
+                logger.traceExit("AT");
                 return DN;
             }
             // case ';': return SEMI;
-            case '{': { logger.exiting("LCURLY"); return LCURLY; }
-            case '}': { logger.exiting("RCURLY"); return RCURLY; }
-            case '(': { logger.exiting("LPAREN"); return LPAREN; }
-            case ')': { logger.exiting("RPAREN"); return RPAREN; }
-            case '*': { logger.exiting("STAR"); return STAR; }
+            case '{': { logger.traceExit("LCURLY"); return LCURLY; }
+            case '}': { logger.traceExit("RCURLY"); return RCURLY; }
+            case '(': { logger.traceExit("LPAREN"); return LPAREN; }
+            case ')': { logger.traceExit("RPAREN"); return RPAREN; }
+            case '*': { logger.traceExit("STAR"); return STAR; }
             default:
                 logger.info("Unknown token at line " + st.lineno() + ": " + t);
-                logger.exiting("NOTOK");
+                logger.traceExit("NOTOK");
                 return NOTOK;
         }
     }
 
     private void doInclude()
     {
-        logger.entering();
+        logger.traceEntry();
 
         // do this at a low level so that the rest of parsing isn't messed
         // up.
@@ -365,7 +366,7 @@ public class Parser
         // restore the old one.
         st = old;
 
-        logger.exiting();
+        logger.traceExit();
     }
 
     private void doSOA()
@@ -454,7 +455,7 @@ public class Parser
         }
 
         int size = rrs.length() / 8;
-        logger.finer("size = " + size);
+        logger.debug("size = " + size);
         byte[] b = new byte[2 + size];
         b[0] = 0;
         b[1] = (byte) size;
@@ -470,12 +471,12 @@ public class Parser
                     int shift = 7-j;
                     int mask = 1 << shift;
 
-                    logger.finer("mask = " + mask);
+                    logger.debug("mask = " + mask);
 
                     b[i+2] |= Utils.getByte(mask, 1);
                     // Initialzing Sync Engine
                 }
-                logger.finer("b[" +(i+2) + "] = " + b[i+2]);
+                logger.debug("b[" +(i+2) + "] = " + b[i+2]);
             }
         }
 
@@ -578,7 +579,7 @@ public class Parser
 
     private void switches(final int t)
     {
-        logger.entering(t);
+        logger.traceEntry(new ObjectMessage(t));
 
         switch (t)
         {
@@ -671,37 +672,37 @@ public class Parser
 
     private int CalcTTL()
     {
-        // logger.severe(globalTTL);
-        // logger.severe(SOATTL);
-        // logger.severe(SOAMinimumTTL);
-        // logger.severe(currentTTL);
+        // logger.fatal(globalTTL);
+        // logger.fatal(SOATTL);
+        // logger.fatal(SOAMinimumTTL);
+        // logger.fatal(currentTTL);
 
         if (currentTTL != -1)
         {
             if (SOATTL > currentTTL)
             {
-                // logger.severe("returning SOATTL");
+                // logger.fatal("returning SOATTL");
                 return SOATTL;
             }
             else
             {
-                // logger.severe("returning currentTTL");
+                // logger.fatal("returning currentTTL");
                 return currentTTL;
             }
         }
         else if (globalTTL != -1)
         {
-            // logger.severe("returning globalTTL");
+            // logger.fatal("returning globalTTL");
             return globalTTL;
         }
         else if (SOATTL != -1)
         {
-            // logger.severe("returning SOATTL");
+            // logger.fatal("returning SOATTL");
             return SOATTL;
         }
         else
         {
-            // logger.severe("returning SOAMinimumTTL");
+            // logger.fatal("returning SOAMinimumTTL");
             return SOAMinimumTTL;
         }
     }
@@ -721,7 +722,7 @@ public class Parser
         {
             while (t != EOF)
             {
-                logger.finest(t);
+                logger.trace(t);
 
                 if (t == Utils.INCLUDE)
                 {
@@ -770,7 +771,7 @@ public class Parser
                 // read to the end of this RR
                 while (!done)
                 {
-                    logger.finest(t);
+                    logger.trace(t);
 
                     switch (t)
                     {
@@ -796,7 +797,7 @@ public class Parser
                         {
                             int temp = intValue;
                             t = getNextToken();
-                            logger.finest("t = " + t);
+                            logger.trace("t = " + t);
 
                             // ptr ttl in
                             // ptr in ttl
@@ -804,7 +805,7 @@ public class Parser
                                 origin.endsWith(".int")))
                             {
                                 currentName = "" + temp + "." + origin;
-                                logger.finest(currentName);
+                                logger.trace(currentName);
 
                                 if (t == INT)
                                 {
@@ -886,8 +887,8 @@ public class Parser
         }
         catch (IllegalArgumentException IAE)
         {
-            logger.throwing(IAE);
-            logger.severe("Skipping: " + zone.getName());
+            logger.catching(IAE);
+            logger.fatal("Skipping: " + zone.getName());
         }
     }
 }

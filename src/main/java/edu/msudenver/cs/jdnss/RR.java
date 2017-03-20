@@ -6,7 +6,6 @@ package edu.msudenver.cs.jdnss;
  * @author Steve Beaty
  */
 
-import edu.msudenver.cs.javaln.*;
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 
@@ -201,7 +200,7 @@ class SOARR extends RR
     ** TTL to prohibit caching."
     **
     ** 2182:
-    ** It may be observed that in section 3.2.1 of RFC1035, which defines
+    ** It may be observed that in section 3.2.1 of RFC1035, which deinfos
     ** the format of a Resource Record, that the definition of the TTL field
     ** contains a throw away line which states that the TTL of an SOA record
     ** should always be sent as zero to prevent caching.  This is mentioned

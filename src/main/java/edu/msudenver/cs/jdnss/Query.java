@@ -5,7 +5,8 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: Query.java,v 1.29 2011/03/14 19:07:22 drb80 Exp $
  */
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 import java.util.Vector;
 import java.util.Arrays;
 import java.net.DatagramPacket;
@@ -15,7 +16,7 @@ public class Query
     private String qnames[];
     private int qtypes[];
     private int qclasses[];
-    private JavaLN logger = JDNSS.getLogger();
+    private Logger logger = JDNSS.getLogger();
 
     // http://www.networksorcery.com/enp/protocol/dns.htm
     private int id;
@@ -54,8 +55,8 @@ public class Query
      */
     private void rebuild()
     {
-        logger.finest(toString());
-        logger.finest("\n" + Utils.toString(buffer));
+        logger.trace(toString());
+        logger.trace("\n" + Utils.toString(buffer));
 
         buffer[0] = Utils.getByte(id, 2);
         buffer[1] = Utils.getByte(id, 1);
@@ -83,8 +84,8 @@ public class Query
         buffer[10] = Utils.getByte(numAdditionals, 2);
         buffer[11] = Utils.getByte(numAdditionals, 1);
 
-        logger.finest(toString());
-        logger.finest("\n" + Utils.toString(buffer));
+        logger.trace(toString());
+        logger.trace("\n" + Utils.toString(buffer));
     }
 
     Query(int id, String[] qnames, int qtypes[], int qclasses[])
@@ -152,11 +153,11 @@ public class Query
      */
     private void parseQueries()
     {
-        logger.entering();
+        logger.traceEntry();
 
         /*
         The question section is used to carry the "question" in most queries,
-        i.e., the parameters that define what is being asked.  The section
+        i.e., the parameters that deinfo what is being asked.  The section
         contains QDCOUNT(usually 1) entries, each of the following format:
 
         1  1  1  1  1  1
@@ -272,14 +273,14 @@ public class Query
     private void createAuthorities(Zone zone)
     {
         Vector v = zone.get(Utils.NS, zone.getName());
-        logger.finest(v);
+        logger.trace(v);
 
         if (v != null)
         {
             for (int i = 0; i < v.size(); i++)
             {
                 NSRR rr =(NSRR) v.elementAt(i);
-                logger.finest(rr);
+                logger.trace(rr);
                 authority = Utils.combine(authority,
                     rr.getBytes(rr.getName(), minimum));
                 numAuthorities++;
@@ -296,7 +297,9 @@ public class Query
         Assertion.aver(v != null, "v == null");
         Assertion.aver(name != null, "name == null");
 
-        logger.entering(new Object[]{v, name, Integer.valueOf(which)});
+        logger.traceEntry(new ObjectMessage(v));
+        logger.traceEntry(new ObjectMessage(name));
+        logger.traceEntry(new ObjectMessage(which));
 
         for (int i = 0; i < v.size(); i++)
         {
@@ -335,17 +338,17 @@ public class Query
 
     private void addAuthorities()
     {
-        logger.finest(UDP);
-        logger.finest(buffer.length);
-        logger.finest(authority.length);
+        logger.trace(UDP);
+        logger.trace(buffer.length);
+        logger.trace(authority.length);
         if (!UDP ||(UDP &&(buffer.length + authority.length < 512)))
         {
-            logger.finest("adding in authorities");
+            logger.trace("adding in authorities");
             buffer = Utils.combine(buffer, authority);
         }
         else
         {
-            logger.finest("NOT adding in authorities");
+            logger.trace("NOT adding in authorities");
             numAuthorities = 0;
         }
     }
@@ -404,14 +407,14 @@ public class Query
         }
         catch (AssertionError AE)
         {
-            logger.finer(Utils.mapTypeToString(type) + " lookup of " +
+            logger.debug(Utils.mapTypeToString(type) + " lookup of " +
                 name + " failed");
 
             rcode = Utils.NAMEERROR;
             return;
         }
 
-        logger.finer(Utils.mapTypeToString(type) +
+        logger.debug(Utils.mapTypeToString(type) +
             " lookup of " + name + " failed but " +
             Utils.mapTypeToString(other) + " record found");
 
@@ -420,7 +423,7 @@ public class Query
 
     private void errLookupFailed(int type, String name, int rcode)
     {
-        logger.finer("'" + Utils.mapTypeToString(type) +
+        logger.debug("'" + Utils.mapTypeToString(type) +
             "' lookup of " + name + " failed");
         this.rcode = rcode;
     }
@@ -428,10 +431,10 @@ public class Query
     private StringAndVector checkForCNAME(Vector v, int type, String name, Zone zone,
         SOARR SOA)
     {
-        logger.entering(v);
-        logger.entering(type);
-        logger.entering(name);
-        logger.entering(zone);
+        logger.traceEntry(new ObjectMessage(v));
+        logger.traceEntry(new ObjectMessage(type));
+        logger.traceEntry(new ObjectMessage(name));
+        logger.traceEntry(new ObjectMessage(zone));
 
         // is there an associated CNAME?
         Vector u = null;
@@ -445,7 +448,7 @@ public class Query
         }
 
         String s =((CNAMERR) u.elementAt(0)).getString();
-        logger.finer(s);
+        logger.debug(s);
 
         Assertion.aver(s != null);
 
@@ -474,8 +477,8 @@ public class Query
         parseQueries();
         firsttime = true;
 
-        logger.finest(toString());
-        logger.finest("\n" + Utils.toString(buffer));
+        logger.trace(toString());
+        logger.trace("\n" + Utils.toString(buffer));
 
         this.UDP = UDP;
 
@@ -487,8 +490,8 @@ public class Query
         {
             String name = qnames[i];
             int type = qtypes[i];
-            logger.finest(name);
-            logger.finest(type);
+            logger.trace(name);
+            logger.trace(type);
 
             Zone zone = null;
             try
@@ -497,14 +500,14 @@ public class Query
             }
             catch (AssertionError AE)
             {
-                logger.finer("Zone lookup of " + name + " failed");
+                logger.debug("Zone lookup of " + name + " failed");
                 rcode = Utils.REFUSED;
                 AA = false;
                 rebuild();
                 return Arrays.copyOf(buffer, buffer.length);
 
             }
-            logger.finest(zone);
+            logger.trace(zone);
 
             // always need to get the SOA to find the default minimum
             Vector w = null;
@@ -514,7 +517,7 @@ public class Query
             }
             catch (AssertionError AE)
             {
-                logger.finer("SOA lookup in " + zone.getName() + " failed");
+                logger.debug("SOA lookup in " + zone.getName() + " failed");
                 rcode = Utils.SERVFAIL;
                 rebuild();
                 return Arrays.copyOf(buffer, buffer.length);
@@ -530,17 +533,17 @@ public class Query
             }
             catch (AssertionError AE)
             {
-                logger.finer("Didn't find: " + name);
+                logger.debug("Didn't find: " + name);
                 if (type != Utils.AAAA && type != Utils.A)
                 {
-                    logger.finer(name + " not A or AAAA, giving up");
+                    logger.debug(name + " not A or AAAA, giving up");
                     errLookupFailed(type, name, Utils.NOERROR);
                     addSOA(zone, SOA);
                     return Arrays.copyOf(buffer, buffer.length);
                 }
                 else
                 {
-                    logger.finer("Looking for a CNAME for " + name);
+                    logger.debug("Looking for a CNAME for " + name);
                     StringAndVector StringAndVector = null;
                     try
                     {
@@ -549,7 +552,7 @@ public class Query
                     }
                     catch (AssertionError AE2)
                     {
-                        logger.finer("Didn't find a CNAME for " + name);
+                        logger.debug("Didn't find a CNAME for " + name);
                         // look for AAAA if A and vice versa
                         dealWithOther(zone, type, name);
                         addSOA(zone, SOA);
@@ -563,7 +566,7 @@ public class Query
 
             if (numAdditionals != 0 && dnsService.getJdnssArgs().RFC2671)
             {
-                logger.finer("Additionals not understood");
+                logger.debug("Additionals not understood");
                 rcode = Utils.NOTIMPL;
                 rebuild();
                 return Arrays.copyOf(buffer, buffer.length);

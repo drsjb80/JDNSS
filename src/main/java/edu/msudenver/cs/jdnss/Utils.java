@@ -8,7 +8,8 @@ import java.util.Map;
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 /**
  * Common methods used throughout
@@ -19,7 +20,7 @@ import edu.msudenver.cs.javaln.JavaLN;
 
 public class Utils
 {
-    private static JavaLN logger = JDNSS.getLogger();
+    private static Logger logger = JDNSS.getLogger();
 
     /** The request/respose numbers */
     public static final int A       = 1;
@@ -116,14 +117,14 @@ public class Utils
         Assertion.aver(s != null);
         Assertion.aver(! s.equals(""));
 
-        logger.entering(s);
+        logger.traceEntry(new ObjectMessage(s));
 
         String longest = null;
 
         while (e.hasMoreElements())
         {
             String next =(String) e.nextElement();
-            logger.fine(next);
+            logger.info(next);
 
             if (s.toLowerCase().endsWith(next.toLowerCase()))
             {
@@ -135,7 +136,7 @@ public class Utils
         }
 
         Assertion.aver(longest != null);
-        logger.exiting(longest);
+        logger.traceExit(longest);
         return longest;
     }
 
@@ -582,11 +583,11 @@ public class Utils
 
     public static StringAndNumber parseName(int start, byte buffer[])
     {
-        logger.entering(start);
+        logger.traceEntry(new ObjectMessage(start));
 
         if (start >= buffer.length)
         {
-            logger.warning("Illegal name");
+            logger.warn("Illegal name");
             return null;
         }
 
@@ -597,11 +598,11 @@ public class Utils
         if ((buffer[current] & 0xc0) == 0xc0)
         {
             int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
-            logger.finest(tmp);
+            logger.trace(tmp);
 
             if (tmp >= start)
             {
-                logger.warning("Illegal name");
+                logger.warn("Illegal name");
                 return null;
             }
 
@@ -627,7 +628,7 @@ public class Utils
             for (int i = 1; i <= length; i++)
             {
                 char c =(char) buffer[current];
-                logger.finest("Adding " + c);
+                logger.trace("Adding " + c);
                 name += c;
                 current++;
             }
@@ -639,11 +640,11 @@ public class Utils
                 name += ".";
 
                 int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
-                logger.finest(tmp);
+                logger.trace(tmp);
 
                 if (tmp >= start)
                 {
-                    logger.warning("Illegal name");
+                    logger.warn("Illegal name");
                     return null;
                 }
 
@@ -666,7 +667,7 @@ public class Utils
         }
 
         StringAndNumber sn = new StringAndNumber(name, current);
-        logger.exiting(sn);
+        logger.traceExit(sn);
         return sn;
     }
 }

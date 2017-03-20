@@ -7,11 +7,12 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 public class UDPThread extends Thread
 {
-    private JavaLN logger = JDNSS.getLogger();
+    private Logger logger = JDNSS.getLogger();
 
     /*
     ** is responding through the original socket thread safe, or should we
@@ -31,7 +32,9 @@ public class UDPThread extends Thread
     public UDPThread(Query query, DatagramSocket socket, int port,
         InetAddress address, JDNSS dnsService)
     {
-        logger.entering(new Object[]{query, socket, address});
+        logger.traceEntry(new ObjectMessage(query));
+        logger.traceEntry(new ObjectMessage(socket));
+        logger.traceEntry(new ObjectMessage(address));
 
         this.query = query;
         this.socket = socket;
@@ -45,10 +48,10 @@ public class UDPThread extends Thread
      */
     public void run()
     {
-        logger.entering();
+        logger.traceEntry();
 
         byte b[] = query.makeResponses(dnsService, true);
-        logger.finest(Utils.toString(b));
+        logger.trace(Utils.toString(b));
 
         if (b != null)
         {
@@ -62,23 +65,23 @@ public class UDPThread extends Thread
                 }
                 catch (UnknownHostException uhe)
                 {
-                    logger.throwing(uhe);
+                    logger.catching(uhe);
                     return;
                 }
             }
 
-            logger.finest(port);
-            logger.finest(address);
-            logger.finest(b.length);
+            logger.trace(port);
+            logger.trace(address);
+            logger.trace(b.length);
 
             DatagramPacket reply = new DatagramPacket(b, b.length,
                 address, port);
 
-            logger.finest("\n" + Utils.toString(reply.getData()));
-            logger.finest(reply.getLength());
-            logger.finest(reply.getOffset());
-            logger.finest(reply.getAddress());
-            logger.finest(reply.getPort());
+            logger.trace("\n" + Utils.toString(reply.getData()));
+            logger.trace(reply.getLength());
+            logger.trace(reply.getOffset());
+            logger.trace(reply.getAddress());
+            logger.trace(reply.getPort());
 
             try
             {
@@ -86,7 +89,7 @@ public class UDPThread extends Thread
             }
             catch (IOException e)
             {
-                logger.throwing(e);
+                logger.catching(e);
             }
         }
     }

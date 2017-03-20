@@ -1,13 +1,14 @@
 package edu.msudenver.cs.jdnss;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 import java.util.Arrays;
 
 public class RRs
 {
     private int location;
     private byte buffer[];
-    private JavaLN logger = JDNSS.getLogger();
+    private Logger logger = JDNSS.getLogger();
     private int numQuestions;
     private int numAnswers;
     private int numAuthorities;
@@ -37,11 +38,11 @@ public class RRs
 
     private void parseQuestions()
     {
-        logger.entering();
+        logger.traceEntry();
 
         /*
         The question section is used to carry the "question" in most queries,
-        i.e., the parameters that define what is being asked.  The section
+        i.e., the parameters that deinfo what is being asked.  The section
         contains QDCOUNT(usually 1) entries, each of the following format:
 
         1  1  1  1  1  1
@@ -81,7 +82,7 @@ public class RRs
 
     public void parseAnswers(int location)
     {
-        logger.entering();
+        logger.traceEntry();
 
         /*
         The answer, authority, and additional sections all share the same

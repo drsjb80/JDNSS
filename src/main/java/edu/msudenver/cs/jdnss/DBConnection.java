@@ -7,13 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 class DBConnection
 {
     private Connection conn;
     private Statement stmt;
-    private static JavaLN logger = JDNSS.getLogger();
+    private static Logger logger = JDNSS.getLogger();
 
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS
@@ -30,7 +31,7 @@ class DBConnection
         }
         catch (ClassNotFoundException cnfe)
         {
-            logger.throwing(cnfe);
+            logger.catching(cnfe);
         }
 
         try
@@ -39,7 +40,7 @@ class DBConnection
         }
         catch (SQLException sqle)
         {
-            logger.throwing(sqle);
+            logger.catching(sqle);
             Assertion.aver(false);
         }
 
@@ -56,7 +57,7 @@ class DBConnection
             }
             catch (SQLException sqle2)
             {
-                logger.throwing(sqle);
+                logger.catching(sqle);
                 Assertion.aver(false);
             }
         }
@@ -64,7 +65,7 @@ class DBConnection
 
     public DBZone getZone(final String name)
     {
-        logger.entering(name);
+        logger.traceEntry(new ObjectMessage(name));
 
         Vector v = new Vector();
 
@@ -88,7 +89,7 @@ class DBConnection
             }
             catch (SQLException sqle2)
             {
-                logger.throwing(sqle);
+                logger.catching(sqle);
                 Assertion.aver(false);
             }
         }
@@ -105,7 +106,7 @@ class DBConnection
         {
             throw AE;
         }
-        logger.finest(s);
+        logger.trace(s);
 
         // then, populate a DBZone with what we found.
         try
@@ -115,11 +116,11 @@ class DBConnection
 
             rs.next();
             final int domainId = rs.getInt("id");
-            logger.finest(domainId);
+            logger.trace(domainId);
 
             Assertion.aver(! rs.next());
 
-            logger.exiting(s);
+            logger.traceExit(s);
             return new DBZone(s, domainId, this);
         }
         catch (SQLException sqle)
@@ -132,7 +133,7 @@ class DBConnection
             }
             catch (SQLException sqle2)
             {
-                logger.throwing(sqle);
+                logger.catching(sqle);
                 Assertion.aver(false);
             }
         }
@@ -143,14 +144,14 @@ class DBConnection
 
     public Vector get(final int type, final String name, final int domainId)
     {
-        logger.entering(type);
-        logger.entering(name);
-        logger.entering(domainId);
+        logger.traceEntry(new ObjectMessage(type));
+        logger.traceEntry(new ObjectMessage(name));
+        logger.traceEntry(new ObjectMessage(domainId));
 
         try
         {
             String stype = Utils.mapTypeToString(type);
-            logger.finest(stype);
+            logger.trace(stype);
             Vector ret = new Vector();
             ResultSet rs = stmt.executeQuery(
                 "SELECT * FROM records where domain_id = " + domainId +
@@ -219,7 +220,7 @@ class DBConnection
                     }
                     default:
                     {
-                        logger.warning("requested type " + type +
+                        logger.warn("requested type " + type +
                         " for " + name + " not found");
                         Assertion.aver(false);
                     }
@@ -231,7 +232,7 @@ class DBConnection
         }
         catch (SQLException sqle)
         {
-            logger.throwing(sqle);
+            logger.catching(sqle);
             Assertion.aver(false);
         }
 

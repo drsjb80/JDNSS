@@ -5,13 +5,14 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: DBZone.java,v 1.3 2011/03/14 19:07:22 drb80 Exp $
  */
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.util.Vector;
 
 class DBZone implements Zone
 {
-    private static JavaLN logger = JDNSS.getLogger();
+    private static Logger logger = JDNSS.getLogger();
     private String zoneName;
     private int domainId;
     private DBConnection dbConnection;
@@ -30,8 +31,8 @@ class DBZone implements Zone
 
     public Vector get(final int type, final String name)
     {
-        logger.entering(type);
-        logger.entering(name);
+        logger.traceEntry(new ObjectMessage(type));
+        logger.traceEntry(new ObjectMessage(name));
 
         return dbConnection.get(type, name, domainId);
     }

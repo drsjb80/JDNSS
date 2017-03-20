@@ -2,7 +2,8 @@ package edu.msudenver.cs.jdnss;
 
 import java.net.*;
 import java.io.*;
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 /**
  * The threads for getting and responding to TCP requests
@@ -12,7 +13,7 @@ import edu.msudenver.cs.javaln.JavaLN;
 public class TCPThread extends Thread
 {
     private final Socket socket;
-    private final JavaLN logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.getLogger();
     private final JDNSS dnsService;
 
     /**
@@ -21,7 +22,8 @@ public class TCPThread extends Thread
      */
     public TCPThread(Socket socket, JDNSS dnsService)
     {
-        logger.entering(new Object[]{socket, dnsService});
+        logger.traceEntry(new ObjectMessage(socket));
+        logger.traceEntry(new ObjectMessage(dnsService));
 
         this.socket = socket;
         this.dnsService = dnsService;
@@ -29,7 +31,7 @@ public class TCPThread extends Thread
 
     public void run()
     {
-        logger.entering();
+        logger.traceEntry();
 
         InputStream is = null;
         OutputStream os = null;
@@ -63,7 +65,7 @@ public class TCPThread extends Thread
         }
         catch (Throwable t)
         {
-            logger.throwing(t);
+            logger.catching(t);
         }
     }
 }

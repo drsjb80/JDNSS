@@ -11,7 +11,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 /**
  * This class implements threading and thread pools(semaphores) for each
@@ -28,11 +29,11 @@ import edu.msudenver.cs.javaln.JavaLN;
 public abstract class Protos extends Thread
 {
     protected JDNSS dnsService;
-    protected JavaLN logger = JDNSS.getLogger();
+    protected Logger logger = JDNSS.getLogger();
 
     public void run()
     {
-        logger.entering();
+        logger.traceEntry();
 
         Semaphore s = new Semaphore(JDNSS.getJdnssArgs().threads);
 
@@ -67,9 +68,9 @@ public abstract class Protos extends Thread
                 }
                 catch (InterruptedException e)
                 {
-                    logger.throwing(e);
+                    logger.catching(e);
                 }
-                logger.exiting(0);
+                logger.traceExit(0);
                 System.exit(0);
             }
         }
@@ -89,14 +90,14 @@ class UDP extends Protos
 
     public UDP(JDNSS dnsService) throws SocketException, UnknownHostException
     {
-        logger.entering(dnsService);
+        logger.traceEntry(new ObjectMessage(dnsService));
         this.dnsService = dnsService;
 
         int port = JDNSS.getJdnssArgs().port;
         String ipaddress = JDNSS.getJdnssArgs().IPaddress;
 
-        logger.finest(port);
-        logger.finest(ipaddress);
+        logger.trace(port);
+        logger.trace(ipaddress);
 
         try
         {
@@ -112,17 +113,17 @@ class UDP extends Protos
         }
         catch (UnknownHostException uhe)
         {
-            logger.throwing(uhe);
+            logger.catching(uhe);
             throw uhe;
         }
         catch (SocketException se)
         {
-            logger.throwing(se);
+            logger.catching(se);
             throw se;
         }
 
-        logger.finest(dsocket);
-        logger.exiting();
+        logger.trace(dsocket);
+        logger.traceExit();
     }
 
     /**
@@ -130,7 +131,7 @@ class UDP extends Protos
      */
     public Thread doit() throws IOException, AssertionError
     {
-        logger.entering();
+        logger.traceEntry();
 
         /*
         "Multicast DNS Messages carried by UDP may be up to the IP MTU of the
@@ -152,25 +153,22 @@ class UDP extends Protos
         }
         catch (IOException e)
         {
-            logger.throwing(e);
+            logger.catching(e);
             throw e;
         }
         catch (AssertionError ae)
         {
-            logger.throwing(ae);
+            logger.catching(ae);
             throw ae;
         }
 
-        if (q.getQR() == true)
-        {
-            logger.finest("Response, exiting");
-            return null;
-        }
+        // ignore if response
+        Assertion.aver(q.getQR() != true);
 
         Thread t = new UDPThread(q, dsocket, packet.getPort(),
             packet.getAddress(), dnsService);
 
-        logger.exiting(t);
+        logger.traceExit(t);
         return t;
     }
 }
@@ -180,7 +178,7 @@ class MC extends UDP
     public MC(JDNSS dnsService) throws SocketException, UnknownHostException,
         IOException
     {
-        logger.entering(dnsService);
+        logger.traceEntry(new ObjectMessage(dnsService));
         this.dnsService = dnsService;
 
         MulticastSocket msocket = null;
@@ -191,8 +189,8 @@ class MC extends UDP
         int port = JDNSS.getJdnssArgs().MCport;
         String address = JDNSS.getJdnssArgs().MCaddress;
 
-        logger.finest(port);
-        logger.finest(address);
+        logger.trace(port);
+        logger.trace(address);
 
         try
         {
@@ -200,7 +198,7 @@ class MC extends UDP
         }
         catch (IOException ioe)
         {
-            logger.throwing(ioe);
+            logger.catching(ioe);
             throw ioe;
         }
 
@@ -211,19 +209,19 @@ class MC extends UDP
         }
         catch (UnknownHostException uhe)
         {
-            logger.throwing(uhe);
+            logger.catching(uhe);
             throw uhe;
         }
         catch (IOException ioe)
         {
-            logger.throwing(ioe);
+            logger.catching(ioe);
             throw ioe;
         }
 
         dsocket = msocket;
 
-        logger.finest(dsocket);
-        logger.exiting();
+        logger.trace(dsocket);
+        logger.traceExit();
     }
 }
 
@@ -234,36 +232,49 @@ class TCP extends Protos
     public TCP(JDNSS dnsService) throws UnknownHostException, IOException
     {
         this.dnsService = dnsService;
-        logger.entering(dnsService);
+        logger.traceEntry(new ObjectMessage(dnsService));
 
         int port = JDNSS.getJdnssArgs().port;
         int backlog = JDNSS.getJdnssArgs().backlog;
         String ipaddress = JDNSS.getJdnssArgs().IPaddress;
 
-        logger.finest(port);
-        logger.finest(backlog);
-        logger.finest(ipaddress);
+        logger.trace(port);
+        logger.trace(backlog);
+        logger.trace(ipaddress);
 
-        if (ipaddress != null)
+        try
         {
-            ssocket = new ServerSocket (port, backlog,
-                InetAddress.getByName(ipaddress));
+            if (ipaddress != null)
+            {
+                ssocket = new ServerSocket (port, backlog,
+                    InetAddress.getByName(ipaddress));
+            }
+            else if (backlog != 0)
+            {
+                ssocket = new ServerSocket(port, backlog);
+            }
+            else
+            {
+                ssocket = new ServerSocket(port);
+            }
         }
-        else if (backlog != 0)
+        catch (UnknownHostException uhe)
         {
-            ssocket = new ServerSocket(port, backlog);
+            logger.catching(uhe);
+            throw uhe;
         }
-        else
+        catch (IOException ioe)
         {
-            ssocket = new ServerSocket(port);
+            logger.catching(ioe);
+            throw ioe;
         }
 
-        logger.exiting();
+        logger.traceExit();
     }
 
     public Thread doit() throws IOException
     {
-        logger.entering();
+        logger.traceEntry();
 
         Socket socket = null;
 
@@ -273,14 +284,14 @@ class TCP extends Protos
         }
         catch (IOException ioe)
         {
-            logger.throwing(ioe);
+            logger.catching(ioe);
             throw ioe;
         }
 
-        logger.finest("Received TCP packet");
+        logger.trace("Received TCP packet");
 
         Thread t = new TCPThread(socket, dnsService);
-        logger.exiting(t);
+        logger.traceExit(t);
         return t;
     }
 }

@@ -8,7 +8,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import edu.msudenver.cs.javaln.JavaLN;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 
 class BindZone implements Zone
 {
@@ -35,7 +36,7 @@ class BindZone implements Zone
     private Hashtable<Integer, Hashtable> tableOfTables =
         new Hashtable<Integer, Hashtable>();
 
-    private JavaLN logger = JDNSS.getLogger();
+    private Logger logger = JDNSS.getLogger();
 
     public BindZone(final String name)
     {
@@ -107,14 +108,14 @@ class BindZone implements Zone
 
     private Hashtable<String, Vector> getTable(final int type)
     {
-        logger.entering(type);
+        logger.traceEntry(new ObjectMessage(type));
 
         final Hashtable ret = tableOfTables.get(type);
 
         if (ret == null)
         {
-            logger.config("type not found: " + type);
-            logger.exiting("null");
+            logger.info("type not found: " + type);
+            logger.traceExit("null");
             return null;
         }
 
@@ -128,7 +129,8 @@ class BindZone implements Zone
      */
     public void add(final String name, final RR rr)
     {
-        logger.entering(new Object[]{name, rr});
+        logger.traceEntry(new ObjectMessage(name));
+        logger.traceEntry(new ObjectMessage(rr));
 
         if ((rr instanceof SOARR) && ! name.equals(this.name))
         {
@@ -137,7 +139,7 @@ class BindZone implements Zone
 
         Hashtable<String, Vector> h = getTable(rr.getType());
 
-        logger.finest(h.get(name));
+        logger.trace(h.get(name));
 
         Vector value = h.get(name);
 
@@ -168,10 +170,11 @@ class BindZone implements Zone
      */
     public Vector get(final int type, final String name)
     {
-        logger.entering(new Object[]{Integer.valueOf(type), name});
+        logger.traceEntry(new ObjectMessage(type));
+        logger.traceEntry(new ObjectMessage(name));
 
         final Hashtable<String, Vector> h = getTable(type);
-        logger.finest(h);
+        logger.trace(h);
 
         Vector v = null;
 
@@ -180,7 +183,7 @@ class BindZone implements Zone
             v = h.get(name);
         }
 
-        logger.exiting (v);
+        logger.traceExit (v);
         Assertion.aver(v != null);
         return v;
     }

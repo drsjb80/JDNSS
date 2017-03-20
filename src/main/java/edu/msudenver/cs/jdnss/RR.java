@@ -50,12 +50,18 @@ public abstract class RR
     {
         int location = 0;
 
-        StringAndNumber sn = Utils.parseName(location, bytes);
-        if (sn != null)
+        StringAndNumber sn = null;
+        try
         {
-            location = sn.getNumber();
-            this.rrname = sn.getString();
+            sn = Utils.parseName(location, bytes);
         }
+        catch (AssertionError ae)
+        {
+            Assertion.aver(false);
+        }
+
+        location = sn.getNumber();
+        this.rrname = sn.getString();
 
         this.rrtype = Utils.addThem(bytes[location++], bytes[location++]);
         this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);

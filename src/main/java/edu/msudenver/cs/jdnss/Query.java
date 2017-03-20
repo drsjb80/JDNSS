@@ -177,12 +177,18 @@ public class Query
 
         for (int i = 0; i < numQuestions; i++)
         {
-            StringAndNumber sn = Utils.parseName(location, buffer);
-            if (sn != null)
+            StringAndNumber sn = null;
+            try
             {
-                location = sn.getNumber();
-                qnames[i] = sn.getString();
+                sn = Utils.parseName(location, buffer);
             }
+            catch (AssertionError ae)
+            {
+                throw ae;
+            }
+
+            location = sn.getNumber();
+            qnames[i] = sn.getString();
             qtypes[i] = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
             qclasses[i] = Utils.addThem(buffer[location], buffer[location + 1]);

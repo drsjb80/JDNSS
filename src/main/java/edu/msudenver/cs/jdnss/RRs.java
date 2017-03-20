@@ -60,23 +60,25 @@ public class RRs
 
         for (int i = 0; i < numQuestions; i++)
         {
-            StringAndNumber sn = Utils.parseName(location, buffer);
-            if (sn != null)
-            {
-                location = sn.getNumber();
-                int type =
-                Utils.addThem(buffer[location], buffer[location + 1]);
-                location += 2;
-                int junk =
-                Utils.addThem(buffer[location], buffer[location + 1]);
-                location += 2;
+            StringAndNumber sn = null;
 
-                questions[i] = new QRR(sn.getString(), type);
+            try
+            {
+                sn = Utils.parseName(location, buffer);
             }
-            else
+            catch (AssertionError ae)
             {
                 questions[i] = null;
+                Assertion.aver(false);
             }
+
+            location = sn.getNumber();
+            int type = Utils.addThem(buffer[location], buffer[location + 1]);
+            location += 2;
+            int junk = Utils.addThem(buffer[location], buffer[location + 1]);
+            location += 2;
+
+            questions[i] = new QRR(sn.getString(), type);
         }
     }
 

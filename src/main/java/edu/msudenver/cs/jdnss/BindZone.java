@@ -112,12 +112,7 @@ class BindZone implements Zone
 
         final Hashtable ret = tableOfTables.get(type);
 
-        if (ret == null)
-        {
-            logger.info("type not found: " + type);
-            logger.traceExit("null");
-            return null;
-        }
+        Assertion.aver(ret != null);
 
         return ret;
     }

@@ -588,7 +588,7 @@ public class Utils
         if (start >= buffer.length)
         {
             logger.warn("Illegal name");
-            return null;
+            Assertion.aver(false);
         }
 
         int current = start;
@@ -603,13 +603,13 @@ public class Utils
             if (tmp >= start)
             {
                 logger.warn("Illegal name");
-                return null;
+                Assertion.aver(false);
             }
 
             StringAndNumber sn = parseName(tmp, buffer);
             if (sn == null)
             {
-                return null;        // error already flagged
+                Assertion.aver(false);
             }
 
             name += sn.getString();
@@ -645,13 +645,13 @@ public class Utils
                 if (tmp >= start)
                 {
                     logger.warn("Illegal name");
-                    return null;
+                    Assertion.aver(false);
                 }
 
                 StringAndNumber sn = parseName(tmp, buffer);
                 if (sn == null)
                 {
-                    return null;        // error already flagged
+                    Assertion.aver(false);
                 }
 
                 name += sn.getString();

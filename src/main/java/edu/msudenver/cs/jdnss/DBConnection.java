@@ -139,7 +139,7 @@ class DBConnection
         }
 
         Assertion.aver(false, "DBConnection failed");
-        return null;
+        return null;    // have to have this or javac complains
     }
 
     public Vector get(final int type, final String name, final int domainId)
@@ -237,6 +237,6 @@ class DBConnection
         }
 
         Assertion.aver(false);
-        return null;
+        return null;    // have to have this or javac complains
     }
 }

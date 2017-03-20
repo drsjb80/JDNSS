@@ -1,7 +1,0 @@
-# -Djava.util.logging.config.file=MethodFilter.props
-
-.level = FINEST
-handlers = java.util.logging.ConsoleHandler
-java.util.logging.ConsoleHandler.level = FINEST
-java.util.logging.ConsoleHandler.filter = edu.msudenver.cs.javaln.LevelFilter
-edu.msudenver.cs.javaln.LevelFilter.level = FINEST

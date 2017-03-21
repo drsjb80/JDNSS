@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 /*
 import java.util.logging.ConsoleHandler;
@@ -92,47 +93,34 @@ public class JDNSS
 
     public void start()
     {
-        boolean udp = jargs.UDP;
-        boolean tcp = jargs.TCP;
-        boolean mc = jargs.MC;
-
-        logger.trace(Boolean.valueOf(udp));
-        logger.trace(Boolean.valueOf(tcp));
-        logger.debug(Boolean.valueOf(mc));
-
+        /*
+        ** Yeah, I know this is a little messy, but it does keep it DRY. I
+        ** need to start each thread independently of whether any of the
+        ** others are started.
+        */
         for (int i = 0; i < 3; i++)
         {
-            Protos proto = null;
-
             try
             {
-                if (i == 0 && udp)
+                switch (i)
                 {
-                    proto = new UDP(this);
-                }
-                if (i == 1 && tcp)
-                {
-                    proto = new TCP(this);
-                }
-                if (i == 2 && mc)
-                {
-                    proto = new MC(this);
+                    case 0: if (jargs.UDP) new UDP(this).start(); break;
+                    case 1: if (jargs.TCP) new TCP(this).start(); break;
+                    case 2: if (jargs.MC) new MC(this).start(); break;
+                    default: Assertion.aver(false);
                 }
             }
             catch (SocketException se)
             {
-                logger.fatal(se);
-                System.exit(1);
+                logger.catching (se);
             }
-            catch (IOException ioe)
+            catch (UnknownHostException uhe)
             {
-                logger.fatal(ioe);
-                System.exit(1);
+                logger.catching (uhe);
             }
-
-            if (proto != null)
+            catch (IOException ie)
             {
-                proto.start();
+                logger.catching (ie);
             }
         }
     }

@@ -5,11 +5,6 @@ import java.io.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
-/**
- * The threads for getting and responding to TCP requests
- *
- * @author Steve Beaty
- */
 public class TCPThread extends Thread
 {
     private final Socket socket;

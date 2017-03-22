@@ -3,6 +3,7 @@ package edu.msudenver.cs.jdnss;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.DatagramPacket;
+import java.net.NetworkInterface;
 
 public class MClient
 {
@@ -27,6 +28,10 @@ public class MClient
 
             InetAddress group = InetAddress.getByName("224.0.0.251");
             MulticastSocket s = new MulticastSocket(port);
+            s.setTimeToLive(255);
+            // s.setNetworkInterface(NetworkInterface.getByName("en0"));
+            // System.out.println (s.getInterface());
+            // System.out.println (s.getNetworkInterface());
 
             s.joinGroup(group);
 
@@ -48,13 +53,13 @@ public class MClient
 
                 if (q.getQR() == false)
                 {
-                    // System.out.println("Query");
+                    System.out.println("Query");
                     continue;
                 }
 
                 if (q.getId() != 1000)
                 {
-                    // System.out.println("Id = " + q.getId());
+                    System.out.println("Id = " + q.getId());
                     continue;
                 }
 

@@ -10,20 +10,15 @@ import java.net.UnknownHostException;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
-public class UDPThread extends Thread
+public class UDPThread implements Runnable
 {
     private Logger logger = JDNSS.getLogger();
 
-    /*
-    ** is responding through the original socket thread safe, or should we
-    ** create another one here?
-    */
     private DatagramSocket socket;
     private int port;
     private InetAddress address;
     private Query query;
-
-    private final JDNSS dnsService;
+    private JDNSS dnsService;
 
     /**
      * @param socket	the socket to respond through
@@ -32,10 +27,6 @@ public class UDPThread extends Thread
     public UDPThread(Query query, DatagramSocket socket, int port,
         InetAddress address, JDNSS dnsService)
     {
-        logger.traceEntry(new ObjectMessage(query));
-        logger.traceEntry(new ObjectMessage(socket));
-        logger.traceEntry(new ObjectMessage(address));
-
         this.query = query;
         this.socket = socket;
         this.port = port;
@@ -49,9 +40,11 @@ public class UDPThread extends Thread
     public void run()
     {
         logger.traceEntry();
+        logger.fatal("In run");
 
         byte b[] = query.makeResponses(dnsService, true);
         logger.trace(Utils.toString(b));
+        logger.fatal(Utils.toString(b));
 
         if (b != null)
         {

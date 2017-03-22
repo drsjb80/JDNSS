@@ -12,17 +12,7 @@ class jdnssArgs
     String MCaddress = "224.0.0.251";
     boolean version;
     String IPaddress;
-    int backlog;
-
-    // i'm going to make an assumption that not everyone who uses this will
-    // be intimately familiar with Java logging and therefore won't want to
-    // use the usual -Djava...
-    String LogHandler;	// Syslogd, CLI, UNIXDomain, Console
-    String LogLevel;	// SEVERE WARNING INFO CONFIG FINE FINER FINEST
-                        // default: INFO
-
-    String SyslogdHost = "localhost";
-    int SyslogdPort = 514;
+    int backlog = 4;
 
     boolean help;
 

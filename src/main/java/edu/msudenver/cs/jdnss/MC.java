@@ -5,6 +5,7 @@ import java.lang.AssertionError;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -29,8 +30,8 @@ class MC extends UDP
         int port = JDNSS.getJdnssArgs().MCport;
         String address = JDNSS.getJdnssArgs().MCaddress;
 
-        logger.trace(port);
-        logger.trace(address);
+        logger.fatal(port);
+        logger.fatal(address);
 
         try
         {
@@ -44,8 +45,9 @@ class MC extends UDP
 
         try
         {
-            msocket.joinGroup(InetAddress.getByName(address));
+            msocket.setNetworkInterface(NetworkInterface.getByName("en0"));
             msocket.setTimeToLive(255);
+            msocket.joinGroup(InetAddress.getByName(address));
         }
         catch (UnknownHostException uhe)
         {

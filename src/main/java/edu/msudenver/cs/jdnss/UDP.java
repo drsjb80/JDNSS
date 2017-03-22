@@ -4,10 +4,15 @@ import java.io.IOException;
 import java.lang.AssertionError;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.MulticastSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
@@ -20,6 +25,9 @@ class UDP extends Thread
     protected DatagramSocket dsocket;
     protected JDNSS dnsService;
     protected Logger logger = JDNSS.getLogger();
+    protected int threadPoolSize = JDNSS.getJdnssArgs().threads;
+    protected int port = JDNSS.getJdnssArgs().port;
+    protected String ipaddress = JDNSS.getJdnssArgs().IPaddress;
 
     public UDP() {}	// for MC
 
@@ -27,12 +35,6 @@ class UDP extends Thread
     {
         logger.traceEntry(new ObjectMessage(dnsService));
         this.dnsService = dnsService;
-
-        int port = JDNSS.getJdnssArgs().port;
-        String ipaddress = JDNSS.getJdnssArgs().IPaddress;
-
-        logger.trace(port);
-        logger.trace(ipaddress);
 
         try
         {
@@ -56,9 +58,6 @@ class UDP extends Thread
             logger.catching(se);
             throw se;
         }
-
-        logger.trace(dsocket);
-        logger.traceExit();
     }
 
     /**
@@ -75,36 +74,56 @@ class UDP extends Thread
         */
 
         int size = this instanceof MC ? 1500 : 512;
+        if (this instanceof MC)
+        {
+            logger.fatal("In MC run");
+            try
+            {
+                logger.fatal(((MulticastSocket)dsocket).getInterface());
+                logger.fatal(((MulticastSocket)dsocket).getNetworkInterface());
+            }
+            catch (SocketException se)
+            {
+            }
+        }
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        Query q = null;
+        ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true)
         {
+            Query q = null;
             try
             {
+                logger.fatal("Before receive");
                 dsocket.receive(packet);
-                q = new Query(Utils.trimByteArray
-                   (packet.getData(), packet.getLength()));
+                logger.fatal("Received packet");
+                q = new Query(Utils.trimByteArray(packet.getData(),
+                    packet.getLength()));
+                logger.fatal(q);
             }
-            catch (IOException e)
+            catch (IOException ioe)
             {
-                logger.catching(e);
-                return;
+                logger.catching(ioe);
+                continue;
             }
             catch (AssertionError ae)
             {
                 logger.catching(ae);
-                return;
+                continue;
             }
 
-            // ignore if response
-            Assertion.aver(q.getQR() != true);
+            if (q.getQR())
+            {
+                logger.warn("Received a response, not a request");
+                continue;
+            }
 
-            Thread t = new UDPThread(q, dsocket, packet.getPort(),
-                packet.getAddress(), dnsService);
-            t.start();
+            logger.fatal("Before submit");
+            Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),
+                packet.getAddress(), dnsService));
+            logger.fatal("After submit");
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
@@ -112,13 +131,17 @@ class UDP extends Thread
             {   
                 try 
                 {   
-                    t.join();
+                    f.get();
                 }
-                catch (InterruptedException e)
+                catch (InterruptedException ie)
                 {   
-                    logger.catching(e);
+                    logger.catching(ie);
                 }
-                logger.traceExit(0);
+                catch (ExecutionException ee)
+                {   
+                    logger.catching(ee);
+                }
+
                 System.exit(0);
             }
         }

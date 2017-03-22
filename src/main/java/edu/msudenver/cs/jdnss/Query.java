@@ -110,6 +110,7 @@ public class Query
             buffer = Utils.combine(buffer, Utils.getTwoBytes(qtypes[i], 2));
             buffer = Utils.combine(buffer, Utils.getTwoBytes(qclasses[i], 2));
         }
+        rebuild();
     }
 
     public byte[] getBuffer()

@@ -76,7 +76,7 @@ public class RRs
             int qtype = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
             // QU/QM
-            logger.fatal(buffer[location] & 0x80);
+            // logger.fatal(buffer[location] & 0x80);
             int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 

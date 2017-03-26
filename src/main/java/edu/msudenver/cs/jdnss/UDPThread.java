@@ -32,6 +32,23 @@ public class UDPThread implements Runnable
         this.port = port;
         this.address = address;
         this.dnsService = dnsService;
+
+        /*
+        if (socket instanceof MulticastSocket)
+        {
+            port = 5353;
+
+            try
+            {
+                address = InetAddress.getByName("224.0.0.251");
+            }
+            catch (UnknownHostException uhe)
+            {
+                logger.catching(uhe);
+                return;
+            }
+        }
+        */
     }
 
     /**
@@ -40,29 +57,13 @@ public class UDPThread implements Runnable
     public void run()
     {
         logger.traceEntry();
-        logger.fatal("In run");
 
         byte b[] = query.makeResponses(dnsService, true);
-        logger.trace(Utils.toString(b));
         logger.fatal(Utils.toString(b));
 
+        // fixme
         if (b != null)
         {
-            if (socket instanceof MulticastSocket)
-            {
-                port = 5353;
-
-                try
-                {
-                    address = InetAddress.getByName("224.0.0.251");
-                }
-                catch (UnknownHostException uhe)
-                {
-                    logger.catching(uhe);
-                    return;
-                }
-            }
-
             logger.trace(port);
             logger.trace(address);
             logger.trace(b.length);

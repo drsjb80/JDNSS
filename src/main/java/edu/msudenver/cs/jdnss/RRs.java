@@ -8,7 +8,7 @@ public class RRs
 {
     private int location;
     private byte buffer[];
-    private Logger logger = JDNSS.getLogger();
+    private static Logger logger = JDNSS.getLogger();
     private int numQuestions;
     private int numAnswers;
     private int numAuthorities;
@@ -20,7 +20,7 @@ public class RRs
     private RR additionals[];
 
     public RRs(byte buffer[], int numQuestions, int numAnswers,
-    int numAuthorities, int numAdditionals)
+        int numAuthorities, int numAdditionals)
     {
         this.buffer = Arrays.copyOf(buffer, buffer.length);
         this.numQuestions = numQuestions;
@@ -73,12 +73,14 @@ public class RRs
             }
 
             location = sn.getNumber();
-            int type = Utils.addThem(buffer[location], buffer[location + 1]);
+            int qtype = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
-            int junk = Utils.addThem(buffer[location], buffer[location + 1]);
+            // QU/QM
+            logger.fatal(buffer[location] & 0x80);
+            int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 
-            questions[i] = new QRR(sn.getString(), type);
+            questions[i] = new QRR(sn.getString(), qtype);
         }
     }
 
@@ -126,13 +128,14 @@ public class RRs
         */
     }
 
-    private String refactor(String title, RR rrs[])
+    private String display(String title, RR rrs[])
     {
         String s = title + "\n";
 
         for (int i = 0; i < rrs.length; i++)
         {
-            s += rrs[i] +(i < rrs.length-1 ? "\n" : "");
+            // put a newline on all except the last
+            s += rrs[i] + (i < rrs.length-1 ? "\n" : "");
         }
 
         return s;
@@ -144,19 +147,19 @@ public class RRs
 
         if (numQuestions > 0)
         {
-            s += refactor("Questions:", questions);
+            s += display("Questions:", questions);
         }
         if (numAnswers > 0)
         {
-            s += refactor("Answers:", answers);
+            s += display("Answers:", answers);
         }
         if (numAuthorities > 0)
         {
-            s += refactor("Authorities:", authorities);
+            s += display("Authorities:", authorities);
         }
         if (numAdditionals > 0)
         {
-            s += refactor("Additional:", additionals);
+            s += display("Additional:", additionals);
         }
 
         return s;

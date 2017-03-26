@@ -35,7 +35,7 @@ public class Query
     private boolean AD = false;        // authenticated data
     private boolean CD = false;        // checking disabled
 
-    private boolean firsttime;
+    private boolean firsttime = true;
 
     public boolean getQR() { return QR; }
     public int getId() { return id; }
@@ -61,18 +61,18 @@ public class Query
         buffer[0] = Utils.getByte(id, 2);
         buffer[1] = Utils.getByte(id, 1);
         buffer[2] =(byte)
-      (
-          (QR ? 128 : 0) |
-          (opcode << 3) |
-          (AA ? 4 : 0) |
-          (TC ? 2 : 0) |
-          (RD ? 1 : 0)
+        (
+            (QR ? 128 : 0) |
+            (opcode << 3) |
+            (AA ? 4 : 0) |
+            (TC ? 2 : 0) |
+            (RD ? 1 : 0)
         );
         buffer[3] =(byte)
-      (
-          (RA ? 128 : 0) |
-          (AD ? 32 : 0) |
-          (CD ? 16 : 0) |
+        (
+            (RA ? 128 : 0) |
+            (AD ? 32 : 0) |
+            (CD ? 16 : 0) |
             rcode
         );
         buffer[4] = Utils.getByte(numQuestions, 2);
@@ -110,12 +110,6 @@ public class Query
             buffer = Utils.combine(buffer, Utils.getTwoBytes(qtypes[i], 2));
             buffer = Utils.combine(buffer, Utils.getTwoBytes(qclasses[i], 2));
         }
-        rebuild();
-    }
-
-    public byte[] getBuffer()
-    {
-        return Arrays.copyOf(buffer, buffer.length);
     }
 
     /**
@@ -142,11 +136,16 @@ public class Query
         RA =      (flags & 0x00000080) != 0;
         AD =      (flags & 0x00000020) != 0;
         CD =      (flags & 0x00000010) != 0;
-        rcode =     flags & 0x0000000f;
+        rcode =   flags & 0x0000000f;
 
         qnames = new String[numQuestions];
         qtypes = new int[numQuestions];
         qclasses = new int[numQuestions];
+    }
+
+    public byte[] getBuffer()
+    {
+        return Arrays.copyOf(buffer, buffer.length);
     }
 
     /**
@@ -235,14 +234,14 @@ public class Query
         return s;
     }
 
-    private void addThem(Vector v, String host, int type)
+    private void addThem(Vector<RR>v, String host, int type)
     {
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
 
         for (int i = 0; i < v.size(); i++)
         {
-            RR rr =(RR) v.elementAt(i);
+            RR rr = v.elementAt(i);
             additional =
                 Utils.combine(additional, rr.getBytes(host, minimum));
             numAdditionals++;
@@ -279,17 +278,17 @@ public class Query
 
     private void createAuthorities(Zone zone)
     {
-        Vector v = zone.get(Utils.NS, zone.getName());
+        Vector<NSRR> v = zone.get(Utils.NS, zone.getName());
         logger.trace(v);
 
         if (v != null)
         {
             for (int i = 0; i < v.size(); i++)
             {
-                NSRR rr =(NSRR) v.elementAt(i);
+                NSRR rr = v.elementAt(i);
                 logger.trace(rr);
-                authority = Utils.combine(authority,
-                    rr.getBytes(rr.getName(), minimum));
+                authority = Utils.combine(authority, rr.getBytes(rr.getName(),
+                    minimum));
                 numAuthorities++;
 
                 // add address if known
@@ -298,7 +297,8 @@ public class Query
         }
     }
 
-    private void createResponses(Zone zone, Vector v, String name, int which)
+    private void createResponses(Zone zone, Vector<RR> v, String name,
+        int which)
     {
         Assertion.aver(zone != null, "zone == null");
         Assertion.aver(v != null, "v == null");
@@ -310,10 +310,10 @@ public class Query
 
         for (int i = 0; i < v.size(); i++)
         {
-            RR rr =(RR) v.elementAt(i);
+            RR rr = v.elementAt(i);
             byte add[] = rr.getBytes(name, minimum);
 
-            if (UDP &&(buffer.length + add.length > 512))
+            if (UDP && (buffer.length + add.length > 512))
             {
                 TC = true;
                 rebuild();
@@ -348,6 +348,7 @@ public class Query
         logger.trace(UDP);
         logger.trace(buffer.length);
         logger.trace(authority.length);
+
         if (!UDP ||(UDP &&(buffer.length + authority.length < 512)))
         {
             logger.trace("adding in authorities");
@@ -370,7 +371,7 @@ public class Query
 
         if (numAdditionals > 0)
         {
-            if (!UDP ||(UDP &&(buffer.length + additional.length < 512)))
+            if (!UDP || (UDP &&(buffer.length + additional.length < 512)))
             {
                 buffer = Utils.combine(buffer, additional);
             }
@@ -383,8 +384,8 @@ public class Query
 
     void addSOA(Zone zone, SOARR SOA)
     {
-        authority = Utils.combine
-      (authority, SOA.getBytes(zone.getName(), minimum));
+        authority = Utils.combine (authority, SOA.getBytes(zone.getName(),
+            minimum));
         numAuthorities++;
         addAuthorities();
         rebuild();
@@ -435,8 +436,8 @@ public class Query
         this.rcode = rcode;
     }
 
-    private StringAndVector checkForCNAME(Vector v, int type, String name, Zone zone,
-        SOARR SOA)
+    private StringAndVector checkForCNAME(Vector v, int type, String name,
+        Zone zone, SOARR SOA)
     {
         logger.traceEntry(new ObjectMessage(v));
         logger.traceEntry(new ObjectMessage(type));
@@ -454,7 +455,7 @@ public class Query
             Assertion.aver(false);
         }
 
-        String s =((CNAMERR) u.elementAt(0)).getString();
+        String s = ((CNAMERR) u.elementAt(0)).getString();
         logger.debug(s);
 
         Assertion.aver(s != null);
@@ -482,16 +483,12 @@ public class Query
     public byte[] makeResponses(JDNSS dnsService, boolean UDP)
     {
         parseQueries();
-        firsttime = true;
-
-        logger.trace(toString());
-        logger.trace("\n" + Utils.toString(buffer));
 
         this.UDP = UDP;
 
-        QR = true;        // response
-        AA = true;        // we are authoritative
-        RA = false;        // recursion not available
+        QR = true;  // response
+        AA = true;  // we are authoritative
+        RA = false; // recursion not available
 
         for (int i = 0; i < qnames.length; i++)
         {
@@ -512,12 +509,11 @@ public class Query
                 AA = false;
                 rebuild();
                 return Arrays.copyOf(buffer, buffer.length);
-
             }
             logger.trace(zone);
 
             // always need to get the SOA to find the default minimum
-            Vector w = null;
+            Vector<SOARR> w = null;
             try
             {
                 w = zone.get(Utils.SOA, zone.getName());
@@ -530,7 +526,7 @@ public class Query
                 return Arrays.copyOf(buffer, buffer.length);
             }
 
-            SOARR SOA =(SOARR) w.elementAt(0);
+            SOARR SOA = w.elementAt(0);
             minimum = SOA.getMinimum();
 
             Vector v = null;

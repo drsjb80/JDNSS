@@ -606,13 +606,7 @@ public class Utils
                 Assertion.aver(false);
             }
 
-            StringAndNumber sn = parseName(tmp, buffer);
-            if (sn == null)
-            {
-                Assertion.aver(false);
-            }
-
-            name += sn.getString();
+            name += parseName(tmp, buffer).getString();
             current += 2;
         }
 
@@ -627,7 +621,7 @@ public class Utils
         {
             for (int i = 1; i <= length; i++)
             {
-                char c =(char) buffer[current];
+                char c = (char) buffer[current];
                 logger.trace("Adding " + c);
                 name += c;
                 current++;
@@ -648,13 +642,7 @@ public class Utils
                     Assertion.aver(false);
                 }
 
-                StringAndNumber sn = parseName(tmp, buffer);
-                if (sn == null)
-                {
-                    Assertion.aver(false);
-                }
-
-                name += sn.getString();
+                name += parseName(tmp, buffer).getString();
                 current += 2;
             }
 

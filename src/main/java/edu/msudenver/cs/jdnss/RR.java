@@ -76,9 +76,11 @@ public abstract class RR
             return false;
         }
 
-        RR rr =(RR) o;
-        return(rr.rrname.equals(this.rrname) && rr.rrclass == rrclass &&
-            rr.rrtype == rrtype && rr.TTL == TTL);
+        RR rr = (RR) o;
+        return rr.rrname.equals(this.rrname) &&
+            rr.rrclass == rrclass &&
+            rr.rrtype == rrtype &&
+            rr.TTL == TTL;
     }
 
     public int hashCode()

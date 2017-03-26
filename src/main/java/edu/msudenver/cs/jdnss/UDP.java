@@ -71,9 +71,13 @@ class UDP extends Thread
         "Multicast DNS Messages carried by UDP may be up to the IP MTU of the
         physical interface, less the space required for the IP header(20
         bytes for IPv4; 40 bytes for IPv6) and the UDP header(8 bytes)."
+
+        Ergo, we should probably calculate those values here instead of
+        just going with 1500.
         */
 
         int size = this instanceof MC ? 1500 : 512;
+        /*
         if (this instanceof MC)
         {
             logger.fatal("In MC run");
@@ -86,6 +90,7 @@ class UDP extends Thread
             {
             }
         }
+        */
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -96,12 +101,10 @@ class UDP extends Thread
             Query q = null;
             try
             {
-                logger.fatal("Before receive");
                 dsocket.receive(packet);
-                logger.fatal("Received packet");
+                logger.fatal("Received a packet");
                 q = new Query(Utils.trimByteArray(packet.getData(),
                     packet.getLength()));
-                logger.fatal(q);
             }
             catch (IOException ioe)
             {
@@ -120,10 +123,10 @@ class UDP extends Thread
                 continue;
             }
 
-            logger.fatal("Before submit");
+            logger.fatal("Port: " + packet.getPort());
+            logger.fatal("Address: " + packet.getAddress());
             Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),
                 packet.getAddress(), dnsService));
-            logger.fatal("After submit");
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.

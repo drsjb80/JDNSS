@@ -91,6 +91,8 @@ public abstract class RR
 
     public int getType() { return rrtype; }
     public String getName() { return rrname; }
+    protected int getTTL() { return TTL; }
+    protected int getRrClass() { return rrclass; }
 
     /**
      * converts all the internal data to a byte array
@@ -674,3 +676,29 @@ class DNSNSECRR extends RR
         return 42;
     }
 }
+
+class OPTRR extends RR
+{
+    public boolean DOBit;
+    public int payloadSize;
+
+    OPTRR(byte[] bytes) {
+        super(bytes);
+
+        //Assert OPTRR is type 41 (See RFC 6891)
+        Assertion.aver(getType() == 41,
+                "Expecting OPTRR type to equal 41");
+
+        DOBit = (((getTTL() >> 15) & 1) == 1);
+        payloadSize = getRrClass();
+
+        if (payloadSize < 512)
+            payloadSize = 512;
+    }
+
+    @Override
+    protected byte[] getBytes() {
+        return this.getBytes();
+    }
+}
+

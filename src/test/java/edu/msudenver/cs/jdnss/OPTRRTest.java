@@ -5,8 +5,12 @@ import org.junit.Test;
 
 public class OPTRRTest {
     @Test
+<<<<<<< HEAD
     public void doBitTest()
     {
+=======
+    public void doBitTest() {
+>>>>>>> Added ability to parse additional section
         byte[] bytes = new byte[16];
 
         String rrName = "Test";
@@ -37,8 +41,12 @@ public class OPTRRTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void payloadSizeTest()
     {
+=======
+    public void payloadSizeTest() {
+>>>>>>> Added ability to parse additional section
         byte[] bytes = new byte[16];
 
         String rrName = "Test";
@@ -85,22 +93,38 @@ public class OPTRRTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void byteSizeTest()
     {
         byte[] bytes = new byte[16];
 
         String rrName = "Test";
+=======
+    public void byteSizeTest(){
+        byte[] bytes = new byte[16];
+
+        String rrName = "Test";
+
+>>>>>>> Added ability to parse additional section
         // Populate RR Name
         byte[] name = new String(rrName).getBytes();
 
         bytes[0] = (byte) rrName.length();
+<<<<<<< HEAD
         for (int i = 1; i <= rrName.length(); i++)
         {
+=======
+        for(int i = 1; i <= rrName.length(); i++) {
+>>>>>>> Added ability to parse additional section
             bytes[i] = name[i - 1];
         }
 
         // Set Resource Record type to 41 (OPTRR)
         bytes[7] = 41;
+<<<<<<< HEAD
+=======
+
+>>>>>>> Added ability to parse additional section
         OPTRR rr = new OPTRR(bytes);
         Assert.assertEquals(15, rr.getByteSize());
 

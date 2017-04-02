@@ -45,8 +45,8 @@ public class QueryTest
         // Populate RR Name
         byte[] name = new String(rrName).getBytes();
         bytes[0] = (byte) rrName.length();
-        for (int i = 1; i <= rrName.length(); i++)
-        {
+
+        for(int i = 1; i <= rrName.length(); i++) {
             bytes[i] = name[i - 1];
         }
         // Set Resource Record type to 41 (OPTRR)
@@ -71,8 +71,8 @@ public class QueryTest
         byte[] nameByte = new String(firstName).getBytes();
 
         bytes[0] = (byte) firstName.length();
-        for (int i = 1; i <= firstName.length(); i++)
-        {
+
+        for(int i = 1; i <= firstName.length(); i++) {
             bytes[i] = nameByte[i - 1];
         }
         bytes[7] = 41;
@@ -81,8 +81,8 @@ public class QueryTest
 
         byte[] secondByte = new String(secondName).getBytes();
         bytes[16] = (byte) secondName.length();
-        for (int i = 17; i <= secondName.length() + 16; i++)
-        {
+
+        for(int i = 17; i <= secondName.length() + 16; i++) {
             bytes[i] = secondByte[i - 17];
         }
 

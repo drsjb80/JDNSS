@@ -50,6 +50,8 @@ public class Query
 
     private byte[] savedAdditional;
     private int savedNumAdditionals;
+    public OPTRR optrr;
+
 
     private OPTRR optrr;
     private int maximumPayload = 512;
@@ -229,23 +231,20 @@ public class Query
 
     public void parseAdditional(byte[] additional, int rrCount)
     {
-        try
-        {
+        try {
             int rrLocation = 0;
-            for (int i = 0; i < rrCount; i++)
-            {
+            for (int i = 0; i < rrCount; i++) {
                 byte[] bytes = new byte[additional.length - rrLocation];
                 System.arraycopy(additional, rrLocation, bytes, 0, additional.length - rrLocation);
                 BasicRR rr = new BasicRR(bytes);
+
                 System.out.println("Name: " + rr.getName() + " Type: " + rr.getType() + " Size: " + rr.getByteSize());
-                if (rr.getType() == 41)
-                {
+                if (rr.getType() == 41) {
                     optrr = new OPTRR(bytes);
                 }
                 rrLocation = rrLocation + rr.getByteSize() + 1;
             }
-        }
-        catch(Exception ex)
+        } catch(Exception ex)
         {
             //RETURN Invalid
         }

@@ -718,17 +718,13 @@ class OPTRR extends RR
     }
 }
 
-class BasicRR extends RR
-{
-    BasicRR(byte[] bytes)
-    {
+class BasicRR extends RR{
+    BasicRR(byte[] bytes){
         super(bytes);
     }
 
     @Override
-    protected byte[] getBytes()
-    {
+    protected byte[] getBytes() {
         return this.getBytes();
     }
-+}
-
+}

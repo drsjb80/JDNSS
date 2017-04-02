@@ -51,6 +51,9 @@ public class Query
     private byte[] savedAdditional;
     private int savedNumAdditionals;
 
+    private OPTRR opt;
+    private int maximumPayload = 512;
+
     /**
      * Rebuild the byte array from the object data
      */
@@ -268,13 +271,14 @@ public class Query
      * Given a zone and an MX or NS hostname, see if there is an A or AAAA
      * record we can also send back...
      */
-    private void createAdditional(Zone zone, String host)
+    private void createAdditional(Zone zone, String host, String name)
     {
         Vector v = null;
         try
         {
             v = zone.get(Utils.A, host);
             addThem(v, host, Utils.A);
+            addSignature(zone, Utils.A, name, additional);
         }
         catch (AssertionError AE1)
         {
@@ -285,6 +289,7 @@ public class Query
         {
             v = zone.get(Utils.AAAA, host);
             addThem(v, host, Utils.AAAA);
+            addSignature(zone, Utils.AAAA, name, additional);
         }
         catch (AssertionError AE2)
         {
@@ -324,39 +329,78 @@ public class Query
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(which));
 
-        for (int i = 0; i < v.size(); i++)
+        if (opt != null)
         {
-            RR rr = v.elementAt(i);
-            byte add[] = rr.getBytes(name, minimum);
+            maximumPayload = opt.payloadSize;
+        }
 
-            if (UDP && (buffer.length + add.length > 512))
+        else
+        {
+            for (int i = 0; i < v.size(); i++)
             {
-                TC = true;
-                rebuild();
-                return;
+                RR rr = v.elementAt(i);
+                byte add[] = rr.getBytes(name, minimum);
+
+                if (UDP && (buffer.length + add.length > maximumPayload))
+                {
+                    TC = true;
+                    rebuild();
+                    return;
+                }
+
+                numAnswers++;
+                buffer = Utils.combine(buffer, add);
+
+                addSignature(zone, rr.getType(), name, buffer);
+
+                if (firsttime && which != Utils.NS)
+                {
+                    createAuthorities(zone);
+                }
+
+                firsttime = false;
+
+                if (which == Utils.MX)
+                {
+                    createAdditional(zone,((MXRR) v.elementAt(i)).getHost(), name);
+
+                }
+                else if (which == Utils.NS)
+                {
+                    createAdditional(zone,((NSRR) v.elementAt(i)).getString(), name);
+                }
             }
 
-            numAnswers++;
+            Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
+            DNSNSECRR nsec = nsecv.elementAt(0);
+            byte add[] = nsec.getBytes(name, minimum);
             buffer = Utils.combine(buffer, add);
 
-            if (firsttime && which != Utils.NS)
-            {
-                createAuthorities(zone);
-            }
-
-            firsttime = false;
-
-            if (which == Utils.MX)
-            {
-                createAdditional(zone,v.elementAt(i).getHost());
-            }
-            else if (which == Utils.NS)
-            {
-                createAdditional(zone,v.elementAt(i).getString());
-            }
+            addSignature(zone, Utils.NSEC, name, buffer);
         }
 
         rebuild();
+    }
+
+    private void addSignature(Zone zone, int type, String name, byte[] destination)
+    {
+        int add[];
+
+        if (opt != null && opt.DOBit)
+        {
+            Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
+
+            for ( int i = 0; i < rrsigv.size(); i++ )
+            {
+                DNSRRSIGRR rrsig = rrsigv.elementAt(i);
+                if ( rrsig.getTypeCovered() == type)
+                {
+                    add[] = rrsig.getBytes(name, minimum);
+                    destination = Utils.combine(destination, add);
+                    break;
+                }
+            }
+        }
     }
 
     private void addAuthorities()
@@ -365,7 +409,7 @@ public class Query
         logger.trace(buffer.length);
         logger.trace(authority.length);
 
-        if (!UDP ||(UDP &&(buffer.length + authority.length < 512)))
+        if (!UDP ||(UDP &&(buffer.length + authority.length < maximumPayload)))
         {
             logger.trace("adding in authorities");
             buffer = Utils.combine(buffer, authority);
@@ -387,7 +431,7 @@ public class Query
 
         if (numAdditionals > 0)
         {
-            if (!UDP || (UDP &&(buffer.length + additional.length < 512)))
+            if (!UDP || (UDP &&(buffer.length + additional.length < maximumPayload)))
             {
                 buffer = Utils.combine(buffer, additional);
             }

@@ -589,6 +589,11 @@ class DNSRRSIGRR extends RR
         return a;
     }
 
+    public int getTypeCovered()
+    {
+        return typeCovered;
+    }
+
     public boolean equals(Object o)
     {
         if (super.equals(o))

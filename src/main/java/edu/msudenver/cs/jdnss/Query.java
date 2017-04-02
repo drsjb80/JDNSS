@@ -371,12 +371,13 @@ public class Query
                 }
             }
 
-            Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
-            DNSNSECRR nsec = nsecv.elementAt(0);
-            byte add[] = nsec.getBytes(name, minimum);
-            buffer = Utils.combine(buffer, add);
-
-            addSignature(zone, Utils.NSEC, name, buffer);
+            if (opt != null && opt.DOBit)
+            {
+                Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
+                DNSNSECRR nsec = nsecv.getElement(0);
+                byte add[] = nsec.getBytes(name, minimum);
+                buffer = Utils.combine(buffer, add);
+            }
         }
 
         rebuild();

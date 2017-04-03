@@ -377,6 +377,9 @@ public class Query
                 DNSNSECRR nsec = nsecv.getElement(0);
                 byte add[] = nsec.getBytes(name, minimum);
                 buffer = Utils.combine(buffer, add);
+                numAnswers++;
+
+                addSignature(zone, Utils.NSEC, name, buffer);
             }
         }
 
@@ -398,6 +401,7 @@ public class Query
                 {
                     add[] = rrsig.getBytes(name, minimum);
                     destination = Utils.combine(destination, add);
+                    numAnswers++;
                     break;
                 }
             }

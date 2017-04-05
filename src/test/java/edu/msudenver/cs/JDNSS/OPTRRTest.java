@@ -5,8 +5,9 @@ import org.junit.Test;
 
 public class OPTRRTest {
     @Test
-    public void doBitTest() {
-        byte[] bytes = new byte[14];
+    public void doBitTest()
+    {
+        byte[] bytes = new byte[16];
 
         String rrName = "Test";
 
@@ -14,7 +15,8 @@ public class OPTRRTest {
         byte[] name = new String(rrName).getBytes();
 
         bytes[0] = (byte) rrName.length();
-        for(int i = 1; i <= rrName.length(); i++) {
+        for (int i = 1; i <= rrName.length(); i++)
+        {
             bytes[i] = name[i - 1];
         }
 
@@ -35,8 +37,9 @@ public class OPTRRTest {
     }
 
     @Test
-    public void payloadSizeTest() {
-        byte[] bytes = new byte[14];
+    public void payloadSizeTest()
+    {
+        byte[] bytes = new byte[16];
 
         String rrName = "Test";
 
@@ -44,7 +47,8 @@ public class OPTRRTest {
         byte[] name = new String(rrName).getBytes();
 
         bytes[0] = (byte) rrName.length();
-        for(int i = 1; i <= rrName.length(); i++) {
+        for(int i = 1; i <= rrName.length(); i++)
+        {
             bytes[i] = name[i - 1];
         }
 
@@ -78,5 +82,34 @@ public class OPTRRTest {
 
         Assert.assertEquals(550, rr.payloadSize);
 
+    }
+
+    @Test
+    public void byteSizeTest()
+    {
+        byte[] bytes = new byte[16];
+
+        String rrName = "Test";
+        // Populate RR Name
+        byte[] name = new String(rrName).getBytes();
+
+        bytes[0] = (byte) rrName.length();
+        for (int i = 1; i <= rrName.length(); i++)
+        {
+            bytes[i] = name[i - 1];
+        }
+
+        // Set Resource Record type to 41 (OPTRR)
+        bytes[7] = 41;
+        OPTRR rr = new OPTRR(bytes);
+        Assert.assertEquals(15, rr.getByteSize());
+
+        bytes[15] = 10; //Add 10 to byte size
+        rr = new OPTRR(bytes);
+        Assert.assertEquals(25, rr.getByteSize());
+
+        bytes[14] = 1; //Add 256 to byte size
+        rr = new OPTRR(bytes);
+        Assert.assertEquals(281, rr.getByteSize());
     }
 }

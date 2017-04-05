@@ -51,7 +51,7 @@ public class Query
     private byte[] savedAdditional;
     private int savedNumAdditionals;
 
-    private OPTRR opt;
+    private OPTRR optrr;
     private int maximumPayload = 512;
     private boolean doDNSSEC = false;
 
@@ -220,9 +220,34 @@ public class Query
             savedNumAdditionals = numAdditionals;
             savedAdditional = new byte[length];
             System.arraycopy(buffer, location, savedAdditional, 0, length);
+            parseAdditional(savedAdditional, savedNumAdditionals);
             buffer = Utils.trimByteArray(buffer, location);
             numAdditionals = 0;
             rebuild();
+        }
+    }
+
+    public void parseAdditional(byte[] additional, int rrCount)
+    {
+        try
+        {
+            int rrLocation = 0;
+            for (int i = 0; i < rrCount; i++)
+            {
+                byte[] bytes = new byte[additional.length - rrLocation];
+                System.arraycopy(additional, rrLocation, bytes, 0, additional.length - rrLocation);
+                BasicRR rr = new BasicRR(bytes);
+                System.out.println("Name: " + rr.getName() + " Type: " + rr.getType() + " Size: " + rr.getByteSize());
+                if (rr.getType() == 41)
+                {
+                    optrr = new OPTRR(bytes);
+                }
+                rrLocation = rrLocation + rr.getByteSize() + 1;
+            }
+        }
+        catch(Exception ex)
+        {
+            //RETURN Invalid
         }
     }
 
@@ -340,10 +365,10 @@ public class Query
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(which));
 
-        if (opt != null)
+        if (optrr != null)
         {
-            maximumPayload = opt.payloadSize;
-            doDNSSEC = opt.DOBit;
+            maximumPayload = optrr.payloadSize;
+            doDNSSEC = optrr.DOBit;
         }
 
         else

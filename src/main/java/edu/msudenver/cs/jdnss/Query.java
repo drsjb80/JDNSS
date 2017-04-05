@@ -395,7 +395,7 @@ public class Query
                 byte add[] = nsec.getBytes(name, minimum);
 
                 buffer = Utils.combine(buffer, add);
-                numAnswers++:
+                numAnswers++;
 
                 addSignature(zone, Utils.NSEC, name, buffer);
                 numAnswers ++;
@@ -411,7 +411,7 @@ public class Query
 
         Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
 
-        for ( int i = 0; i < rrsigv.size(); i++ )
+        for (int i = 0; i < rrsigv.size(); i++)
         {
             DNSRRSIGRR rrsig = rrsigv.elementAt(i);
 

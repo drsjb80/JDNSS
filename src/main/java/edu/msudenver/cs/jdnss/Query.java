@@ -53,6 +53,7 @@ public class Query
 
     private OPTRR opt;
     private int maximumPayload = 512;
+    private boolean doDNSSEC = false;
 
     /**
      * Rebuild the byte array from the object data
@@ -278,7 +279,12 @@ public class Query
         {
             v = zone.get(Utils.A, host);
             addThem(v, host, Utils.A);
-            addSignature(zone, Utils.A, name, additional);
+
+            if (doDNSSEC)
+            {
+                addSignature(zone, Utils.A, name, additional);
+                numAdditionals++:
+            }
         }
         catch (AssertionError AE1)
         {
@@ -289,7 +295,12 @@ public class Query
         {
             v = zone.get(Utils.AAAA, host);
             addThem(v, host, Utils.AAAA);
-            addSignature(zone, Utils.AAAA, name, additional);
+
+            if (doDNSSEC)
+            {
+                addSignature(zone, Utils.AAAA, name, additional);
+                numAdditionals++;
+            }
         }
         catch (AssertionError AE2)
         {
@@ -332,6 +343,7 @@ public class Query
         if (opt != null)
         {
             maximumPayload = opt.payloadSize;
+            doDNSSEC = opt.DOBit;
         }
 
         else
@@ -348,10 +360,15 @@ public class Query
                     return;
                 }
 
-                numAnswers++;
-                buffer = Utils.combine(buffer, add);
 
-                addSignature(zone, rr.getType(), name, buffer);
+                buffer = Utils.combine(buffer, add);
+                numAnswers++;
+
+                if (doDNSSEC)
+                {
+                    addSignature(zone, rr.getType(), name, buffer);
+                    numAnswers++;
+                }
 
                 if (firsttime && which != Utils.NS)
                 {
@@ -371,15 +388,17 @@ public class Query
                 }
             }
 
-            if (opt != null && opt.DOBit)
+            if (doDNSSEC)
             {
                 Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
                 DNSNSECRR nsec = nsecv.getElement(0);
                 byte add[] = nsec.getBytes(name, minimum);
+
                 buffer = Utils.combine(buffer, add);
-                numAnswers++;
+                numAnswers++:
 
                 addSignature(zone, Utils.NSEC, name, buffer);
+                numAnswers ++;
             }
         }
 
@@ -390,20 +409,17 @@ public class Query
     {
         int add[];
 
-        if (opt != null && opt.DOBit)
-        {
-            Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
+        Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
 
-            for ( int i = 0; i < rrsigv.size(); i++ )
+        for ( int i = 0; i < rrsigv.size(); i++ )
+        {
+            DNSRRSIGRR rrsig = rrsigv.elementAt(i);
+
+            if (rrsig.getTypeCovered() == type)
             {
-                DNSRRSIGRR rrsig = rrsigv.elementAt(i);
-                if ( rrsig.getTypeCovered() == type)
-                {
-                    add[] = rrsig.getBytes(name, minimum);
-                    destination = Utils.combine(destination, add);
-                    numAnswers++;
-                    break;
-                }
+                add[] =rrsig.getBytes(name, minimum);
+                destination = Utils.combine(destination, add);
+                break;
             }
         }
     }
@@ -426,7 +442,7 @@ public class Query
         }
     }
 
-    public void addAdditionals()
+    private void addAdditionals()
     {
         if (savedNumAdditionals > 0)
         {

@@ -50,10 +50,8 @@ public class Query
 
     private byte[] savedAdditional;
     private int savedNumAdditionals;
+
     public OPTRR optrr;
-
-
-    private OPTRR optrr;
     private int maximumPayload = 512;
     private boolean doDNSSEC = false;
 
@@ -238,7 +236,6 @@ public class Query
                 System.arraycopy(additional, rrLocation, bytes, 0, additional.length - rrLocation);
                 BasicRR rr = new BasicRR(bytes);
 
-                System.out.println("Name: " + rr.getName() + " Type: " + rr.getType() + " Size: " + rr.getByteSize());
                 if (rr.getType() == 41) {
                     optrr = new OPTRR(bytes);
                 }
@@ -307,7 +304,7 @@ public class Query
             if (doDNSSEC)
             {
                 addSignature(zone, Utils.A, name, additional);
-                numAdditionals++:
+                numAdditionals++;
             }
         }
         catch (AssertionError AE1)
@@ -332,7 +329,7 @@ public class Query
         }
     }
 
-    private void createAuthorities(Zone zone)
+    private void createAuthorities(Zone zone, String name)
     {
         Vector<NSRR> v = zone.get(Utils.NS, zone.getName());
         logger.trace(v);
@@ -348,7 +345,7 @@ public class Query
                 numAuthorities++;
 
                 // add address if known
-                createAdditional(zone, rr.getString());
+                createAdditional(zone, rr.getString(), name);
             }
         }
     }
@@ -396,7 +393,7 @@ public class Query
 
                 if (firsttime && which != Utils.NS)
                 {
-                    createAuthorities(zone);
+                    createAuthorities(zone, name);
                 }
 
                 firsttime = false;
@@ -415,7 +412,7 @@ public class Query
             if (doDNSSEC)
             {
                 Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
-                DNSNSECRR nsec = nsecv.getElement(0);
+                DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
                 byte add[] = nsec.getBytes(name, minimum);
 
                 buffer = Utils.combine(buffer, add);
@@ -431,7 +428,6 @@ public class Query
 
     private void addSignature(Zone zone, int type, String name, byte[] destination)
     {
-        int add[];
 
         Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
 
@@ -441,7 +437,7 @@ public class Query
 
             if (rrsig.getTypeCovered() == type)
             {
-                add[] =rrsig.getBytes(name, minimum);
+                byte add[] = rrsig.getBytes(name, minimum);
                 destination = Utils.combine(destination, add);
                 break;
             }
@@ -487,7 +483,7 @@ public class Query
         }
     }
 
-    void addSOA(Zone zone, SOARR SOA)
+    private void addSOA(Zone zone, SOARR SOA)
     {
         authority = Utils.combine (authority, SOA.getBytes(zone.getName(),
             minimum));

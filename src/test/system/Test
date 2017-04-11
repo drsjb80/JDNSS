@@ -1,6 +1,7 @@
 #! /bin/bash -e
 
-PORT=53
+# 5353 used by Bonjour?
+PORT=5354
 
 . TESTS
 
@@ -36,10 +37,10 @@ do
 	    DIGARGS="+dnssec $DIGARGS";;
     esac
 
-    JAR='../../../../../../../../target/jdnss-2.0.jar'
+    JAR='../../../target/jdnss-2.0.jar'
     JDNSS="java $DEBUG -jar $JAR --once=true"
 
-    $JDNSS --port=$PORT $file &
+    $JDNSS --port=$PORT zone_files/$file &
     sleep 1
 
     dig $DIGARGS $DIGHOST $query -p $PORT $type | \

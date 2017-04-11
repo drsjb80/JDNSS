@@ -1,8 +1,0 @@
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: REFUSED
-;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
-;; WARNING: recursion requested but not available
-
-;; QUESTION SECTION:
-;one.MXAAA.com.			IN	A
-

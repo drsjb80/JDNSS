@@ -1,3 +1,0 @@
-mysql.server start
-/usr/local/bin/mysql -u root < Mysql
-mysql.server stop

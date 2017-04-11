@@ -1,4 +1,0 @@
-#! /bin/bash
-
-java -Djava.util.logging.config.file=../debug/All.finest \
-	    -cp .. JDNSS -p 5353 $*

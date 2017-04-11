@@ -1,0 +1,42 @@
+06-Apr-2017 20:30:02.609 starting BIND 9.11.0-P3 <id:4801fbc>
+06-Apr-2017 20:30:02.609 running on Darwin x86_64 16.4.0 Darwin Kernel Version 16.4.0: Thu Dec 22 22:53:21 PST 2016; root:xnu-3789.41.3~3/RELEASE_X86_64
+06-Apr-2017 20:30:02.609 built with '--prefix=/usr/local/Cellar/bind/9.11.0-P3' '--enable-threads' '--enable-ipv6' '--with-openssl=/usr/local/opt/openssl' '--with-libjson=no' 'CC=clang'
+06-Apr-2017 20:30:02.609 running as: named -g -c named.conf
+06-Apr-2017 20:30:02.609 ----------------------------------------------------
+06-Apr-2017 20:30:02.609 BIND 9 is maintained by Internet Systems Consortium,
+06-Apr-2017 20:30:02.609 Inc. (ISC), a non-profit 501(c)(3) public-benefit 
+06-Apr-2017 20:30:02.609 corporation.  Support and training for BIND 9 are 
+06-Apr-2017 20:30:02.609 available at https://www.isc.org/support
+06-Apr-2017 20:30:02.609 ----------------------------------------------------
+06-Apr-2017 20:30:02.609 found 4 CPUs, using 4 worker threads
+06-Apr-2017 20:30:02.609 using 3 UDP listeners per interface
+06-Apr-2017 20:30:02.609 using up to 4096 sockets
+06-Apr-2017 20:30:02.614 loading configuration from '/Users/beatys/VirtualBox Shared/JDNSS/src/main/java/edu/msudenver/cs/jdnss/test/named/named.conf'
+06-Apr-2017 20:30:02.615 reading built-in trusted keys from file '/usr/local/Cellar/bind/9.11.0-P3/etc/bind.keys'
+06-Apr-2017 20:30:02.615 using default UDP/IPv4 port range: [49152, 65535]
+06-Apr-2017 20:30:02.615 using default UDP/IPv6 port range: [49152, 65535]
+06-Apr-2017 20:30:02.616 listening on IPv6 interfaces, port 53
+06-Apr-2017 20:30:02.617 could not listen on UDP socket: permission denied
+06-Apr-2017 20:30:02.617 listening on all IPv6 interfaces failed
+06-Apr-2017 20:30:02.618 listening on IPv4 interface lo0, 127.0.0.1#5354
+06-Apr-2017 20:30:02.619 generating session key for dynamic DNS
+06-Apr-2017 20:30:02.619 sizing zone task pool based on 1 zones
+06-Apr-2017 20:30:02.620 'max-cache-size 90%' - setting to 7372MB (out of 8192MB)
+06-Apr-2017 20:30:02.622 set up managed keys zone for view _default, file 'managed-keys.bind'
+06-Apr-2017 20:30:02.622 'max-cache-size 90%' - setting to 7372MB (out of 8192MB)
+06-Apr-2017 20:30:02.626 configuring command channel from '/usr/local/Cellar/bind/9.11.0-P3/etc/rndc.key'
+06-Apr-2017 20:30:02.626 couldn't add command channel 127.0.0.1#953: file not found
+06-Apr-2017 20:30:02.626 configuring command channel from '/usr/local/Cellar/bind/9.11.0-P3/etc/rndc.key'
+06-Apr-2017 20:30:02.626 couldn't add command channel ::1#953: file not found
+06-Apr-2017 20:30:02.626 not using config file logging statement for logging due to -g option
+06-Apr-2017 20:30:02.626 listening on IPv6 interfaces, port 53
+06-Apr-2017 20:30:02.626 could not listen on UDP socket: permission denied
+06-Apr-2017 20:30:02.626 listening on all IPv6 interfaces failed
+06-Apr-2017 20:30:02.627 managed-keys-zone: loaded serial 0
+06-Apr-2017 20:30:02.630 zone TTL3.com/IN: loaded serial 11
+06-Apr-2017 20:30:02.630 all zones loaded
+06-Apr-2017 20:30:02.630 running
+06-Apr-2017 20:30:02.630 zone TTL3.com/IN: sending notifies (serial 11)
+06-Apr-2017 20:30:04.632 shutting down
+06-Apr-2017 20:30:04.632 no longer listening on 127.0.0.1#5354
+06-Apr-2017 20:30:04.685 exiting

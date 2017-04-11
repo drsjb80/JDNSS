@@ -1,0 +1,11 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: REFUSED
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 3c254a5ca228f2a4c7b5e1b958e6f960072d663945313c03 (good)
+;; QUESTION SECTION:
+;one.MXAAA.com.			IN	A
+

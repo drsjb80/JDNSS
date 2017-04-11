@@ -1,0 +1,54 @@
+#! /bin/bash -e
+
+PORT=53
+
+. ../TESTS
+
+# name file query type
+tests=( 'SOA SOA.com SOA.com SOA' )
+# tests=( 'HINFO HINFO.com HINFO.com HINFO' )
+# tests=( 'ORIGIN ORIGIN.com www.sub.ORIGIN.com' )
+
+for i in "${tests[@]}"
+do
+    # create an array with the contents of the current array element
+    b=(${i[@]})
+
+    name=${b[0]};
+    file=${b[1]};
+    query=${b[2]};
+    type=${b[3]};
+
+    echo $name
+
+    sed -e "s/NAME/$file/g" < named.skel > named.conf
+
+    DIGARGS='+nostats +nocmd'
+    DIGHOST='@127.0.0.1'
+
+    case $name in
+    	TCP ) 
+	    DIGARGS="+vc $DIGARGS";;
+	ip ) continue;;
+	*reverse | *.in-addr.arpa )
+	    query="-x $query" ;;
+	dnssec )
+	    DIGARGS="+dnssec $DIGARGS";;
+    esac
+
+    ARGS="-g -c named.conf"
+    DNS="/usr/local/sbin/named"
+
+    $DNS $ARGS &> $name.log &
+    sleep 1
+
+    dig $DIGARGS $DIGHOST $query -p $PORT $type | \
+        sed -e 's/, id: [0-9][0-9]*$//' > $name.good
+
+    kill `cat named.pid`
+
+    sleep 1
+
+done
+
+grep SERVFAIL *.good

@@ -1,0 +1,16 @@
+@	IN	SOA	@  root.one.test.com (
+			11 ; serial
+			28800 ; refresh
+			7200 ; retry
+			604800 ; expire	
+			86400 ; minimum
+			)
+
+	IN	NS	ns1.reverse.com.
+	IN	NS	ns2.reverse.com.
+
+; ns1.reverse.com.	IN	A	192.168.1.2
+; ns2.reverse.com.	IN	A	192.168.1.2
+
+27.1.168.192.in-addr.arpa.	IN	PTR	www.reverse.com.
+28				IN	PTR	www.reverse.com.

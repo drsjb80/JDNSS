@@ -53,6 +53,7 @@ class BindZone implements Zone
         tableOfTables.put(Utils.SOA, hSOA);
         tableOfTables.put(Utils.DNSKEY, hDNSKEY);
         tableOfTables.put(Utils.RRSIG, hDNSRRSIG);
+        tableOfTables.put(Utils.NSEC, hDNSNSEC);
     }
 
     /**

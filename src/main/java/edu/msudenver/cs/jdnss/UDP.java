@@ -29,7 +29,7 @@ class UDP extends Thread
     protected int port = JDNSS.getJdnssArgs().port;
     protected String ipaddress = JDNSS.getJdnssArgs().IPaddress;
 
-    public UDP() {}	// for MC
+    public UDP() {} // don't do anything, let MC() do all the work.
 
     public UDP(JDNSS dnsService) throws SocketException, UnknownHostException
     {
@@ -77,20 +77,11 @@ class UDP extends Thread
         */
 
         int size = this instanceof MC ? 1500 : 512;
-        /*
         if (this instanceof MC)
         {
-            logger.fatal("In MC run");
-            try
-            {
-                logger.fatal(((MulticastSocket)dsocket).getInterface());
-                logger.fatal(((MulticastSocket)dsocket).getNetworkInterface());
-            }
-            catch (SocketException se)
-            {
-            }
+            // logger.fatal("In MC run");
+            // logger.fatal(Utils.toString((MulticastSocket)dsocket));
         }
-        */
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -102,7 +93,7 @@ class UDP extends Thread
             try
             {
                 dsocket.receive(packet);
-                logger.fatal("Received a packet");
+                // logger.fatal("Received a packet");
                 q = new Query(Utils.trimByteArray(packet.getData(),
                     packet.getLength()));
             }
@@ -123,8 +114,8 @@ class UDP extends Thread
                 continue;
             }
 
-            logger.fatal("Port: " + packet.getPort());
-            logger.fatal("Address: " + packet.getAddress());
+            // logger.fatal("Port: " + packet.getPort());
+            // logger.fatal("Address: " + packet.getAddress());
             Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),
                 packet.getAddress(), dnsService));
 

@@ -97,15 +97,7 @@ class DBConnection
         Assertion.aver(v.size() != 0);
 
         // then, find the longest that matches
-        String s = null;
-        try
-        {
-            s = Utils.findLongest(v.elements(), name);
-        }
-        catch (AssertionError AE)
-        {
-            throw AE;
-        }
+        String s = Utils.findLongest(v.elements(), name);
         logger.trace(s);
 
         // then, populate a DBZone with what we found.

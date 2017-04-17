@@ -2,6 +2,8 @@ package edu.msudenver.cs.jdnss;
 
 import java.text.DecimalFormat;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.Enumeration;
 import java.util.Map;
@@ -577,6 +579,62 @@ public class Utils
         s += "getPort() = " + dgp.getPort() + "\n";
         s += "getSocketAddress() = " + dgp.getSocketAddress() + "\n";
         s += "getData() = " + Utils.toString(dgp.getData());
+
+        return s;
+    }
+
+    public static String toString(DatagramSocket dgs)
+    {
+        String s = "";
+
+        try
+        {
+            s += "getBroadcast() = " + dgs.getBroadcast() + "\n";
+            // s += "getInetAddress = " + dgs.getInetAddress().getHostAddress() + "\n";
+            s += "getInetAddress = " + dgs.getInetAddress() + "\n";
+            // s += "getLocalAddress = " + dgs.getLocalAddress().getHostAddress() + "\n";
+            s += "getLocalAddress = " + dgs.getLocalAddress() + "\n";
+            s += "getLocalPort() = " + dgs.getLocalPort() + "\n";
+            s += "getLocalSocketAddress() = " + dgs.getLocalSocketAddress() + "\n";
+            s += "getReceiveBufferSize() = " + dgs.getReceiveBufferSize() + "\n";
+            s += "getReuseAddress() = " + dgs.getReuseAddress() + "\n";
+            s += "getSendBufferSize() = " + dgs.getSendBufferSize() + "\n";
+            s += "getSoTimeout() = " + dgs.getSoTimeout() + "\n";
+            s += "getTrafficClass() = " + dgs.getTrafficClass() + "\n";
+            s += "isBound() = " + dgs.isBound() + "\n";
+            s += "isClosed() = " + dgs.isClosed() + "\n";
+            s += "isConnected() = " + dgs.isConnected();
+        }
+        catch (java.net.SocketException SE)
+        {
+            logger.catching(SE);
+            return null;
+        }
+
+        return s;
+    }
+
+    public static String toString(MulticastSocket mcs)
+    {
+        String s = toString((DatagramSocket) mcs) + "\n";
+
+        try
+        {
+            s += "getInterface() = " + mcs.getInterface() + "\n";
+            s += "getNetworkInterface() = " + mcs.getNetworkInterface() + "\n";
+            s += "getTimeToLive() = " + mcs.getTimeToLive() + "\n";
+            s += "getLoopbackMode() = " + mcs.getLoopbackMode();
+        }
+        catch (java.net.SocketException se)
+        {
+            logger.catching(se);
+            return null;
+        }
+        catch (java.io.IOException ioe)
+        {
+            logger.catching(ioe);
+            return null;
+        }
 
         return s;
     }

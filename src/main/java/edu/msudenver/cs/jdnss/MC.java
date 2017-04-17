@@ -22,32 +22,25 @@ class MC extends UDP
         logger.traceEntry(new ObjectMessage(dnsService));
         this.dnsService = dnsService;
 
-        MulticastSocket msocket = null;
 
-        /**
-        * Here is the difference for MC -- we need to join a group.
+        final int port = JDNSS.getJdnssArgs().MCport;
+        final String address = JDNSS.getJdnssArgs().MCaddress;
+
+        // logger.fatal(port);
+        // logger.fatal(address);
+
+        MulticastSocket msocket = new MulticastSocket(port);
+
+        /*
+        try
+        {
         */
-        int port = JDNSS.getJdnssArgs().MCport;
-        String address = JDNSS.getJdnssArgs().MCaddress;
-
-        logger.fatal(port);
-        logger.fatal(address);
-
-        try
-        {
-            msocket = new MulticastSocket(port);
-        }
-        catch (IOException ioe)
-        {
-            logger.catching(ioe);
-            throw ioe;
-        }
-
-        try
-        {
-            msocket.setNetworkInterface(NetworkInterface.getByName("en0"));
+            // msocket.setNetworkInterface(NetworkInterface.getByName("en0"));
             msocket.setTimeToLive(255);
             msocket.joinGroup(InetAddress.getByName(address));
+            // logger.fatal(msocket.getInterface());
+            // logger.fatal(msocket.getNetworkInterface());
+        /*
         }
         catch (UnknownHostException uhe)
         {
@@ -59,9 +52,11 @@ class MC extends UDP
             logger.catching(ioe);
             throw ioe;
         }
+        */
 
         // now UDP and MC are the same, so use the run from UDP
         dsocket = msocket;
+        System.out.println(dsocket);
 
         logger.traceExit();
     }

@@ -59,7 +59,7 @@ public class UDPThread implements Runnable
         logger.traceEntry();
 
         byte b[] = query.makeResponses(dnsService, true);
-        logger.fatal(Utils.toString(b));
+        // logger.fatal(Utils.toString(b));
 
         // fixme
         if (b != null)

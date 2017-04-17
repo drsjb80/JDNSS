@@ -20,20 +20,21 @@ public class Query
 
     // http://www.networksorcery.com/enp/protocol/dns.htm
     private int id;
-    private int opcode = 0;        // standard query
+    private int opcode = 0;     // standard query
 
     private int numQuestions;
     private int numAnswers;
     private int numAuthorities;
     private int numAdditionals;
     private int rcode;
-    private boolean TC = false;        // truncation
-    private boolean QR = false;        // query
-    private boolean AA = true;        // authoritative answer
-    private boolean RD = false;        // recursion desired
-    private boolean RA = false;        // recursion available
-    private boolean AD = false;        // authenticated data
-    private boolean CD = false;        // checking disabled
+    private boolean TC = false; // truncation
+    private boolean QR = false; // query
+    private boolean AA = true;  // authoritative answer
+    private boolean RD = false; // recursion desired
+    private boolean RA = false; // recursion available
+    private boolean AD = false; // authenticated data
+    private boolean CD = false; // checking disabled
+    private boolean QU = false; // unicast
 
     private boolean firsttime = true;
 
@@ -110,6 +111,7 @@ public class Query
             buffer = Utils.combine(buffer, Utils.getTwoBytes(qtypes[i], 2));
             buffer = Utils.combine(buffer, Utils.getTwoBytes(qclasses[i], 2));
         }
+        rebuild();
     }
 
     /**
@@ -184,6 +186,7 @@ public class Query
             }
             catch (AssertionError ae)
             {
+                logger.catching(ae);
                 throw ae;
             }
 
@@ -191,7 +194,19 @@ public class Query
             qnames[i] = sn.getString();
             qtypes[i] = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
+
+            /*
+            ** Multicast DNS defines the top bit in the class field of a
+            ** DNS question as the unicast-response bit.  When this bit is
+            ** set in a question, it indicates that the querier is willing
+            ** to accept unicast replies in response to this specific
+            ** query, as well as the usual multicast responses.  These
+            ** questions requesting unicast responses are referred to as
+            ** "QU" questions, to distinguish them from the more usual
+            ** questions requesting multicast responses ("QM" questions).
+            */
             qclasses[i] = Utils.addThem(buffer[location], buffer[location + 1]);
+            QU = (qclasses[i] & 0xc000) == 0xc000;
             location += 2;
         }
 
@@ -216,12 +231,13 @@ public class Query
         s += "Additional RR's: " + numAdditionals + "\n";
 
         s += "QR: " + QR + "\t";
-        s += "AA: " + AA + "\n";
-        s += "TC: " + TC + "\t";
-        s += "RD: " + RD + "\n";
+        s += "AA: " + AA + "\t";
+        s += "TC: " + TC + "\n";
+        s += "RD: " + RD + "\t";
         s += "RA: " + RA + "\t";
-        s += "AD: " + AD + "\t";
+        s += "AD: " + AD + "\n";
         s += "CD: " + CD + "\t";
+        s += "QU: " + QU + "\n";
         s += "opcode: " + opcode + "\n";
         s += "rcode: " + rcode;
 
@@ -332,11 +348,11 @@ public class Query
 
             if (which == Utils.MX)
             {
-                createAdditional(zone,((MXRR) v.elementAt(i)).getHost());
+                createAdditional(zone,v.elementAt(i).getHost());
             }
             else if (which == Utils.NS)
             {
-                createAdditional(zone,((NSRR) v.elementAt(i)).getString());
+                createAdditional(zone,v.elementAt(i).getString());
             }
         }
 
@@ -429,6 +445,7 @@ public class Query
         rcode = Utils.NOERROR;
     }
 
+    // Keeping it DRY.
     private void errLookupFailed(int type, String name, int rcode)
     {
         logger.debug("'" + Utils.mapTypeToString(type) +
@@ -436,38 +453,24 @@ public class Query
         this.rcode = rcode;
     }
 
-    private StringAndVector checkForCNAME(Vector v, int type, String name,
+    /**
+     * See if we have an cononical name associated with a name and return
+     * if so.
+     */
+    private StringAndVector checkForCNAME(int type, String name,
         Zone zone, SOARR SOA)
     {
-        logger.traceEntry(new ObjectMessage(v));
-        logger.traceEntry(new ObjectMessage(type));
-        logger.traceEntry(new ObjectMessage(name));
-        logger.traceEntry(new ObjectMessage(zone));
+        logger.traceEntry(Integer.toString(type));
+        logger.traceEntry(name);
+        logger.traceEntry(zone.toString());
 
-        // is there an associated CNAME?
-        Vector u = null;
-        try
-        {
-            u = zone.get(Utils.CNAME, name);
-        }
-        catch (AssertionError AE)
-        {
-            Assertion.aver(false);
-        }
+        Vector<RR> u = zone.get(Utils.CNAME, name);
 
-        String s = ((CNAMERR) u.elementAt(0)).getString();
-        logger.debug(s);
-
+        // grab the first one as they all should work.
+        String s =  u.elementAt(0).getString();
         Assertion.aver(s != null);
 
-        try
-        {
-            v = zone.get(type, s);
-        }
-        catch (AssertionError AE)
-        {
-            Assertion.aver(false);
-        }
+        Vector<RR> v = zone.get(type, s);
 
         // yes, so first put in the CNAME
         createResponses(zone, u, name, Utils.CNAME);
@@ -550,7 +553,7 @@ public class Query
                     StringAndVector StringAndVector = null;
                     try
                     {
-                        StringAndVector = checkForCNAME(v, type, name, zone,
+                        StringAndVector = checkForCNAME(type, name, zone,
                             SOA);
                     }
                     catch (AssertionError AE2)

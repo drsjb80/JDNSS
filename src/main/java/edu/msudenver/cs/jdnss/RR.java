@@ -94,6 +94,10 @@ public abstract class RR
     protected int getTTL() { return TTL; }
     protected int getRrClass() { return rrclass; }
 
+    // to enhance polymorphism and decrease casting for derived classes
+    protected String getString() { Assertion.aver(false); return null; }
+    protected String getHost() { Assertion.aver(false); return null; }
+
     /**
      * converts all the internal data to a byte array
      * @return the resource record to put in the response

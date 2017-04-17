@@ -24,7 +24,7 @@ public class MClient
 
         try
         {
-            int port = 5353;
+            int port = 5354;
 
             InetAddress group = InetAddress.getByName("224.0.0.251");
             MulticastSocket s = new MulticastSocket(port);
@@ -33,9 +33,11 @@ public class MClient
             // System.out.println (s.getInterface());
             // System.out.println (s.getNetworkInterface());
 
+            // s.joinGroup(group, NetworkInterface.getByName("en0"));
             s.joinGroup(group);
 
             Query q = new Query(1000, questions, types, classes);
+            System.out.println (q);
             byte send[] = q.getBuffer();
 
             s.send(new DatagramPacket(send, send.length, group, port));

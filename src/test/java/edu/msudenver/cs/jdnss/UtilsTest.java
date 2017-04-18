@@ -47,7 +47,6 @@ public class UtilsTest
         Utils.count (null, "bar");
         Utils.count ("foo", null);
     }
-        
 
     @Test
     public void reverse()

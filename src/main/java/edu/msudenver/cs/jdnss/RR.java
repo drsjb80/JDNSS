@@ -38,6 +38,8 @@ public abstract class RR
     private int rrtype;
     private int rrclass = 1;        // IN
     private int TTL;
+    private int rdlength;
+    private int byteSize;
 
     public RR(String rrname, int rrtype, int TTL)
     {
@@ -67,6 +69,8 @@ public abstract class RR
         this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
         this.TTL = Utils.addThem(bytes[location++], bytes[location++],
             bytes[location++], bytes[location++]);
+        this.rdlength = Utils.addThem(bytes[location++], bytes[location++]);
+        this.byteSize = location - 1 + rdlength;
     }
 
     public boolean equals(Object o)
@@ -93,6 +97,8 @@ public abstract class RR
     public String getName() { return rrname; }
     protected int getTTL() { return TTL; }
     protected int getRrClass() { return rrclass; }
+    protected int rdlength() { return rdlength; }
+    public int getByteSize() { return byteSize; }
 
     // to enhance polymorphism and decrease casting for derived classes
     protected String getString() { Assertion.aver(false); return null; }
@@ -589,6 +595,11 @@ class DNSRRSIGRR extends RR
         return a;
     }
 
+    public int getTypeCovered()
+    {
+        return typeCovered;
+    }
+
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -701,8 +712,19 @@ class OPTRR extends RR
     }
 
     @Override
-    protected byte[] getBytes() {
+    protected byte[] getBytes()
+    {
         return this.getBytes();
     }
 }
 
+class BasicRR extends RR{
+    BasicRR(byte[] bytes){
+        super(bytes);
+    }
+
+    @Override
+    protected byte[] getBytes() {
+        return this.getBytes();
+    }
+}

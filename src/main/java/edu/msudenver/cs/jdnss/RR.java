@@ -64,7 +64,10 @@ public abstract class RR
 
         location = sn.getNumber();
         this.rrname = sn.getString();
-
+        System.out.println(this.rrname);
+        if (location == 0) {
+            location++;
+        }
         this.rrtype = Utils.addThem(bytes[location++], bytes[location++]);
         this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
         this.TTL = Utils.addThem(bytes[location++], bytes[location++],

@@ -234,12 +234,12 @@ public class Query
             for (int i = 0; i < rrCount; i++) {
                 byte[] bytes = new byte[additional.length - rrLocation];
                 System.arraycopy(additional, rrLocation, bytes, 0, additional.length - rrLocation);
-                BasicRR rr = new BasicRR(bytes);
+                OPTRR tempRR = new OPTRR(bytes);
 
-                if (rr.getType() == 41) {
+                if (tempRR.isValid()) {
                     optrr = new OPTRR(bytes);
                 }
-                rrLocation = rrLocation + rr.getByteSize() + 1;
+                rrLocation = rrLocation + tempRR.getByteSize() + 1;
             }
         } catch(Exception ex)
         {
@@ -363,8 +363,8 @@ public class Query
 
         if (optrr != null)
         {
-            maximumPayload = optrr.payloadSize;
-            doDNSSEC = optrr.DOBit;
+            maximumPayload = optrr.getPayloadSize();
+            doDNSSEC = optrr.dnssecAware();
         }
 
         else

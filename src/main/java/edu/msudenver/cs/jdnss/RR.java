@@ -697,15 +697,15 @@ class DNSNSECRR extends RR
 
 class OPTRR extends RR
 {
-    public boolean DOBit;
-    public int payloadSize;
+    private boolean DOBit;
+    private int payloadSize;
+    private boolean valid = false;
 
     OPTRR(byte[] bytes) {
         super(bytes);
 
-        //Assert OPTRR is type 41 (See RFC 6891)
-        Assertion.aver(getType() == 41,
-                "Expecting OPTRR type to equal 41");
+        //OPTRR is type 41 (See RFC 6891)
+        valid = (getType() == 41);
 
         DOBit = (((getTTL() >> 15) & 1) == 1);
         payloadSize = getRrClass();
@@ -714,20 +714,21 @@ class OPTRR extends RR
             payloadSize = 512;
     }
 
+    public int getPayloadSize(){
+        return payloadSize;
+    }
+
+    public boolean dnssecAware(){
+        return DOBit;
+    }
+
+    public boolean isValid(){
+        return valid;
+    }
+
     @Override
     protected byte[] getBytes()
     {
-        return this.getBytes();
-    }
-}
-
-class BasicRR extends RR{
-    BasicRR(byte[] bytes){
-        super(bytes);
-    }
-
-    @Override
-    protected byte[] getBytes() {
         return this.getBytes();
     }
 }

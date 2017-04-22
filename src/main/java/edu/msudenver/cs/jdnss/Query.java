@@ -238,6 +238,8 @@ public class Query
 
                 if (tempRR.isValid()) {
                     optrr = new OPTRR(bytes);
+                    maximumPayload = optrr.getPayloadSize();
+                    doDNSSEC = optrr.dnssecAware();
                 }
                 rrLocation = rrLocation + tempRR.getByteSize() + 1;
             }
@@ -361,66 +363,57 @@ public class Query
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(which));
 
-        if (optrr != null)
+        for (int i = 0; i < v.size(); i++)
         {
-            maximumPayload = optrr.getPayloadSize();
-            doDNSSEC = optrr.dnssecAware();
-        }
+            RR rr = v.elementAt(i);
+            byte add[] = rr.getBytes(name, minimum);
 
-        else
-        {
-            for (int i = 0; i < v.size(); i++)
+            if (UDP && (buffer.length + add.length > maximumPayload))
             {
-                RR rr = v.elementAt(i);
-                byte add[] = rr.getBytes(name, minimum);
-
-                if (UDP && (buffer.length + add.length > maximumPayload))
-                {
-                    TC = true;
-                    rebuild();
-                    return;
-                }
-
-
-                buffer = Utils.combine(buffer, add);
-                numAnswers++;
-
-                if (doDNSSEC)
-                {
-                    addSignature(zone, rr.getType(), name, buffer);
-                    numAnswers++;
-                }
-
-                if (firsttime && which != Utils.NS)
-                {
-                    createAuthorities(zone, name);
-                }
-
-                firsttime = false;
-
-                if (which == Utils.MX)
-                {
-                    createAdditional(zone,((MXRR) v.elementAt(i)).getHost(), name);
-
-                }
-                else if (which == Utils.NS)
-                {
-                    createAdditional(zone,((NSRR) v.elementAt(i)).getString(), name);
-                }
+                TC = true;
+                rebuild();
+                return;
             }
+
+
+            buffer = Utils.combine(buffer, add);
+            numAnswers++;
 
             if (doDNSSEC)
             {
-                Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
-                DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
-                byte add[] = nsec.getBytes(name, minimum);
-
-                buffer = Utils.combine(buffer, add);
+                addSignature(zone, rr.getType(), name, buffer);
                 numAnswers++;
-
-                addSignature(zone, Utils.NSEC, name, buffer);
-                numAnswers ++;
             }
+
+            if (firsttime && which != Utils.NS)
+            {
+                createAuthorities(zone, name);
+            }
+
+            firsttime = false;
+
+            if (which == Utils.MX)
+            {
+                createAdditional(zone,((MXRR) v.elementAt(i)).getHost(), name);
+
+            }
+            else if (which == Utils.NS)
+            {
+                createAdditional(zone,((NSRR) v.elementAt(i)).getString(), name);
+            }
+        }
+
+        if (doDNSSEC)
+        {
+            Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
+            DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
+            byte add[] = nsec.getBytes(name, minimum);
+
+            buffer = Utils.combine(buffer, add);
+            numAnswers++;
+
+            addSignature(zone, Utils.NSEC, name, buffer);
+            numAnswers ++;
         }
 
         rebuild();
@@ -572,6 +565,10 @@ public class Query
     {
         parseQueries();
 
+        System.out.println("MakeResponses()");
+        System.out.println(maximumPayload);
+        System.out.println(doDNSSEC);
+
         this.UDP = UDP;
 
         QR = true;  // response
@@ -582,6 +579,9 @@ public class Query
         {
             String name = qnames[i];
             int type = qtypes[i];
+
+            System.out.println("Name: " + name);
+            System.out.println("Type: " + type);
             logger.trace(name);
             logger.trace(type);
 
@@ -589,6 +589,7 @@ public class Query
             try
             {
                 zone = dnsService.getZone(name);
+                System.out.println("Got zone" + zone);
             }
             catch (AssertionError AE)
             {
@@ -598,6 +599,7 @@ public class Query
                 rebuild();
                 return Arrays.copyOf(buffer, buffer.length);
             }
+
             logger.trace(zone);
 
             // always need to get the SOA to find the default minimum
@@ -621,9 +623,11 @@ public class Query
             try
             {
                 v = zone.get(type, name);
+                System.out.println("Got vector: " + v);
             }
             catch (AssertionError AE)
             {
+                System.out.println("Didnt get vector");
                 logger.debug("Didn't find: " + name);
                 if (type != Utils.AAAA && type != Utils.A)
                 {
@@ -655,8 +659,11 @@ public class Query
                 }
             }
 
+            System.out.println("Will continue");
+
             if (numAdditionals != 0 && dnsService.getJdnssArgs().RFC2671)
             {
+                System.out.println("ADDITIONALS NOT UNDERSTOOD WTF");
                 logger.debug("Additionals not understood");
                 rcode = Utils.NOTIMPL;
                 rebuild();

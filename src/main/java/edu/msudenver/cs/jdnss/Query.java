@@ -305,8 +305,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                addSignature(zone, Utils.A, name, additional);
-                numAdditionals++;
+                addRRSignature(zone, Utils.A, name, additional);
             }
         }
         catch (AssertionError AE1)
@@ -321,8 +320,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                addSignature(zone, Utils.AAAA, name, additional);
-                numAdditionals++;
+                addRRSignature(zone, Utils.AAAA, name, additional);
             }
         }
         catch (AssertionError AE2)
@@ -363,66 +361,48 @@ public class Query
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(which));
 
-        for (int i = 0; i < v.size(); i++)
-        {
+        for (int i = 0; i < v.size(); i++) {
             RR rr = v.elementAt(i);
             byte add[] = rr.getBytes(name, minimum);
 
-            if (UDP && (buffer.length + add.length > maximumPayload))
-            {
+            if (UDP && (buffer.length + add.length > maximumPayload)) {
                 TC = true;
                 rebuild();
                 return;
             }
-
-
             buffer = Utils.combine(buffer, add);
             numAnswers++;
 
-            if (doDNSSEC)
-            {
-                addSignature(zone, rr.getType(), name, buffer);
-                numAnswers++;
+            //Add RRSIG Records Corresponding to Type
+            if (doDNSSEC) {
+                addRRSignature(zone, rr.getType(), name, buffer);
             }
 
-            if (firsttime && which != Utils.NS)
-            {
+            if (firsttime && which != Utils.NS) {
                 createAuthorities(zone, name);
             }
 
             firsttime = false;
 
-            if (which == Utils.MX)
-            {
-                createAdditional(zone,((MXRR) v.elementAt(i)).getHost(), name);
+            if (which == Utils.MX) {
+                createAdditional(zone, ((MXRR) v.elementAt(i)).getHost(), name);
 
+            } else if (which == Utils.NS) {
+                createAdditional(zone, ((NSRR) v.elementAt(i)).getString(), name);
             }
-            else if (which == Utils.NS)
-            {
-                createAdditional(zone,((NSRR) v.elementAt(i)).getString(), name);
-            }
-        }
-
-        if (doDNSSEC)
-        {
-            Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
-            DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
-            byte add[] = nsec.getBytes(name, minimum);
-
-            buffer = Utils.combine(buffer, add);
-            numAnswers++;
-
-            addSignature(zone, Utils.NSEC, name, buffer);
-            numAnswers ++;
         }
 
         rebuild();
     }
 
-    private void addSignature(Zone zone, int type, String name, byte[] destination)
+    private void addRRSignature(Zone zone, int type, String name, byte[] destination)
     {
-
-        Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
+        Vector<DNSRRSIGRR> rrsigv = null;
+        try {
+            rrsigv = zone.get(Utils.RRSIG, zone.getName());
+        } catch(AssertionError ex){
+            return;
+        }
 
         for (int i = 0; i < rrsigv.size(); i++)
         {
@@ -431,10 +411,33 @@ public class Query
             if (rrsig.getTypeCovered() == type)
             {
                 byte add[] = rrsig.getBytes(name, minimum);
-                destination = Utils.combine(destination, add);
+
+                if (UDP && (buffer.length + add.length > maximumPayload))
+                {
+                    TC = true;
+                    rebuild();
+                    return;
+                }
+
+                buffer = Utils.combine(buffer, add);
+                numAnswers++;
                 break;
             }
         }
+    }
+
+    private void addNSECRecords(Zone zone, String name)
+    {
+        Vector<RR> nsecv = null;
+        try {
+            nsecv = zone.get(Utils.NSEC, zone.getName());
+        } catch (AssertionError ex){
+            return;
+        }
+        DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
+        byte add[] = nsec.getBytes(name, minimum);
+        authority = Utils.combine(authority, add);
+        numAuthorities++;
     }
 
     private void addAuthorities()
@@ -565,10 +568,6 @@ public class Query
     {
         parseQueries();
 
-        System.out.println("MakeResponses()");
-        System.out.println(maximumPayload);
-        System.out.println(doDNSSEC);
-
         this.UDP = UDP;
 
         QR = true;  // response
@@ -580,8 +579,6 @@ public class Query
             String name = qnames[i];
             int type = qtypes[i];
 
-            System.out.println("Name: " + name);
-            System.out.println("Type: " + type);
             logger.trace(name);
             logger.trace(type);
 
@@ -589,7 +586,6 @@ public class Query
             try
             {
                 zone = dnsService.getZone(name);
-                System.out.println("Got zone" + zone);
             }
             catch (AssertionError AE)
             {
@@ -619,15 +615,19 @@ public class Query
             SOARR SOA = w.elementAt(0);
             minimum = SOA.getMinimum();
 
+            if (doDNSSEC) {
+                //Add all NSEC Records and their corresponding RRSIGS to authority
+                addNSECRecords(zone, name);
+                addRRSignature(zone, Utils.NSEC, name, authority);
+            }
+
             Vector v = null;
             try
             {
                 v = zone.get(type, name);
-                System.out.println("Got vector: " + v);
             }
             catch (AssertionError AE)
             {
-                System.out.println("Didnt get vector");
                 logger.debug("Didn't find: " + name);
                 if (type != Utils.AAAA && type != Utils.A)
                 {
@@ -659,11 +659,8 @@ public class Query
                 }
             }
 
-            System.out.println("Will continue");
-
             if (numAdditionals != 0 && dnsService.getJdnssArgs().RFC2671)
             {
-                System.out.println("ADDITIONALS NOT UNDERSTOOD WTF");
                 logger.debug("Additionals not understood");
                 rcode = Utils.NOTIMPL;
                 rebuild();

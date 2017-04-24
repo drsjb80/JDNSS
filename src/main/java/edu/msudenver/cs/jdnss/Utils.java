@@ -54,6 +54,10 @@ public class Utils
     public static final int NOTIMPL     = 4;
     public static final int REFUSED     = 5;
 
+    public static final int ANSWER = 0;
+    public static final int ADDITIONAL = 1;
+    public static final int AUTHORITY = 2;
+
     private static HashMap<String, Integer> StringToType =
         new HashMap<String, Integer>();
     private static HashMap<Integer, String> TypeToString =

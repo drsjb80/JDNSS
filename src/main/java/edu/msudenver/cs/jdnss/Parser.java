@@ -525,8 +525,8 @@ public class Parser
 
     private void doRRSIG()
     {
-        int typeCovered =(getNextToken());
-        Assertion.aver(isARR(typeCovered));
+        int typeCovered = getNextToken();
+        Assertion.aver(isARR(typeCovered), typeCovered + "not covered with RRSIG");
 
         Assertion.aver(getNextToken() == INT,
             "Expecting number at line " + st.lineno());
@@ -544,8 +544,7 @@ public class Parser
             "Expecting DATE at line " + st.lineno());
         int expiration = intValue;
 
-        Assertion.aver(getNextToken() == LPAREN,
-            "Expecting left paren at line " + st.lineno());
+        Assertion.aver(getNextToken() == LPAREN, "Expecting left paren at line " + st.lineno());
 
         Assertion.aver(getNextToken() == DATE,
             "Expecting DATE at line " + st.lineno());

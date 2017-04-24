@@ -7,6 +7,8 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
+
+import javax.rmi.CORBA.Util;
 import java.util.Vector;
 import java.util.Arrays;
 import java.net.DatagramPacket;
@@ -305,7 +307,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                addRRSignature(zone, Utils.A, name, additional);
+                additional = addRRSignature(zone, Utils.A, name, additional, Utils.ADDITIONAL);
             }
         }
         catch (AssertionError AE1)
@@ -320,7 +322,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                addRRSignature(zone, Utils.AAAA, name, additional);
+                additional = addRRSignature(zone, Utils.AAAA, name, additional, Utils.ADDITIONAL);
             }
         }
         catch (AssertionError AE2)
@@ -353,6 +355,7 @@ public class Query
     private void createResponses(Zone zone, Vector<RR> v, String name,
         int which)
     {
+        System.out.println("Create Responses");
         Assertion.aver(zone != null, "zone == null");
         Assertion.aver(v != null, "v == null");
         Assertion.aver(name != null, "name == null");
@@ -375,7 +378,7 @@ public class Query
 
             //Add RRSIG Records Corresponding to Type
             if (doDNSSEC) {
-                addRRSignature(zone, rr.getType(), name, buffer);
+                buffer = addRRSignature(zone, rr.getType(), name, buffer, Utils.ANSWER);
             }
 
             if (firsttime && which != Utils.NS) {
@@ -395,13 +398,13 @@ public class Query
         rebuild();
     }
 
-    private void addRRSignature(Zone zone, int type, String name, byte[] destination)
+    private byte[] addRRSignature(Zone zone, int type, String name, byte[] destination, int section)
     {
         Vector<DNSRRSIGRR> rrsigv = null;
         try {
             rrsigv = zone.get(Utils.RRSIG, zone.getName());
         } catch(AssertionError ex){
-            return;
+            return destination;
         }
 
         for (int i = 0; i < rrsigv.size(); i++)
@@ -412,18 +415,30 @@ public class Query
             {
                 byte add[] = rrsig.getBytes(name, minimum);
 
-                if (UDP && (buffer.length + add.length > maximumPayload))
+                switch(section)
                 {
-                    TC = true;
-                    rebuild();
-                    return;
+                    case Utils.ANSWER:
+                        if (UDP && (buffer.length + add.length > maximumPayload))
+                        {
+                            TC = true;
+                            rebuild();
+                            return destination;
+                        }
+                        destination = Utils.combine(destination, add);
+                        numAnswers++;
+                        break;
+                    case Utils.ADDITIONAL:
+                        destination = Utils.combine(destination, add);
+                        numAdditionals++;
+                        break;
+                    case Utils.AUTHORITY:
+                        destination = Utils.combine(destination, add);
+                        numAuthorities++;
+                        break;
                 }
-
-                buffer = Utils.combine(buffer, add);
-                numAnswers++;
-                break;
             }
         }
+        return destination;
     }
 
     private void addNSECRecords(Zone zone, String name)
@@ -484,8 +499,6 @@ public class Query
         authority = Utils.combine (authority, SOA.getBytes(zone.getName(),
             minimum));
         numAuthorities++;
-        addAuthorities();
-        rebuild();
     }
 
     /*
@@ -566,6 +579,7 @@ public class Query
      */
     public byte[] makeResponses(JDNSS dnsService, boolean UDP)
     {
+        System.out.println("Make Responses");
         parseQueries();
 
         this.UDP = UDP;
@@ -615,11 +629,13 @@ public class Query
             SOARR SOA = w.elementAt(0);
             minimum = SOA.getMinimum();
 
+            /*
             if (doDNSSEC) {
-                //Add all NSEC Records and their corresponding RRSIGS to authority
-                addNSECRecords(zone, name);
-                addRRSignature(zone, Utils.NSEC, name, authority);
+                System.out.println("Add RRSIG Records.  Additional size = " + additional.length);
+                //authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                System.out.println("Completed RRSIG Records.  Additional size = " + additional.length);
             }
+            */
 
             Vector v = null;
             try
@@ -634,6 +650,14 @@ public class Query
                     logger.debug(name + " not A or AAAA, giving up");
                     errLookupFailed(type, name, Utils.NOERROR);
                     addSOA(zone, SOA);
+                    if (doDNSSEC) {
+                        System.out.println("Add NSEC Records.  Additional size = " + authority.length);
+                        addNSECRecords(zone, name);
+                        authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                        System.out.println("Add NSEC Records complete.  Additional size = " + authority.length);
+                    }
+                    addAuthorities();
+                    rebuild();
                     return Arrays.copyOf(buffer, buffer.length);
                 }
                 else
@@ -651,6 +675,14 @@ public class Query
                         // look for AAAA if A and vice versa
                         dealWithOther(zone, type, name);
                         addSOA(zone, SOA);
+                        if (doDNSSEC) {
+                            System.out.println("Add NSEC Records.  Additional size = " + authority.length);
+                            addNSECRecords(zone, name);
+                            authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                            System.out.println("Add NSEC Records complete.  Additional size = " + authority.length);
+                        }
+                        addAuthorities();
+                        rebuild();
                         return Arrays.copyOf(buffer, buffer.length);
                     }
 

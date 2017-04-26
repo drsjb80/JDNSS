@@ -8,6 +8,7 @@ package edu.msudenver.cs.jdnss;
 
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /*
 **                                        1  1  1  1  1  1

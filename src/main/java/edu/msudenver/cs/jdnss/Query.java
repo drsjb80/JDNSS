@@ -307,7 +307,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                additional = addRRSignature(zone, Utils.A, name, additional, Utils.ADDITIONAL);
+                //additional = addRRSignature(zone, Utils.A, name, additional, Utils.ADDITIONAL);
             }
         }
         catch (AssertionError AE1)
@@ -322,7 +322,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                additional = addRRSignature(zone, Utils.AAAA, name, additional, Utils.ADDITIONAL);
+                //additional = addRRSignature(zone, Utils.AAAA, name, additional, Utils.ADDITIONAL);
             }
         }
         catch (AssertionError AE2)
@@ -378,7 +378,10 @@ public class Query
 
             //Add RRSIG Records Corresponding to Type
             if (doDNSSEC) {
-                buffer = addRRSignature(zone, rr.getType(), name, buffer, Utils.ANSWER);
+                System.out.println("BUFFER BEFORE: " + buffer.length);
+                //addRRSignature(zone, rr.getType(), name, buffer, Utils.ANSWER);
+                System.out.println("BUFFER AFTER: " + buffer.length);
+
             }
 
             if (firsttime && which != Utils.NS) {
@@ -398,23 +401,33 @@ public class Query
         rebuild();
     }
 
-    private byte[] addRRSignature(Zone zone, int type, String name, byte[] destination, int section)
-    {
+    public void addDNSKeys(Zone zone, String host){
+        System.out.println("Adding DNSKEYS");
+        Vector v = null;
+        try {
+            v = zone.get(Utils.DNSKEY, host);
+            System.out.println("adding them");
+            addThem(v, host, Utils.DNSKEY);
+        } catch (AssertionError AE1)
+        {
+        }
+    }
+
+    private void addRRSignature(Zone zone, int type, String name, byte[] destination, int section) {
         Vector<DNSRRSIGRR> rrsigv = null;
         try {
             rrsigv = zone.get(Utils.RRSIG, zone.getName());
-        } catch(AssertionError ex){
-            return destination;
+        } catch (AssertionError ex) {
+            return;
         }
 
-        for (int i = 0; i < rrsigv.size(); i++)
-        {
+        System.out.println("RRSIGV.SIZE: " + rrsigv.size());
+        for (int i = 0; i < rrsigv.size(); i++) {
             DNSRRSIGRR rrsig = rrsigv.elementAt(i);
+            if (rrsig.getTypeCovered() == type) {
+                System.out.println("RRSIG match found. Type Covered: " + rrsig.getTypeCovered() + " Size: " + rrsig.getBytes().length);
 
-            if (rrsig.getTypeCovered() == type)
-            {
-                byte add[] = rrsig.getBytes(name, minimum);
-
+                byte add[] = rrsig.getBytes();
                 switch(section)
                 {
                     case Utils.ANSWER:
@@ -422,23 +435,23 @@ public class Query
                         {
                             TC = true;
                             rebuild();
-                            return destination;
+                            return;
                         }
-                        destination = Utils.combine(destination, add);
+                        System.out.println("BUFFER LENGTH: " + buffer.length + "Destination Length: " + destination.length);
+                        buffer = Utils.combine(destination, add);
                         numAnswers++;
                         break;
                     case Utils.ADDITIONAL:
-                        destination = Utils.combine(destination, add);
+                        additional = Utils.combine(destination, add);
                         numAdditionals++;
                         break;
                     case Utils.AUTHORITY:
-                        destination = Utils.combine(destination, add);
+                        authority = Utils.combine(destination, add);
                         numAuthorities++;
                         break;
                 }
             }
         }
-        return destination;
     }
 
     private void addNSECRecords(Zone zone, String name)
@@ -629,18 +642,28 @@ public class Query
             SOARR SOA = w.elementAt(0);
             minimum = SOA.getMinimum();
 
-            /*
             if (doDNSSEC) {
-                System.out.println("Add RRSIG Records.  Additional size = " + additional.length);
-                //authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
-                System.out.println("Completed RRSIG Records.  Additional size = " + additional.length);
+                /*System.out.println("Add RRSIG Records.  Authority size = " + authority.length);
+                addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                System.out.println("Add RRSIG Records DONE.  Authority size = " + authority.length);
+
+                //byte[] myArray= addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+
+                //OPTRR rr = new OPTRR(myArray);
+                */
+
             }
-            */
 
             Vector v = null;
             try
             {
                 v = zone.get(type, name);
+
+                if (doDNSSEC) {
+                    System.out.println("ADDING NSEC RECORDS");
+                    addNSECRecords(zone, name);
+                    //addNSEC3Records
+                }
             }
             catch (AssertionError AE)
             {
@@ -653,7 +676,7 @@ public class Query
                     if (doDNSSEC) {
                         System.out.println("Add NSEC Records.  Additional size = " + authority.length);
                         addNSECRecords(zone, name);
-                        authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                       // authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
                         System.out.println("Add NSEC Records complete.  Additional size = " + authority.length);
                     }
                     addAuthorities();
@@ -678,7 +701,7 @@ public class Query
                         if (doDNSSEC) {
                             System.out.println("Add NSEC Records.  Additional size = " + authority.length);
                             addNSECRecords(zone, name);
-                            authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                   //         authority = addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
                             System.out.println("Add NSEC Records complete.  Additional size = " + authority.length);
                         }
                         addAuthorities();
@@ -698,6 +721,8 @@ public class Query
                 rebuild();
                 return Arrays.copyOf(buffer, buffer.length);
             }
+
+            addDNSKeys(zone, name);
 
             createResponses(zone, v, name, type);
         }

@@ -59,7 +59,7 @@ public class Parser
     private BindZone zone;
 
     private Logger logger = JDNSS.getLogger();
-    
+
     private boolean inBase64 = false;
 
     /**
@@ -525,37 +525,41 @@ public class Parser
 
     private void doRRSIG()
     {
+        logger.traceEntry();
+
         int typeCovered = getNextToken();
-        Assertion.aver(isARR(typeCovered), typeCovered + "not covered with RRSIG");
+        Assertion.aver(isARR(typeCovered),
+                typeCovered + " not covered with RRSIG on line " + st.lineno());
 
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int algorithm = intValue;
 
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int labels = intValue;
 
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int originalTTL = intValue;
 
+        Assertion.aver(getNextToken() == LPAREN,
+                "Expecting left paren at line " + st.lineno());
+
         Assertion.aver(getNextToken() == DATE,
-            "Expecting DATE at line " + st.lineno());
+                "Expecting DATE at line " + st.lineno());
         int expiration = intValue;
 
-        Assertion.aver(getNextToken() == LPAREN, "Expecting left paren at line " + st.lineno());
-
         Assertion.aver(getNextToken() == DATE,
-            "Expecting DATE at line " + st.lineno());
+                "Expecting DATE at line " + st.lineno());
         int inception = intValue;
 
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int keyTag = intValue;
 
         Assertion.aver(getNextToken() == DN,
-            "Expecting DN at line " + st.lineno());
+                "Expecting DN at line " + st.lineno());
         String signersName = StringValue;
 
         String signature = "";
@@ -568,12 +572,13 @@ public class Parser
         inBase64 = false;
 
         Assertion.aver(tok == RPAREN,
-            "Expecting right paren at line " + st.lineno());
+                "Expecting right paren at line " + st.lineno());
 
         DNSRRSIGRR d = new DNSRRSIGRR(currentName, currentTTL, typeCovered,
-            algorithm, labels, originalTTL, expiration, inception, signersName,
-            signature);
+                algorithm, labels, originalTTL, expiration, inception, signersName,
+                signature);
         zone.add(currentName, d);
+        logger.traceExit();
     }
 
     private void switches(final int t)

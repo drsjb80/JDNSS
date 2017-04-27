@@ -7,8 +7,8 @@ package edu.msudenver.cs.jdnss;
  */
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 /*
 **                                        1  1  1  1  1  1
@@ -556,6 +556,67 @@ class DNSKEYRR extends RR
     }
 }
 
+// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+class NSEC3RR extends RR
+{
+    private int hashAlgorithm;
+    private int flags;
+    private int iterations;
+    private String salt;
+    private String nextHashedOwnerName;
+    private ArrayList<Integer> types;
+    NSEC3RR(String domain, int TTL, int hashAlgorithm, int flags,
+            int iterations, String salt, String nextHashedOwnerName,
+            ArrayList<Integer> types)
+    {
+        super(domain, Utils.NSEC3, TTL);
+        this.hashAlgorithm = hashAlgorithm;
+        this.flags = flags;
+        this.iterations = iterations;
+        this.salt = salt;
+        this.nextHashedOwnerName = nextHashedOwnerName;
+        this.types = types;
+    }
+    protected byte[] getBytes()
+    {
+        byte a[] = new byte[0];
+        a = Utils.combine(a, Utils.getByte(hashAlgorithm, 1));
+        a = Utils.combine(a, Utils.getByte(flags, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(iterations, 1));
+        // Assertion.aver(Utils.getByte(salt.length() == 24);
+        a = Utils.combine(a, Utils.getByte(salt.length(), 1));
+        a = Utils.combine(a, Utils.convertString(salt));
+        // Assertion.aver(Utils.getByte(salt.length() == 24);
+        a = Utils.combine(a,
+                Utils.getByte(this.nextHashedOwnerName.length(), 1));
+        a = Utils.combine(a,
+                Utils.convertString(nextHashedOwnerName));
+        for (Integer i: types)
+        {
+        }
+
+        return a;
+    }
+}
+class NSEC3PARAMRR extends RR
+{
+    private int hashAlgorithm;
+    private int flags;
+    private int iterations;
+    private String salt;
+    NSEC3PARAMRR(String domain, int TTL, int hashAlgorithm, int flags,
+                 int iterations, String salt)
+    {
+        super(domain, Utils.NSEC3PARAM, TTL);
+        this.hashAlgorithm = hashAlgorithm;
+        this.flags = flags;
+        this.iterations = iterations;
+        this.salt = salt;
+    }
+    protected byte[] getBytes()
+    { Assertion.aver(false); return null; }
+}
+
 class DNSRRSIGRR extends RR
 {
     private int typeCovered;
@@ -634,7 +695,6 @@ class DNSRRSIGRR extends RR
         Assertion.aver(false);
         return 42;
     }
-
 
     public String toString()
     {

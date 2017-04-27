@@ -10,6 +10,8 @@ import java.util.Calendar;
 import java.util.BitSet;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
@@ -54,7 +56,8 @@ public class Parser
     private int currentTTL = -1;
 
     private StreamTokenizer st;
-    private Hashtable tokens;
+    private Hashtable<String, Integer> tokens =
+            new Hashtable<String, Integer>();
 
     private BindZone zone;
 
@@ -78,7 +81,6 @@ public class Parser
 
         initTokenizer(st);
 
-        tokens = new Hashtable();
         tokens.put("SOA", Integer.valueOf(Utils.SOA));
         tokens.put("IN", Integer.valueOf(IN));
         tokens.put("MX", Integer.valueOf(Utils.MX));
@@ -93,6 +95,8 @@ public class Parser
         tokens.put("RRSIG", Integer.valueOf(Utils.RRSIG));
         tokens.put("NSEC", Integer.valueOf(Utils.NSEC));
         tokens.put("DNSKEY", Integer.valueOf(Utils.DNSKEY));
+        tokens.put("NSEC3", Integer.valueOf(Utils.NSEC3));
+        tokens.put("NSEC3PARAM", Integer.valueOf(Utils.NSEC3PARAM));
         tokens.put("DS", Integer.valueOf(Utils.DS));
         tokens.put("$INCLUDE", Integer.valueOf(Utils.INCLUDE));
         tokens.put("$ORIGIN", Integer.valueOf(Utils.ORIGIN));
@@ -148,7 +152,7 @@ public class Parser
         ** end in an IPv4 address
         */
         if (a.matches("(\\p{XDigit}*\\:)+\\p{XDigit}+") ||
-            a.matches("(\\p{XDigit}*\\:)+(\\d+\\.){3}+\\d+"))
+                a.matches("(\\p{XDigit}*\\:)+(\\d+\\.){3}+\\d+"))
         {
             StringValue = a.replaceFirst("(\\:0+)+", ":");
             StringValue = StringValue.replaceFirst("^0+\\:", ":");
@@ -159,8 +163,8 @@ public class Parser
 
         String b = a.toLowerCase();
         if (b.matches("(\\d+\\.){4}+in-addr\\.arpa\\.") ||
-            b.matches("(\\d+\\.){32}+in-addr\\.arpa\\.") ||
-            b.matches("(\\d+\\.){32}+ip6\\.int\\."))
+                b.matches("(\\d+\\.){32}+in-addr\\.arpa\\.") ||
+                b.matches("(\\d+\\.){32}+ip6\\.int\\."))
         {
             StringValue = b.replaceFirst("\\.$", "");
             logger.trace(StringValue);
@@ -179,9 +183,9 @@ public class Parser
 
             Calendar c = new GregorianCalendar();
             c.set( Integer.parseInt(year), Integer.parseInt(month) - 1,
-                Integer.parseInt(day), Integer.parseInt(hour),
-                Integer.parseInt(minute), Integer.parseInt(second));
-            intValue =(int) c.getTime().getTime();
+                    Integer.parseInt(day), Integer.parseInt(hour),
+                    Integer.parseInt(minute), Integer.parseInt(second));
+            intValue = (int) c.getTime().getTime();
 
             logger.traceExit("DATE");
             return DATE;
@@ -239,6 +243,7 @@ public class Parser
         }
 
         // if (a.matches("[a-zA-Z0-9/\\+]+(==?)?"))
+        logger.fatal(inBase64);
         if (inBase64)
         {
             StringValue = a.trim();
@@ -263,7 +268,7 @@ public class Parser
         catch (IOException e)
         {
             logger.info("Error while reading token on line " +
-                 st.lineno() + ": " + e);
+                    st.lineno() + ": " + e);
             logger.traceExit("NOTOK");
             return NOTOK;
         }
@@ -300,7 +305,7 @@ public class Parser
                 /*
                 ** is it in the tokens hash?
                 */
-                Integer i =(Integer) tokens.get(a);
+                Integer i = tokens.get(a);
                 if (i != null)
                 {
                     final int j = i.intValue();
@@ -354,7 +359,7 @@ public class Parser
         catch (FileNotFoundException e)
         {
             logger.info("Cannot open $INCLUDE file at line " + st.lineno() +
-                ": " + st.sval);
+                    ": " + st.sval);
             return;
         }
 
@@ -383,40 +388,42 @@ public class Parser
         }
 
         Assertion.aver(getNextToken() == DN,
-            "Expecting contact at line " + st.lineno());
+                "Expecting contact at line " + st.lineno());
         String contact = StringValue;
 
         Assertion.aver(getNextToken() == LPAREN,
-            "Expecting left paren at line " + st.lineno());
+                "Expecting left paren at line " + st.lineno());
         Assertion.aver(getNextToken() == INT,
-            "Expecting serial number at line " + st.lineno());
+                "Expecting serial number at line " + st.lineno());
         int serial = intValue;
         Assertion.aver(getNextToken() == INT,
-            "Expecting refresh at line " + st.lineno());
+                "Expecting refresh at line " + st.lineno());
         int refresh = intValue;
         Assertion.aver(getNextToken() == INT,
-            "Expecting retry at line " + st.lineno());
+                "Expecting retry at line " + st.lineno());
         int retry = intValue;
         Assertion.aver(getNextToken() == INT,
-            "Expecting expire at line " + st.lineno());
+                "Expecting expire at line " + st.lineno());
         int expire = intValue;
         Assertion.aver(getNextToken() == INT,
-            "Expecting minimum at line " + st.lineno());
+                "Expecting minimum at line " + st.lineno());
         int minimum = intValue;
         Assertion.aver(getNextToken() == RPAREN,
-            "Expecting rightparen at line " + st.lineno());
+                "Expecting rightparen at line " + st.lineno());
 
         SOAMinimumTTL = minimum;
         SOATTL =(currentTTL != -1) ? currentTTL : -1;
 
         zone.add(origin, new SOARR(origin, server, contact, serial,
-            refresh, retry, expire, minimum,
-               (SOATTL != -1) ? SOATTL : minimum));
+                refresh, retry, expire, minimum,
+                (SOATTL != -1) ? SOATTL : minimum));
     }
 
 
     private boolean isARR(int which)
     {
+        logger.traceEntry(Integer.toString(which));
+
         switch (which)
         {
             case Utils.A: case Utils.NS: case Utils.CNAME:
@@ -425,17 +432,22 @@ public class Parser
             case Utils.A6: case Utils.DNAME: case Utils.DS:
             case Utils.RRSIG: case Utils.NSEC: case Utils.DNSKEY:
             case Utils.INCLUDE: case Utils.ORIGIN: case Utils.TTL:
-                return true;
+            case Utils.NSEC3: case Utils.NSEC3PARAM:
+            logger.traceExit(true);
+            return true;
         }
+        logger.traceExit(false);
         return false;
     }
 
     private void doNSEC()
     {
+        logger.traceEntry();
+
         boolean paren = false;
 
         Assertion.aver(getNextToken() == DN,
-            "Expecting DN at line " + st.lineno());
+                "Expecting DN at line " + st.lineno());
 
         String nextDomainName = StringValue;
 
@@ -482,29 +494,32 @@ public class Parser
 
         if (paren)
             Assertion.aver(getNextToken() != RPAREN,
-                "Expecting right paren at line " + st.lineno());
+                    "Expecting right paren at line " + st.lineno());
 
         zone.add(currentName, new DNSNSECRR(currentName, currentTTL,
-            nextDomainName, b));
+                nextDomainName, b));
+        logger.traceExit(false);
     }
 
     private void doDNSKEY()
     {
+        logger.traceEntry();
+
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int flags = intValue;
 
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int protocol = intValue;
         Assertion.aver(protocol == 3, "Protocol != 3");
 
         Assertion.aver(getNextToken() == INT,
-            "Expecting number at line " + st.lineno());
+                "Expecting number at line " + st.lineno());
         int algorithm = intValue;
 
         Assertion.aver(getNextToken() == LPAREN,
-            "Expecting left paren at line " + st.lineno());
+                "Expecting left paren at line " + st.lineno());
 
         String publicKey = "";
         inBase64 = true;
@@ -516,11 +531,84 @@ public class Parser
         inBase64 = false;
 
         Assertion.aver(tok == RPAREN,
-            "Expecting right paren at line " + st.lineno());
+                "Expecting right paren at line " + st.lineno());
 
         zone.add(currentName,
-            new DNSKEYRR(currentName, currentTTL, flags, protocol,
-            algorithm, publicKey));
+                new DNSKEYRR(currentName, currentTTL, flags, protocol,
+                        algorithm, publicKey));
+        logger.traceExit(false);
+    }
+
+    private void doNSEC3PARAM()
+    {
+        logger.traceEntry();
+
+        Assertion.aver(getNextToken() == INT,
+                "Expecting number at line " + st.lineno());
+        int hashAlgorithm = intValue;
+
+        Assertion.aver(getNextToken() == INT,
+                "Expecting number at line " + st.lineno());
+        int flags = intValue;
+
+        Assertion.aver(getNextToken() == INT,
+                "Expecting number at line " + st.lineno());
+        int iterations = intValue;
+
+        // really should look for hex.
+        Assertion.aver(getNextToken() == DN,
+                "Expecting domain name  at line " + st.lineno());
+        String salt = StringValue;
+
+        NSEC3PARAMRR d = new NSEC3PARAMRR(currentName, currentTTL,
+                hashAlgorithm, flags, iterations, salt);
+        zone.add(currentName, d);
+        logger.traceExit();
+    }
+    private void doNSEC3()
+    {
+        logger.traceEntry();
+
+        Assertion.aver(getNextToken() == INT,
+                "Expecting number at line " + st.lineno());
+        int hashAlgorithm = intValue;
+
+        Assertion.aver(getNextToken() == INT,
+                "Expecting number at line " + st.lineno());
+        int flags = intValue;
+
+        Assertion.aver(getNextToken() == INT,
+                "Expecting number at line " + st.lineno());
+        int iterations = intValue;
+
+        // really should look for hex.
+        Assertion.aver(getNextToken() == DN,
+                "Expecting domain name  at line " + st.lineno());
+        String salt = StringValue;
+
+        Assertion.aver(getNextToken() == LPAREN,
+                "Expecting left paren at line " + st.lineno());
+
+        // this is probably cheating as this is supposed to be Base 32.
+        String nextHashedOwnerName = "";
+        inBase64 = true;
+        while (getNextToken() == BASE64)
+        {
+            nextHashedOwnerName += StringValue;
+        }
+        inBase64 = false;
+
+        ArrayList<Integer> types = new ArrayList<Integer>();
+        while (getNextToken() != RPAREN)
+        {
+            types.add(Utils.mapStringToType(StringValue));
+        }
+        Collections.sort(types);
+
+        NSEC3RR d = new NSEC3RR(currentName, currentTTL, hashAlgorithm,
+                flags, iterations, salt, nextHashedOwnerName, types);
+        zone.add(currentName, d);
+        logger.traceExit();
     }
 
     private void doRRSIG()
@@ -543,12 +631,27 @@ public class Parser
                 "Expecting number at line " + st.lineno());
         int originalTTL = intValue;
 
-        Assertion.aver(getNextToken() == LPAREN,
-                "Expecting left paren at line " + st.lineno());
+        // https://tools.ietf.org/html/rfc4034#section-3.3
 
-        Assertion.aver(getNextToken() == DATE,
-                "Expecting DATE at line " + st.lineno());
-        int expiration = intValue;
+        int tok = getNextToken();
+        int expiration = 0;
+
+        if (tok == LPAREN)
+        {
+            Assertion.aver(getNextToken() == DATE,
+                    "Expecting DATE at line " + st.lineno());
+            expiration = intValue;
+        }
+        else if (tok == DATE)
+        {
+            expiration = intValue;
+            Assertion.aver(getNextToken() == LPAREN,
+                    "Expecting left paren at line " + st.lineno());
+        }
+        else
+        {
+            Assertion.aver(false, "Unknown syntax at line " + st.lineno());
+        }
 
         Assertion.aver(getNextToken() == DATE,
                 "Expecting DATE at line " + st.lineno());
@@ -564,7 +667,6 @@ public class Parser
 
         String signature = "";
         inBase64 = true;
-        int tok;
         while ((tok = getNextToken()) == BASE64)
         {
             signature += StringValue;
@@ -590,9 +692,9 @@ public class Parser
             case Utils.A:
             {
                 Assertion.aver(getNextToken() == IPV4ADDR,
-                    "Expecting IPV4ADDR at line " + st.lineno());
+                        "Expecting IPV4ADDR at line " + st.lineno());
                 zone.add(currentName,
-                    new ARR(currentName, currentTTL, StringValue));
+                        new ARR(currentName, currentTTL, StringValue));
                 break;
             }
             case Utils.A6:
@@ -603,72 +705,72 @@ public class Parser
             case Utils.AAAA:
             {
                 Assertion.aver(getNextToken() == IPV6ADDR,
-                    "Expecting IPV6ADDR at line " + st.lineno());
+                        "Expecting IPV6ADDR at line " + st.lineno());
                 zone.add(currentName,
-                    new AAAARR(currentName, currentTTL, StringValue));
+                        new AAAARR(currentName, currentTTL, StringValue));
                 break;
             }
             case Utils.NS:
             {
                 Assertion.aver(getNextToken() == DN,
-                    "Expecting domain name at line " + st.lineno());
+                        "Expecting domain name at line " + st.lineno());
                 zone.add(currentName,
-                    new NSRR(currentName, currentTTL, StringValue));
+                        new NSRR(currentName, currentTTL, StringValue));
                 break;
             }
             case Utils.CNAME:
             {
                 Assertion.aver(getNextToken() == DN,
-                    "Expecting domain name at line " + st.lineno());
+                        "Expecting domain name at line " + st.lineno());
                 zone.add(currentName,
-                    new CNAMERR(currentName, currentTTL, StringValue));
+                        new CNAMERR(currentName, currentTTL, StringValue));
                 break;
             }
             case Utils.TXT:
             {
                 Assertion.aver(getNextToken() == STRING,
-                    "Expecting text at line " + st.lineno());
+                        "Expecting text at line " + st.lineno());
                 zone.add(currentName,
-                    new TXTRR(currentName, currentTTL, StringValue));
+                        new TXTRR(currentName, currentTTL, StringValue));
                 break;
             }
             case Utils.HINFO:
             {
                 Assertion.aver(getNextToken() == STRING,
-                    "Expecting text at line " + st.lineno());
+                        "Expecting text at line " + st.lineno());
                 String s = StringValue;
                 Assertion.aver(getNextToken() == STRING,
-                    "Expecting text at line " + st.lineno());
+                        "Expecting text at line " + st.lineno());
 
                 zone.add(currentName,
-                    new HINFORR(currentName, currentTTL, s, StringValue));
+                        new HINFORR(currentName, currentTTL, s, StringValue));
                 break;
             }
             case Utils.MX:
             {
                 Assertion.aver(getNextToken() == INT,
-                    "Expecting number at line " + st.lineno());
+                        "Expecting number at line " + st.lineno());
                 Assertion.aver(getNextToken() == DN,
-                    "Expecting domain at line " + st.lineno());
+                        "Expecting domain at line " + st.lineno());
 
                 zone.add(currentName,
-                    new MXRR(currentName, currentTTL, StringValue, intValue));
+                        new MXRR(currentName, currentTTL, StringValue, intValue));
                 break;
             }
             case Utils.PTR:
             {
                 Assertion.aver(getNextToken() == DN,
-                    "Expecting domain at line " + st.lineno());
+                        "Expecting domain at line " + st.lineno());
 
                 zone.add(currentName,
-                    new PTRRR(currentName, currentTTL, StringValue));
+                        new PTRRR(currentName, currentTTL, StringValue));
 
                 break;
             }
             default:
             {
                 logger.info("At line " + st.lineno() +
-                    ", didn't recognize: " + t);
+                        ", didn't recognize: " + t);
                 break;
             }
         }
@@ -739,7 +841,7 @@ public class Parser
                 {
                     t = getNextToken();
                     Assertion.aver(t == DN,
-                        "Expecting domain at line " + st.lineno());
+                            "Expecting domain at line " + st.lineno());
                     origin = StringValue;
                     t = getNextToken();
                     continue;
@@ -749,7 +851,7 @@ public class Parser
                 {
                     t = getNextToken();
                     Assertion.aver(t == INT,
-                        "Expecting integer at line " + st.lineno());
+                            "Expecting integer at line " + st.lineno());
                     globalTTL = intValue;
                     t = getNextToken();
                     continue;
@@ -780,11 +882,11 @@ public class Parser
                     switch (t)
                     {
                         case DN: case INADDR:
-                        {
-                            currentName = StringValue;
-                            t = getNextToken();
-                            break;
-                        }
+                    {
+                        currentName = StringValue;
+                        t = getNextToken();
+                        break;
+                    }
                         case IN :
                         {
                             t = getNextToken();
@@ -806,7 +908,7 @@ public class Parser
                             // ptr ttl in
                             // ptr in ttl
                             if (first &&(origin.endsWith(".arpa") ||
-                                origin.endsWith(".int")))
+                                    origin.endsWith(".int")))
                             {
                                 currentName = "" + temp + "." + origin;
                                 logger.trace(currentName);
@@ -829,6 +931,8 @@ public class Parser
                                     case Utils.RRSIG: doRRSIG(); break;
                                     case Utils.NSEC: doNSEC(); break;
                                     case Utils.DNSKEY: doDNSKEY(); break;
+                                    case Utils.NSEC3: doNSEC3(); break;
+                                    case Utils.NSEC3PARAM: doNSEC3PARAM(); break;
                                     default: switches(t); break;
                                 }
                                 done = true;
@@ -875,10 +979,22 @@ public class Parser
                             done = true;
                             break;
                         }
+                        case Utils.NSEC3:
+                        {
+                            doNSEC3();
+                            done = true;
+                            break;
+                        }
+                        case Utils.NSEC3PARAM:
+                        {
+                            doNSEC3PARAM();
+                            done = true;
+                            break;
+                        }
                         default:
                         {
                             logger.info("At line " + st.lineno() +
-                                ", didn't recognize: " + t);
+                                    ", didn't recognize: " + t);
                             done = true;
                             break;
                         }

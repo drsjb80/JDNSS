@@ -41,6 +41,8 @@ public class Utils
     public static final int RRSIG   = 46;
     public static final int NSEC    = 47;
     public static final int DNSKEY  = 48;
+    public static final int NSEC3       = 50;
+    public static final int NSEC3PARAM  = 51;
     public static final int INCLUDE = 256;
     public static final int ORIGIN  = 257;
     public static final int TTL     = 258;
@@ -59,9 +61,9 @@ public class Utils
     public static final int AUTHORITY = 2;
 
     private static HashMap<String, Integer> StringToType =
-        new HashMap<String, Integer>();
+            new HashMap<String, Integer>();
     private static HashMap<Integer, String> TypeToString =
-        new HashMap<Integer, String>();
+            new HashMap<Integer, String>();
 
     static
     {
@@ -80,6 +82,8 @@ public class Utils
         StringToType.put("DS", DS);
         StringToType.put("RRSIG", RRSIG);
         StringToType.put("NSEC", NSEC);
+        StringToType.put("NSEC3", NSEC3);
+        StringToType.put("NSEC3PARAM", NSEC3PARAM);
         StringToType.put("DNSKEY", DNSKEY);
         StringToType.put("INCLUDE", INCLUDE);
         StringToType.put("ORIGIN", ORIGIN);
@@ -260,12 +264,12 @@ public class Utils
     public static int addThem(byte a, byte b, byte c, byte d)
     {
         return
-      (
-          ((a & 0xff) << 24) +
-          ((b & 0xff) << 16) +
-          ((c & 0xff) << 8) +
-           (d & 0xff)
-        );
+                (
+                        ((a & 0xff) << 24) +
+                                ((b & 0xff) << 16) +
+                                ((c & 0xff) << 8) +
+                                (d & 0xff)
+                );
     }
 
     /**
@@ -278,10 +282,10 @@ public class Utils
     public static int addThem(int a, int b)
     {
         return
-      (
-          ((a & 0x000000ff) << 8) +
-          (b & 0x000000ff)
-        );
+                (
+                        ((a & 0x000000ff) << 8) +
+                                (b & 0x000000ff)
+                );
     }
 
     /**
@@ -447,12 +451,12 @@ public class Utils
     }
 
     /**
-      * How many times does one string exist in another?
-      *
-      * @param s        the String to search
-      * @param c        what to search for
-      * @return        the number of matches
-      */
+     * How many times does one string exist in another?
+     *
+     * @param s        the String to search
+     * @param c        what to search for
+     * @return        the number of matches
+     */
     public static int count(String s, String c)
     {
         Assertion.aver(s != null);

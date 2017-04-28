@@ -485,6 +485,7 @@ class ARR extends ADDRRR
     ARR(String name, int TTL, String address)
     {
         super(name, Utils.A, TTL);
+        System.out.println("A TTL = " + TTL);
         this.address = address;
     }
 
@@ -655,8 +656,10 @@ class DNSRRSIGRR extends RR
         a = Utils.combine(a, Utils.getBytes(expiration));
         a = Utils.combine(a, Utils.getBytes(inception));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
-        a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
+        //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
+        a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes());
+
         return a;
     }
 

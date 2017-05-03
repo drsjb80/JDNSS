@@ -7,6 +7,7 @@ package edu.msudenver.cs.jdnss;
  */
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 
 /*
@@ -64,7 +65,10 @@ public abstract class RR
 
         location = sn.getNumber();
         this.rrname = sn.getString();
-
+        System.out.println(this.rrname);
+        if (location == 0) {
+            location++;
+        }
         this.rrtype = Utils.addThem(bytes[location++], bytes[location++]);
         this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
         this.TTL = Utils.addThem(bytes[location++], bytes[location++],
@@ -481,6 +485,7 @@ class ARR extends ADDRRR
     ARR(String name, int TTL, String address)
     {
         super(name, Utils.A, TTL);
+        System.out.println("A TTL = " + TTL);
         this.address = address;
     }
 
@@ -552,6 +557,67 @@ class DNSKEYRR extends RR
     }
 }
 
+// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+class NSEC3RR extends RR
+{
+    private int hashAlgorithm;
+    private int flags;
+    private int iterations;
+    private String salt;
+    private String nextHashedOwnerName;
+    private ArrayList<Integer> types;
+    NSEC3RR(String domain, int TTL, int hashAlgorithm, int flags,
+            int iterations, String salt, String nextHashedOwnerName,
+            ArrayList<Integer> types)
+    {
+        super(domain, Utils.NSEC3, TTL);
+        this.hashAlgorithm = hashAlgorithm;
+        this.flags = flags;
+        this.iterations = iterations;
+        this.salt = salt;
+        this.nextHashedOwnerName = nextHashedOwnerName;
+        this.types = types;
+    }
+    protected byte[] getBytes()
+    {
+        byte a[] = new byte[0];
+        a = Utils.combine(a, Utils.getByte(hashAlgorithm, 1));
+        a = Utils.combine(a, Utils.getByte(flags, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(iterations, 1));
+        // Assertion.aver(Utils.getByte(salt.length() == 24);
+        a = Utils.combine(a, Utils.getByte(salt.length(), 1));
+        a = Utils.combine(a, Utils.convertString(salt));
+        // Assertion.aver(Utils.getByte(salt.length() == 24);
+        a = Utils.combine(a,
+                Utils.getByte(this.nextHashedOwnerName.length(), 1));
+        a = Utils.combine(a,
+                Utils.convertString(nextHashedOwnerName));
+        for (Integer i: types)
+        {
+        }
+
+        return a;
+    }
+}
+class NSEC3PARAMRR extends RR
+{
+    private int hashAlgorithm;
+    private int flags;
+    private int iterations;
+    private String salt;
+    NSEC3PARAMRR(String domain, int TTL, int hashAlgorithm, int flags,
+                 int iterations, String salt)
+    {
+        super(domain, Utils.NSEC3PARAM, TTL);
+        this.hashAlgorithm = hashAlgorithm;
+        this.flags = flags;
+        this.iterations = iterations;
+        this.salt = salt;
+    }
+    protected byte[] getBytes()
+    { Assertion.aver(false); return null; }
+}
+
 class DNSRRSIGRR extends RR
 {
     private int typeCovered;
@@ -590,8 +656,10 @@ class DNSRRSIGRR extends RR
         a = Utils.combine(a, Utils.getBytes(expiration));
         a = Utils.combine(a, Utils.getBytes(inception));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
-        a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
+        //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
+        a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes());
+
         return a;
     }
 
@@ -630,7 +698,6 @@ class DNSRRSIGRR extends RR
         Assertion.aver(false);
         return 42;
     }
-
 
     public String toString()
     {
@@ -694,15 +761,15 @@ class DNSNSECRR extends RR
 
 class OPTRR extends RR
 {
-    public boolean DOBit;
-    public int payloadSize;
+    private boolean DOBit;
+    private int payloadSize;
+    private boolean valid = false;
 
     OPTRR(byte[] bytes) {
         super(bytes);
 
-        //Assert OPTRR is type 41 (See RFC 6891)
-        Assertion.aver(getType() == 41,
-                "Expecting OPTRR type to equal 41");
+        //OPTRR is type 41 (See RFC 6891)
+        valid = (getType() == 41);
 
         DOBit = (((getTTL() >> 15) & 1) == 1);
         payloadSize = getRrClass();
@@ -711,20 +778,21 @@ class OPTRR extends RR
             payloadSize = 512;
     }
 
+    public int getPayloadSize(){
+        return payloadSize;
+    }
+
+    public boolean dnssecAware(){
+        return DOBit;
+    }
+
+    public boolean isValid(){
+        return valid;
+    }
+
     @Override
     protected byte[] getBytes()
     {
-        return this.getBytes();
-    }
-}
-
-class BasicRR extends RR{
-    BasicRR(byte[] bytes){
-        super(bytes);
-    }
-
-    @Override
-    protected byte[] getBytes() {
         return this.getBytes();
     }
 }

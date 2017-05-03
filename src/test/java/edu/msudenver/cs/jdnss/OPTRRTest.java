@@ -27,12 +27,12 @@ public class OPTRRTest {
 
         OPTRR rr = new OPTRR(bytes);
 
-        Assert.assertTrue(rr.DOBit);
+        Assert.assertTrue(rr.dnssecAware());
 
         //Set DO Bit to a 0
         bytes[12] = (byte) 0;
         rr = new OPTRR(bytes);
-        Assert.assertFalse(rr.DOBit);
+        Assert.assertFalse(rr.dnssecAware());
     }
 
     @Test
@@ -55,14 +55,14 @@ public class OPTRRTest {
 
         //Byte array payloadsize = 0
         OPTRR rr = new OPTRR(bytes);
-        Assert.assertEquals(512, rr.payloadSize);
+        Assert.assertEquals(512, rr.getPayloadSize());
 
         bytes[8] = 0;
         bytes[9] = 100;
 
         //Byte array payloadsize = 100
         rr = new OPTRR(bytes);
-        Assert.assertEquals(512, rr.payloadSize);
+        Assert.assertEquals(512, rr.getPayloadSize());
 
         //Byte array payloadsize = 512
         bytes[8] = 2;
@@ -70,7 +70,7 @@ public class OPTRRTest {
 
         rr = new OPTRR(bytes);
 
-        Assert.assertEquals(512, rr.payloadSize);
+        Assert.assertEquals(512, rr.getPayloadSize());
 
         //Byte array payloadsize = 550
         bytes[8] = 2;
@@ -78,7 +78,7 @@ public class OPTRRTest {
 
         rr = new OPTRR(bytes);
 
-        Assert.assertEquals(550, rr.payloadSize);
+        Assert.assertEquals(550, rr.getPayloadSize());
 
     }
 

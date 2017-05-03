@@ -8,7 +8,6 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
-import javax.rmi.CORBA.Util;
 import java.util.Vector;
 import java.util.Arrays;
 import java.net.DatagramPacket;

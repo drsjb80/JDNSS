@@ -1,9 +1,4 @@
 package edu.msudenver.cs.jdnss;
-/**
- * parses the incoming DNS queries
- * @author Steve Beaty
- * @version $Id: Query.java,v 1.29 2011/03/14 19:07:22 drb80 Exp $
- */
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
@@ -14,40 +9,29 @@ import java.net.DatagramPacket;
 
 public class Query
 {
+    private Header header;
+    private byte[] buffer;
+
     private String qnames[];
     private int qtypes[];
     private int qclasses[];
-    private Logger logger = JDNSS.getLogger();
 
-    // http://www.networksorcery.com/enp/protocol/dns.htm
-    private int id;
-    private int opcode = 0;     // standard query
+    private Logger logger = JDNSS.getLogger();
+    private Zone zone;
+    private SOARR SOA;
+
+    private boolean firsttime = true;
+
+    private boolean UDP;
+    private boolean QU;     // unicast response requested
+    private int minimum;
+
+    private byte[] additional = new byte[0];
+    private byte[] authority = new byte[0];
 
     private int numQuestions;
     private int numAnswers;
     private int numAuthorities;
-    private int numAdditionals;
-    private int rcode;
-    private boolean TC = false; // truncation
-    private boolean QR = false; // query
-    private boolean AA = true;  // authoritative answer
-    private boolean RD = false; // recursion desired
-    private boolean RA = false; // recursion available
-    private boolean AD = false; // authenticated data
-    private boolean CD = false; // checking disabled
-    private boolean QU = false; // unicast
-
-    private boolean firsttime = true;
-
-    public boolean getQR() { return QR; }
-    public int getId() { return id; }
-
-    private boolean UDP;
-    private int minimum;
-
-    private byte[] buffer;
-    private byte[] additional = new byte[0];
-    private byte[] authority = new byte[0];
 
     private byte[] savedAdditional;
     private int savedNumAdditionals;
@@ -57,97 +41,17 @@ public class Query
     private boolean doDNSSEC = false;
 
     /**
-     * Rebuild the byte array from the object data
-     */
-    private void rebuild()
-    {
-        logger.trace(toString());
-        logger.trace("\n" + Utils.toString(buffer));
-
-        buffer[0] = Utils.getByte(id, 2);
-        buffer[1] = Utils.getByte(id, 1);
-        buffer[2] =(byte)
-        (
-            (QR ? 128 : 0) |
-            (opcode << 3) |
-            (AA ? 4 : 0) |
-            (TC ? 2 : 0) |
-            (RD ? 1 : 0)
-        );
-        buffer[3] =(byte)
-        (
-            (RA ? 128 : 0) |
-            (AD ? 32 : 0) |
-            (CD ? 16 : 0) |
-            rcode
-        );
-        buffer[4] = Utils.getByte(numQuestions, 2);
-        buffer[5] = Utils.getByte(numQuestions, 1);
-        buffer[6] = Utils.getByte(numAnswers, 2);
-        buffer[7] = Utils.getByte(numAnswers, 1);
-        buffer[8] = Utils.getByte(numAuthorities, 2);
-        buffer[9] = Utils.getByte(numAuthorities, 1);
-        buffer[10] = Utils.getByte(numAdditionals, 2);
-        buffer[11] = Utils.getByte(numAdditionals, 1);
-
-        logger.trace(toString());
-        logger.trace("\n" + Utils.toString(buffer));
-    }
-
-    Query(int id, String[] qnames, int qtypes[], int qclasses[])
-    {
-        // internal representation
-        this.id = id;
-        this.numQuestions = qnames.length;
-        this.qnames = new String[this.numQuestions];
-        this.qtypes = new int[this.numQuestions];
-        this.qclasses = new int[this.numQuestions];
-
-        // set aside room for the header; it is created later via rebuild()
-        buffer = new byte[12];
-
-        for (int i = 0; i < numQuestions; i++)
-        {
-            this.qnames[i] = qnames[i];
-            this.qtypes[i] = qtypes[i];
-            this.qclasses[i] = qclasses[i];
-
-            buffer = Utils.combine(buffer, Utils.convertString(qnames[i]));
-            buffer = Utils.combine(buffer, Utils.getTwoBytes(qtypes[i], 2));
-            buffer = Utils.combine(buffer, Utils.getTwoBytes(qclasses[i], 2));
-        }
-        rebuild();
-    }
-
-    /**
      * creates a Query from a packet
      */
     public Query(byte b[])
     {
-        buffer =         Arrays.copyOf(b, b.length);
-        id =             Utils.addThem(buffer[0], buffer[1]);
-        numQuestions =   Utils.addThem(buffer[4], buffer[5]);
-        numAnswers =     Utils.addThem(buffer[6], buffer[7]);
-        numAuthorities = Utils.addThem(buffer[8], buffer[9]);
-        numAdditionals = Utils.addThem(buffer[10], buffer[11]);
+        buffer = Arrays.copyOf(b, b.length);
+        header = new Header(buffer);
+        numQuestions = header.getNumQuestions();
+        numAnswers = header.getNumAnswers();
+        numAuthorities = header.getNumAuthorities();
 
-        Assertion.aver(numAnswers == 0);
-        Assertion.aver(numAuthorities == 0);
-
-        int flags = Utils.addThem(buffer[2], buffer[3]);
-        QR =      (flags & 0x00008000) != 0;
-        opcode =  (flags & 0x00007800) >> 11;
-        AA =      (flags & 0x00000400) != 0;
-        TC =      (flags & 0x00000200) != 0;
-        RD =      (flags & 0x00000100) != 0;
-        RA =      (flags & 0x00000080) != 0;
-        AD =      (flags & 0x00000020) != 0;
-        CD =      (flags & 0x00000010) != 0;
-        rcode =   flags & 0x0000000f;
-
-        qnames = new String[numQuestions];
-        qtypes = new int[numQuestions];
-        qclasses = new int[numQuestions];
+        // FIXME: put a bunch of avers here
     }
 
     public byte[] getBuffer()
@@ -181,6 +85,9 @@ public class Query
         */
 
         int location = 12;
+        qnames = new String[numQuestions];
+        qtypes = new int[numQuestions];
+        qclasses = new int[numQuestions];
 
         for (int i = 0; i < numQuestions; i++)
         {
@@ -215,16 +122,15 @@ public class Query
             location += 2;
         }
 
-        if (numAdditionals > 0)
+        if (header.getNumAdditionals() > 0)
         {
             int length = buffer.length - location;
-            savedNumAdditionals = numAdditionals;
+            savedNumAdditionals = header.getNumAdditionals();
             savedAdditional = new byte[length];
             System.arraycopy(buffer, location, savedAdditional, 0, length);
             parseAdditional(savedAdditional, savedNumAdditionals);
             buffer = Utils.trimByteArray(buffer, location);
-            numAdditionals = 0;
-            rebuild();
+            header.clearNumAdditionals();
         }
     }
 
@@ -252,22 +158,7 @@ public class Query
 
     public String toString()
     {
-        String s = "Id: 0x" + Integer.toHexString(id) + "\n";
-        s += "Questions: " + numQuestions + "\t";
-        s += "Answers: " + numAnswers + "\n";
-        s += "Authority RR's: " + numAuthorities + "\t";
-        s += "Additional RR's: " + numAdditionals + "\n";
-
-        s += "QR: " + QR + "\t";
-        s += "AA: " + AA + "\t";
-        s += "TC: " + TC + "\n";
-        s += "RD: " + RD + "\t";
-        s += "RA: " + RA + "\t";
-        s += "AD: " + AD + "\n";
-        s += "CD: " + CD + "\t";
-        s += "QU: " + QU + "\n";
-        s += "opcode: " + opcode + "\n";
-        s += "rcode: " + rcode;
+        String s = header.toString();
 
         for (int i = 0; i < numQuestions; i++)
         {
@@ -288,7 +179,7 @@ public class Query
             RR rr = v.elementAt(i);
             additional =
                 Utils.combine(additional, rr.getBytes(host, minimum));
-            numAdditionals++;
+            header.incrementNumAdditionals();
         }
     }
 
@@ -296,7 +187,7 @@ public class Query
      * Given a zone and an MX or NS hostname, see if there is an A or AAAA
      * record we can also send back...
      */
-    private void createAdditional(Zone zone, String host, String name)
+    private void createAdditional(String host, String name)
     {
         Vector v = null;
         try
@@ -306,7 +197,7 @@ public class Query
 
             if (doDNSSEC)
             {
-                addRRSignature(zone, Utils.A, name, additional, Utils.ADDITIONAL);
+                addRRSignature(Utils.A, name, additional, Utils.ADDITIONAL);
             }
         }
         catch (AssertionError AE1)
@@ -321,7 +212,8 @@ public class Query
 
             if (doDNSSEC)
             {
-                addRRSignature(zone, Utils.AAAA, name, additional, Utils.ADDITIONAL);
+                addRRSignature(Utils.AAAA, name, additional,
+                    Utils.ADDITIONAL);
             }
         }
         catch (AssertionError AE2)
@@ -330,7 +222,7 @@ public class Query
         }
     }
 
-    private void createAuthorities(Zone zone, String name)
+    private void createAuthorities(String name)
     {
         Vector<NSRR> v = zone.get(Utils.NS, zone.getName());
         logger.trace(v);
@@ -343,19 +235,17 @@ public class Query
                 logger.trace(rr);
                 authority = Utils.combine(authority, rr.getBytes(rr.getName(),
                     minimum));
-                numAuthorities++;
+                header.incrementNumAuthorities();
 
-
-                createAdditional(zone, rr.getString(), name);
+                createAdditional(rr.getString(), name);
             }
             if (doDNSSEC){
-                addRRSignature(zone, Utils.NS, name, authority, Utils.AUTHORITY);
+                addRRSignature(Utils.NS, name, authority, Utils.AUTHORITY);
             }
         }
     }
 
-    private void createResponses(Zone zone, Vector<RR> v, String name,
-        int which)
+    private void createResponses(Vector<RR> v, String name, int which)
     {
         Assertion.aver(zone != null, "zone == null");
         Assertion.aver(v != null, "v == null");
@@ -370,8 +260,7 @@ public class Query
             byte add[] = rr.getBytes(name, minimum);
 
             if (UDP && (buffer.length + add.length > maximumPayload)) {
-                TC = true;
-                rebuild();
+                header.setTC();
                 return;
             }
             buffer = Utils.combine(buffer, add);
@@ -379,39 +268,42 @@ public class Query
 
             //Add RRSIG Records Corresponding to Type
             if (doDNSSEC) {
-                addRRSignature(zone, rr.getType(), name, buffer, Utils.ANSWER);
+                addRRSignature(rr.getType(), name, buffer, Utils.ANSWER);
             }
 
             if (firsttime && which != Utils.NS) {
-                createAuthorities(zone, name);
+                createAuthorities(name);
             }
 
             firsttime = false;
 
             if (which == Utils.MX) {
-                createAdditional(zone, ((MXRR) v.elementAt(i)).getHost(), name);
+                createAdditional(((MXRR) v.elementAt(i)).getHost(), name);
 
             } else if (which == Utils.NS) {
-                createAdditional(zone, ((NSRR) v.elementAt(i)).getString(), name);
+                createAdditional(((NSRR) v.elementAt(i)).getString(), name);
             }
         }
 
-        rebuild();
+        header.rebuild();
     }
 
-    public void addDNSKeys(Zone zone, String host){
+    public void addDNSKeys(String host){
         Vector v = null;
         try {
             v = zone.get(Utils.DNSKEY, host);
             addThem(v, host, Utils.DNSKEY);
 
-            addRRSignature(zone, Utils.DNSKEY, host, additional, Utils.ADDITIONAL);
+            addRRSignature(Utils.DNSKEY, host, additional,
+                Utils.ADDITIONAL);
         } catch (AssertionError AE1)
         {
+            // FIXME
         }
     }
 
-    private void addRRSignature(Zone zone, int type, String name, byte[] destination, int section) {
+    private void addRRSignature(int type, String name,
+        byte[] destination, int section) {
         Vector<DNSRRSIGRR> rrsigv = null;
         try {
             rrsigv = zone.get(Utils.RRSIG, zone.getName());
@@ -426,10 +318,9 @@ public class Query
                 switch(section)
                 {
                     case Utils.ANSWER:
-                        if (UDP && (buffer.length + add.length > maximumPayload))
+                        if (UDP && (buffer.length+add.length > maximumPayload))
                         {
-                            TC = true;
-                            rebuild();
+                            header.setTC();
                             return;
                         }
                         buffer = Utils.combine(destination, add);
@@ -437,18 +328,18 @@ public class Query
                         break;
                     case Utils.ADDITIONAL:
                         additional = Utils.combine(destination, add);
-                        numAdditionals++;
+                        header.incrementNumAdditionals();
                         break;
                     case Utils.AUTHORITY:
                         authority = Utils.combine(destination, add);
-                        numAuthorities++;
+                        header.incrementNumAuthorities();
                         break;
                 }
             }
         }
     }
 
-    private void addNSECRecords(Zone zone, String name)
+    private void addNSECRecords(String name)
     {
         Vector<RR> nsecv = null;
         try {
@@ -459,7 +350,7 @@ public class Query
         DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
         authority = Utils.combine(authority, add);
-        numAuthorities++;
+        header.incrementNumAuthorities();
     }
 
     private void addAuthorities()
@@ -468,7 +359,7 @@ public class Query
         logger.trace(buffer.length);
         logger.trace(authority.length);
 
-        if (!UDP ||(UDP &&(buffer.length + authority.length < maximumPayload)))
+        if (!UDP ||(UDP && (buffer.length+authority.length < maximumPayload)))
         {
             logger.trace("adding in authorities");
             buffer = Utils.combine(buffer, authority);
@@ -476,7 +367,7 @@ public class Query
         else
         {
             logger.trace("NOT adding in authorities");
-            numAuthorities = 0;
+            header.clearNumAuthorities();
         }
     }
 
@@ -485,27 +376,29 @@ public class Query
         if (savedNumAdditionals > 0)
         {
             additional = Utils.combine(additional, savedAdditional);
-            numAdditionals += savedNumAdditionals;
+            header.setNumAdditionals (header.getNumAdditionals()
+                + savedNumAdditionals);
         }
 
-        if (numAdditionals > 0)
+        if (header.getNumAdditionals() > 0)
         {
-            if (!UDP || (UDP &&(buffer.length + additional.length < maximumPayload)))
+            if (!UDP || 
+                (UDP && (buffer.length+additional.length < maximumPayload)))
             {
                 buffer = Utils.combine(buffer, additional);
             }
             else
             {
-                numAdditionals = 0;
+                header.clearNumAdditionals();
             }
         }
     }
 
-    private void addSOA(Zone zone, SOARR SOA)
+    private void addSOA(SOARR SOA)
     {
         authority = Utils.combine (authority, SOA.getBytes(zone.getName(),
             minimum));
-        numAuthorities++;
+        header.incrementNumAuthorities();
     }
 
     /*
@@ -521,7 +414,7 @@ public class Query
     no AAAA RR(but may have other types of RRs), and thus improve the response
     time to further queries for an AAAA RR of the name.
     */
-    private void dealWithOther(Zone zone, int type, String name)
+    private void dealWithOther(int type, String name)
     {
         int other = type == Utils.A ? Utils.AAAA : Utils.A;
 
@@ -535,7 +428,7 @@ public class Query
             logger.debug(Utils.mapTypeToString(type) + " lookup of " +
                 name + " failed");
 
-            rcode = Utils.NAMEERROR;
+            header.setRcode(Utils.NAMEERROR);
             return;
         }
 
@@ -543,7 +436,7 @@ public class Query
             " lookup of " + name + " failed but " +
             Utils.mapTypeToString(other) + " record found");
 
-        rcode = Utils.NOERROR;
+        header.setRcode(Utils.NOERROR);
     }
 
     // Keeping it DRY.
@@ -551,34 +444,91 @@ public class Query
     {
         logger.debug("'" + Utils.mapTypeToString(type) +
             "' lookup of " + name + " failed");
-        this.rcode = rcode;
+        header.setRcode(rcode);
     }
 
-    /**
-     * See if we have an cononical name associated with a name and return
-     * if so.
-     */
-    private StringAndVector checkForCNAME(int type, String name,
-        Zone zone, SOARR SOA)
+
+    private void setZone(JDNSS dnsService, String name)
     {
-        logger.traceEntry(Integer.toString(type));
-        logger.traceEntry(name);
-        logger.traceEntry(zone.toString());
+        try
+        {
+            zone = dnsService.getZone(name);
+        }
+        catch (AssertionError AE)
+        {
+            logger.debug("Zone lookup of " + name + " failed");
+            header.setRcode(Utils.REFUSED);
+            header.setNotAuthoritative();
+            throw(AE);
+            // return Arrays.copyOf(buffer, buffer.length);
+        }
+    }
 
-        Vector<RR> u = zone.get(Utils.CNAME, name);
+    private void setMinimum()
+    {
+        Vector<SOARR> w = null;
+        try
+        {
+            w = zone.get(Utils.SOA, zone.getName());
+            SOA = w.elementAt(0);
+            minimum = SOA.getMinimum();
+        }
+        catch (AssertionError AE)
+        {
+            logger.debug("SOA lookup in " + zone.getName() + " failed");
+            header.setRcode(Utils.SERVFAIL);
+            throw(AE);
+        }
+    }
 
-        // grab the first one as they all should work.
-        String s =  u.elementAt(0).getString();
-        Assertion.aver(s != null);
+    private void nameNotFound(int type, String name)
+    {
+        logger.debug(name + " not A or AAAA, giving up");
+        errLookupFailed(type, name, Utils.NOERROR);
+        addSOA(SOA);
+        if (doDNSSEC) {
+            addNSECRecords(name);
+            addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+        }
+        addAuthorities();
+    }
 
-        Vector<RR> v = zone.get(type, s);
+    private StringAndVector lookForCNAME(int type, String name)
+    {
+        logger.debug("Looking for a CNAME for " + name);
 
-        // yes, so first put in the CNAME
-        createResponses(zone, u, name, Utils.CNAME);
+        try
+        {
+            Vector<RR> u = zone.get(Utils.CNAME, name);
 
-        // then continue the lookup on the original type
-        // with the new name
-        return new StringAndVector(s, v);
+            // grab the first one as they all should work. maybe we should
+            // round-robin?
+            String s = u.elementAt(0).getString();
+            Assertion.aver(s != null);
+
+            Vector<RR> v = zone.get(type, s);
+
+            // yes, so first put in the CNAME
+            createResponses(u, name, Utils.CNAME);
+
+            // then continue the lookup on the original type
+            // with the new name
+            return new StringAndVector(s, v);
+        }
+        catch (AssertionError AE)
+        {
+            logger.debug("Didn't find a CNAME for " + name);
+
+            // look for AAAA if A and vice versa
+            dealWithOther(type, name);
+            addSOA(SOA);
+            if (doDNSSEC) {
+                addNSECRecords(name);
+                addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+            }
+            addAuthorities();
+            throw (AE);
+        }
     }
 
     /**
@@ -590,9 +540,21 @@ public class Query
 
         this.UDP = UDP;
 
-        QR = true;  // response
-        AA = true;  // we are authoritative
-        RA = false; // recursion not available
+        header.setResponse();
+        header.setAuthoritative();
+        header.setNoRecurse();
+
+        // this assumes one zone per query as we only look at the first
+        // name.
+        try
+        {
+            setZone(dnsService, qnames[0]);
+            setMinimum();
+        }
+        catch (AssertionError AE)
+        {
+            return Arrays.copyOf(buffer, buffer.length);
+        }
 
         for (int i = 0; i < qnames.length; i++)
         {
@@ -602,47 +564,16 @@ public class Query
             logger.trace(name);
             logger.trace(type);
 
-            Zone zone = null;
-            try
-            {
-                zone = dnsService.getZone(name);
-            }
-            catch (AssertionError AE)
-            {
-                logger.debug("Zone lookup of " + name + " failed");
-                rcode = Utils.REFUSED;
-                AA = false;
-                rebuild();
-                return Arrays.copyOf(buffer, buffer.length);
-            }
-
-            logger.trace(zone);
-
-            // always need to get the SOA to find the default minimum
-            Vector<SOARR> w = null;
-            try
-            {
-                w = zone.get(Utils.SOA, zone.getName());
-            }
-            catch (AssertionError AE)
-            {
-                logger.debug("SOA lookup in " + zone.getName() + " failed");
-                rcode = Utils.SERVFAIL;
-                rebuild();
-                return Arrays.copyOf(buffer, buffer.length);
-            }
-
-            SOARR SOA = w.elementAt(0);
-            minimum = SOA.getMinimum();
-
             Vector v = null;
             try
             {
                 v = zone.get(type, name);
 
-                if (doDNSSEC) {
-                    addNSECRecords(zone, name);
-                    addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
+                if (doDNSSEC)
+                {
+                    addNSECRecords(name);
+                    addRRSignature(Utils.NSEC, name, authority,
+                        Utils.AUTHORITY);
                 }
             }
             catch (AssertionError AE)
@@ -650,66 +581,44 @@ public class Query
                 logger.debug("Didn't find: " + name);
                 if (type != Utils.AAAA && type != Utils.A)
                 {
-                    logger.debug(name + " not A or AAAA, giving up");
-                    errLookupFailed(type, name, Utils.NOERROR);
-                    addSOA(zone, SOA);
-                    if (doDNSSEC) {
-                        addNSECRecords(zone, name);
-                        addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
-                    }
-                    addAuthorities();
-                    rebuild();
+                    nameNotFound(type, name);
                     return Arrays.copyOf(buffer, buffer.length);
                 }
                 else
                 {
-                    logger.debug("Looking for a CNAME for " + name);
-                    StringAndVector StringAndVector = null;
                     try
                     {
-                        StringAndVector = checkForCNAME(type, name, zone,
-                            SOA);
+                        StringAndVector snv = lookForCNAME(type, name);
+                        name = snv.getString();
+                        v = snv.getVector();
                     }
                     catch (AssertionError AE2)
                     {
-                        logger.debug("Didn't find a CNAME for " + name);
-                        // look for AAAA if A and vice versa
-                        dealWithOther(zone, type, name);
-                        addSOA(zone, SOA);
-                        if (doDNSSEC) {
-                            addNSECRecords(zone, name);
-                            addRRSignature(zone, Utils.NSEC, name, authority, Utils.AUTHORITY);
-                        }
-                        addAuthorities();
-                        rebuild();
                         return Arrays.copyOf(buffer, buffer.length);
                     }
-
-                    v = StringAndVector.getVector();
-                    name = StringAndVector.getString();
                 }
             }
 
-            if (numAdditionals != 0 && dnsService.getJdnssArgs().RFC2671)
+            if (header.getNumAdditionals() != 0 &&
+                dnsService.getJdnssArgs().RFC2671)
             {
                 logger.debug("Additionals not understood");
-                rcode = Utils.NOTIMPL;
-                rebuild();
+                header.setRcode(Utils.NOTIMPL);
                 return Arrays.copyOf(buffer, buffer.length);
             }
 
-            addDNSKeys(zone, name);
+            addDNSKeys(name);
 
-            createResponses(zone, v, name, type);
+            createResponses(v, name, type);
         }
 
-        if (numAuthorities > 0)
+        if (header.getNumAuthorities() > 0)
         {
             addAuthorities();
         }
 
         addAdditionals();
-        rebuild();
+        header.rebuild();
         return Arrays.copyOf(buffer, buffer.length);
     }
 }

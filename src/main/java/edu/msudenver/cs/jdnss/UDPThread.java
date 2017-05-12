@@ -59,32 +59,27 @@ public class UDPThread implements Runnable
         logger.traceEntry();
 
         byte b[] = query.makeResponses(dnsService, true);
-        // logger.fatal(Utils.toString(b));
 
-        // fixme
-        if (b != null)
+        logger.trace(port);
+        logger.trace(address);
+        logger.trace(b.length);
+
+        DatagramPacket reply = new DatagramPacket(b, b.length,
+            address, port);
+
+        logger.trace("\n" + Utils.toString(reply.getData()));
+        logger.trace(reply.getLength());
+        logger.trace(reply.getOffset());
+        logger.trace(reply.getAddress());
+        logger.trace(reply.getPort());
+
+        try
         {
-            logger.trace(port);
-            logger.trace(address);
-            logger.trace(b.length);
-
-            DatagramPacket reply = new DatagramPacket(b, b.length,
-                address, port);
-
-            logger.trace("\n" + Utils.toString(reply.getData()));
-            logger.trace(reply.getLength());
-            logger.trace(reply.getOffset());
-            logger.trace(reply.getAddress());
-            logger.trace(reply.getPort());
-
-            try
-            {
-                socket.send(reply);
-            }
-            catch (IOException e)
-            {
-                logger.catching(e);
-            }
+            socket.send(reply);
+        }
+        catch (IOException e)
+        {
+            logger.catching(e);
         }
     }
 }

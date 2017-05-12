@@ -108,12 +108,6 @@ class UDP extends Thread
                 continue;
             }
 
-            if (q.getQR())
-            {
-                logger.warn("Received a response, not a request");
-                continue;
-            }
-
             // logger.fatal("Port: " + packet.getPort());
             // logger.fatal("Address: " + packet.getAddress());
             Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),

@@ -84,8 +84,8 @@ public abstract class RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return rrname.hashCode() + rrtype + rrclass + TTL + rdlength +
+            byteSize;
     }
 
     public int getType() { return rrtype; }
@@ -154,6 +154,7 @@ class QRR extends RR
         super(rrname, rrtype, 0);
     }
 
+    @Override
     protected byte[] getBytes() { return new byte[0]; }
 }
 
@@ -167,6 +168,21 @@ class SOARR extends RR
     private int retry;
     private int expire;
     private int minimum;
+
+    SOARR(String domain, String server, String contact, int serial,
+        int refresh, int retry, int expire, int minimum, int TTL)
+    {
+        super(domain, Utils.SOA, TTL);
+
+        this.domain = domain;
+        this.server = server;
+        this.contact = contact;
+        this.serial = serial;
+        this.refresh = refresh;
+        this.retry = retry;
+        this.expire = expire;
+        this.minimum = minimum;
+    }
 
     @Override
     public boolean equals(Object o)
@@ -189,25 +205,11 @@ class SOARR extends RR
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return super.hashCode() + domain.hashCode() + server.hashCode() +
             contact.hashCode() + serial + refresh + retry + expire + minimum;
-    }
-
-    SOARR(String domain, String server, String contact, int serial,
-        int refresh, int retry, int expire, int minimum, int TTL)
-    {
-        super(domain, Utils.SOA, TTL);
-
-        this.domain = domain;
-        this.server = server;
-        this.contact = contact;
-        this.serial = serial;
-        this.refresh = refresh;
-        this.retry = retry;
-        this.expire = expire;
-        this.minimum = minimum;
     }
 
     /*
@@ -229,6 +231,7 @@ class SOARR extends RR
 
     public int getMinimum() { return minimum; }
 
+    @Override
     public String toString()
     {
         String s = "SOA:  ";
@@ -244,6 +247,7 @@ class SOARR extends RR
         return s;
     }
 
+    @Override
     protected byte[] getBytes()
     {
         byte a[] = Utils.convertString(server);
@@ -268,6 +272,7 @@ class HINFORR extends RR
         this.OS = OS;
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -284,17 +289,20 @@ class HINFORR extends RR
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return super.hashCode() + CPU.hashCode() + OS.hashCode();
     }
 
+    @Override
     public String toString()
     {
         return("HINFO: CPU = " + CPU + ", OS = " + OS + ", " +
             super.toString());
     }
 
+    @Override
     protected byte[] getBytes()
     {
         return Utils.combine(Utils.toCS(CPU), Utils.toCS(OS));
@@ -313,6 +321,7 @@ class MXRR extends RR
         this.preference = preference;
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -329,6 +338,7 @@ class MXRR extends RR
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return super.hashCode() + host.hashCode() + preference;
@@ -336,12 +346,14 @@ class MXRR extends RR
 
     public String getHost() { return host; }
 
+    @Override
     public String toString()
     {
         return("MX: host = " + host + ", preference = " + preference +
             ", " + super.toString());
     }
 
+    @Override
     protected byte[] getBytes()
     {
         byte c[] = new byte[2];
@@ -361,6 +373,7 @@ abstract class STRINGRR extends RR
         super(name, type, TTL);
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -377,6 +390,7 @@ abstract class STRINGRR extends RR
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return super.hashCode() + string.hashCode();
@@ -384,11 +398,13 @@ abstract class STRINGRR extends RR
 
     public String getString() { return string; }
 
+    @Override
     public String toString()
     {
         return "STRING: string = " + string + ", " + super.toString();
     }
 
+    @Override
     protected byte[] getBytes() { return Utils.convertString(string); }
 }
 
@@ -400,6 +416,7 @@ class TXTRR extends STRINGRR
         this.string = text;
     }
 
+    @Override
     protected byte[] getBytes() { return Utils.toCS(string); }
 }
 
@@ -439,6 +456,7 @@ abstract class ADDRRR extends RR
         super(name, type, TTL);
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -455,6 +473,7 @@ abstract class ADDRRR extends RR
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return super.hashCode() + address.hashCode();
@@ -462,6 +481,7 @@ abstract class ADDRRR extends RR
 
     public String getAddress() { return address; }
 
+    @Override
     public String toString()
     {
         return "ADDR: address = " + address + ", " + super.toString();
@@ -477,6 +497,7 @@ class ARR extends ADDRRR
         this.address = address;
     }
 
+    @Override
     protected byte[] getBytes() { return Utils.IPV4(address); }
 }
 
@@ -488,6 +509,7 @@ class AAAARR extends ADDRRR
         this.address = address;
     }
 
+    @Override
     protected byte[] getBytes() { return Utils.IPV6(address); }
 }
 
@@ -509,6 +531,7 @@ class DNSKEYRR extends RR
         this.publicKey = publicKey;
     }
 
+    @Override
     protected byte[] getBytes()
     {
         byte a[] = new byte[0];
@@ -519,6 +542,7 @@ class DNSKEYRR extends RR
         return a;
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -538,6 +562,7 @@ class DNSKEYRR extends RR
         return false;
     }
 
+    @Override
     public int hashCode()
     {
         return super.hashCode() + flags + protocol + algorithm +
@@ -568,6 +593,7 @@ class NSEC3RR extends RR
         this.types = types;
     }
 
+    @Override
     protected byte[] getBytes()
     {
         byte a[] = new byte[0];
@@ -651,6 +677,7 @@ class DNSRRSIGRR extends RR
         this.signature = signature;
     }
 
+    @Override
     protected byte[] getBytes()
     {
         byte a[] = new byte[0];
@@ -673,6 +700,7 @@ class DNSRRSIGRR extends RR
         return typeCovered;
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -709,15 +737,15 @@ class DNSRRSIGRR extends RR
     @Override
     public String toString()
     {
-        return super.toString() +
-            " typeCovered = " + typeCovered +
+        return " typeCovered = " + typeCovered +
             ", algorithm = " + algorithm +
             ", labels = " + labels +
             ", originalTTL = " + originalTTL +
             ", expiration = " + expiration +
             ", inception = " + inception +
             ", signersName = " + signersName +
-            ", signature = " + signature;
+            ", signature = " + signature +
+            super.toString();
     }
 }
 

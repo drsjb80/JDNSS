@@ -429,7 +429,7 @@ public class Query
                 name + " failed");
 
             header.setRcode(Utils.NAMEERROR);
-            return;
+            throw(AE);
         }
 
         logger.debug(Utils.mapTypeToString(type) +
@@ -519,15 +519,58 @@ public class Query
         {
             logger.debug("Didn't find a CNAME for " + name);
 
-            // look for AAAA if A and vice versa
+            // no CNAME, but maybe we can look for A <=> AAAA and return no
+            // answers, but a NOERROR rcode.
             dealWithOther(type, name);
-            addSOA(SOA);
-            if (doDNSSEC) {
-                addNSECRecords(name);
-                addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+
+            /* FIXME -- find out what needs to be added.
+            catch (AssertionError AE2)
+            {
+                if (doDNSSEC)
+                {
+                    addNSECRecords(name);
+                    addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+                }
             }
+            addSOA(SOA);
             addAuthorities();
-            throw (AE);
+            */
+        }
+
+        // should have already returned something good or throw an
+        // exception from dealWithOther.
+        return null;
+    }
+
+    private StringAndVector findRR(int type, String name)
+    {
+        Vector v = null;
+        try
+        {
+            v = zone.get(type, name);
+
+            if (doDNSSEC)
+            {
+                addNSECRecords(name);
+                addRRSignature(Utils.NSEC, name, authority,
+                    Utils.AUTHORITY);
+            }
+
+            return new StringAndVector(name, v);
+        }
+        catch (AssertionError AE)
+        {
+            logger.debug("Didn't find: " + name);
+
+            if (type != Utils.AAAA && type != Utils.A)
+            {
+                nameNotFound(type, name);
+                throw(AE);
+            }
+            else
+            {
+                return lookForCNAME(type, name);
+            }
         }
     }
 
@@ -567,43 +610,12 @@ public class Query
             Vector v = null;
             try
             {
-                v = zone.get(type, name);
-
-                if (doDNSSEC)
-                {
-                    addNSECRecords(name);
-                    addRRSignature(Utils.NSEC, name, authority,
-                        Utils.AUTHORITY);
-                }
+                StringAndVector snv = findRR(type, name);
+                name = snv.getString();
+                v = snv.getVector();
             }
-            catch (AssertionError AE)
+            catch (AssertionError AE2)
             {
-                logger.debug("Didn't find: " + name);
-                if (type != Utils.AAAA && type != Utils.A)
-                {
-                    nameNotFound(type, name);
-                    return Arrays.copyOf(buffer, buffer.length);
-                }
-                else
-                {
-                    try
-                    {
-                        StringAndVector snv = lookForCNAME(type, name);
-                        name = snv.getString();
-                        v = snv.getVector();
-                    }
-                    catch (AssertionError AE2)
-                    {
-                        return Arrays.copyOf(buffer, buffer.length);
-                    }
-                }
-            }
-
-            if (header.getNumAdditionals() != 0 &&
-                dnsService.getJdnssArgs().RFC2671)
-            {
-                logger.debug("Additionals not understood");
-                header.setRcode(Utils.NOTIMPL);
                 return Arrays.copyOf(buffer, buffer.length);
             }
 

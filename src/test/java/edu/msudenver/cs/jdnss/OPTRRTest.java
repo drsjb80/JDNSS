@@ -13,6 +13,7 @@ public class OPTRRTest {
         // Populate RR Name
         byte[] name = new String(rrName).getBytes();
 
+        // FIXME with ArrayCopy
         bytes[0] = (byte) rrName.length();
         for (int i = 1; i <= rrName.length(); i++)
         {
@@ -44,6 +45,7 @@ public class OPTRRTest {
         // Populate RR Name
         byte[] name = new String(rrName).getBytes();
 
+        // FIXME with ArrayCopy
         bytes[0] = (byte) rrName.length();
         for(int i = 1; i <= rrName.length(); i++)
         {
@@ -91,6 +93,7 @@ public class OPTRRTest {
         // Populate RR Name
         byte[] name = new String(rrName).getBytes();
 
+        // FIXME with ArrayCopy
         bytes[0] = (byte) rrName.length();
         for(int i = 1; i <= rrName.length(); i++) {
             bytes[i] = name[i - 1];

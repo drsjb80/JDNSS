@@ -680,7 +680,7 @@ public class Utils
 
         if (length == 0)
         {
-            return new StringAndNumber("", 0);
+            return new StringAndNumber("", 1);
         }
 
         while (length > 0)

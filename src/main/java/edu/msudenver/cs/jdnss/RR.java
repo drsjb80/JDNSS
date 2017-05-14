@@ -53,22 +53,11 @@ public abstract class RR
     {
         int location = 0;
 
-        StringAndNumber sn = null;
-        try
-        {
-            sn = Utils.parseName(location, bytes);
-        }
-        catch (AssertionError ae)
-        {
-            Assertion.aver(false);
-        }
+        StringAndNumber san = Utils.parseName(location, bytes);
 
-        location = sn.getNumber();
-        this.rrname = sn.getString();
-        System.out.println(this.rrname);
-        if (location == 0) {
-            location++;
-        }
+        location = san.getNumber();
+        this.rrname = san.getString();
+
         this.rrtype = Utils.addThem(bytes[location++], bytes[location++]);
         this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
         this.TTL = Utils.addThem(bytes[location++], bytes[location++],
@@ -88,7 +77,9 @@ public abstract class RR
         return rr.rrname.equals(this.rrname) &&
             rr.rrclass == rrclass &&
             rr.rrtype == rrtype &&
-            rr.TTL == TTL;
+            rr.TTL == TTL &&
+            rr.rdlength == rdlength &&
+            rr.byteSize == byteSize;
     }
 
     public int hashCode()
@@ -177,6 +168,7 @@ class SOARR extends RR
     private int expire;
     private int minimum;
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -186,7 +178,7 @@ class SOARR extends RR
                 return false;
             }
 
-            SOARR soarr =(SOARR) o;
+            SOARR soarr = (SOARR) o;
             return(soarr.domain.equals(domain) && 
                 soarr.server.equals(server) &&
                 soarr.contact.equals(contact) && soarr.serial == serial &&
@@ -199,8 +191,8 @@ class SOARR extends RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + domain.hashCode() + server.hashCode() +
+            contact.hashCode() + serial + refresh + retry + expire + minimum;
     }
 
     SOARR(String domain, String server, String contact, int serial,
@@ -224,7 +216,7 @@ class SOARR extends RR
     ** TTL to prohibit caching."
     **
     ** 2182:
-    ** It may be observed that in section 3.2.1 of RFC1035, which deinfos
+    ** It may be observed that in section 3.2.1 of RFC1035, which defines
     ** the format of a Resource Record, that the definition of the TTL field
     ** contains a throw away line which states that the TTL of an SOA record
     ** should always be sent as zero to prevent caching.  This is mentioned
@@ -269,6 +261,13 @@ class HINFORR extends RR
 {
     private String CPU, OS;
 
+    HINFORR(String name, int TTL, String CPU, String OS)
+    {
+        super(name, Utils.HINFO, TTL);
+        this.CPU = CPU;
+        this.OS = OS;
+    }
+
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -278,7 +277,7 @@ class HINFORR extends RR
                 return false;
             }
 
-            HINFORR hinforr =(HINFORR) o;
+            HINFORR hinforr = (HINFORR) o;
             return hinforr.CPU.equals(CPU) && hinforr.OS.equals(OS);
         }
 
@@ -287,15 +286,7 @@ class HINFORR extends RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
-    }
-
-    HINFORR(String name, int TTL, String CPU, String OS)
-    {
-        super(name, Utils.HINFO, TTL);
-        this.CPU = CPU;
-        this.OS = OS;
+        return super.hashCode() + CPU.hashCode() + OS.hashCode();
     }
 
     public String toString()
@@ -315,6 +306,13 @@ class MXRR extends RR
     private String host;
     private int preference;
 
+    MXRR(String name, int TTL, String host, int preference)
+    {
+        super(name, Utils.MX, TTL);
+        this.host = host;
+        this.preference = preference;
+    }
+
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -324,7 +322,7 @@ class MXRR extends RR
                 return false;
             }
 
-            MXRR mxrr =(MXRR) o;
+            MXRR mxrr = (MXRR) o;
             return mxrr.host.equals(host) && mxrr.preference == preference;
         }
 
@@ -333,18 +331,10 @@ class MXRR extends RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + host.hashCode() + preference;
     }
 
     public String getHost() { return host; }
-
-    MXRR(String name, int TTL, String host, int preference)
-    {
-        super(name, Utils.MX, TTL);
-        this.host = host;
-        this.preference = preference;
-    }
 
     public String toString()
     {
@@ -380,7 +370,7 @@ abstract class STRINGRR extends RR
                 return false;
             }
 
-            STRINGRR stringrr =(STRINGRR) o;
+            STRINGRR stringrr = (STRINGRR) o;
             return stringrr.string.equals(string);
         }
 
@@ -389,8 +379,7 @@ abstract class STRINGRR extends RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + string.hashCode();
     }
 
     public String getString() { return string; }
@@ -468,8 +457,7 @@ abstract class ADDRRR extends RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + address.hashCode();
     }
 
     public String getAddress() { return address; }
@@ -540,11 +528,11 @@ class DNSKEYRR extends RR
                 return false;
             }
 
-            DNSKEYRR dnskeyrr =(DNSKEYRR) o;
-            return(dnskeyrr.flags == flags &&
+            DNSKEYRR dnskeyrr = (DNSKEYRR) o;
+            return dnskeyrr.flags == flags &&
                 dnskeyrr.protocol == protocol &&
                 dnskeyrr.algorithm == algorithm &&
-                dnskeyrr.publicKey.equals(publicKey));
+                dnskeyrr.publicKey.equals(publicKey);
         }
 
         return false;
@@ -552,8 +540,8 @@ class DNSKEYRR extends RR
 
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + flags + protocol + algorithm +
+            publicKey.hashCode();
     }
 }
 
@@ -566,6 +554,7 @@ class NSEC3RR extends RR
     private String salt;
     private String nextHashedOwnerName;
     private ArrayList<Integer> types;
+
     NSEC3RR(String domain, int TTL, int hashAlgorithm, int flags,
             int iterations, String salt, String nextHashedOwnerName,
             ArrayList<Integer> types)
@@ -578,6 +567,7 @@ class NSEC3RR extends RR
         this.nextHashedOwnerName = nextHashedOwnerName;
         this.types = types;
     }
+
     protected byte[] getBytes()
     {
         byte a[] = new byte[0];
@@ -598,6 +588,12 @@ class NSEC3RR extends RR
 
         return a;
     }
+
+    @Override
+    public boolean equals(Object o) { Assertion.aver(false); return false; }
+
+    @Override
+    public int hashCode() { Assertion.aver(false); return 42; }
 }
 class NSEC3PARAMRR extends RR
 {
@@ -605,8 +601,9 @@ class NSEC3PARAMRR extends RR
     private int flags;
     private int iterations;
     private String salt;
+
     NSEC3PARAMRR(String domain, int TTL, int hashAlgorithm, int flags,
-                 int iterations, String salt)
+        int iterations, String salt)
     {
         super(domain, Utils.NSEC3PARAM, TTL);
         this.hashAlgorithm = hashAlgorithm;
@@ -614,8 +611,16 @@ class NSEC3PARAMRR extends RR
         this.iterations = iterations;
         this.salt = salt;
     }
+
+    @Override
     protected byte[] getBytes()
     { Assertion.aver(false); return null; }
+
+    @Override
+    public boolean equals(Object o) { Assertion.aver(false); return false; }
+
+    @Override
+    public int hashCode() { Assertion.aver(false); return 42; }
 }
 
 class DNSRRSIGRR extends RR
@@ -677,9 +682,9 @@ class DNSRRSIGRR extends RR
                 return false;
             }
 
-            DNSRRSIGRR dnsrrsigrr =(DNSRRSIGRR) o;
+            DNSRRSIGRR dnsrrsigrr = (DNSRRSIGRR) o;
 
-            return(dnsrrsigrr.typeCovered == typeCovered &&
+            return dnsrrsigrr.typeCovered == typeCovered &&
                 dnsrrsigrr.algorithm == algorithm &&
                 dnsrrsigrr.labels == labels &&
                 dnsrrsigrr.originalTTL == originalTTL &&
@@ -687,30 +692,32 @@ class DNSRRSIGRR extends RR
                 dnsrrsigrr.inception == inception &&
                 dnsrrsigrr.keyTag == keyTag &&
                 dnsrrsigrr.signersName.equals(signersName) &&
-                dnsrrsigrr.signature.equals(signature));
+                dnsrrsigrr.signature.equals(signature);
         }
 
         return false;
     }
 
+    @Override
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + typeCovered + algorithm + labels +
+            originalTTL + expiration + inception + keyTag +
+            signersName.hashCode() + signature.hashCode();
     }
 
+    @Override
     public String toString()
     {
-        return("DNSRRSIGRR: " +
-        " typeCovered = " + typeCovered +
-        ", algorithm = " + algorithm +
-        ", labels = " + labels +
-        ", originalTTL = " + originalTTL +
-        ", expiration = " + expiration +
-        ", inception = " + inception +
-        ", signersName = " + signersName +
-        ", signature = " + signature +
-        ", " + super.toString());
+        return super.toString() +
+            " typeCovered = " + typeCovered +
+            ", algorithm = " + algorithm +
+            ", labels = " + labels +
+            ", originalTTL = " + originalTTL +
+            ", expiration = " + expiration +
+            ", inception = " + inception +
+            ", signersName = " + signersName +
+            ", signature = " + signature;
     }
 }
 
@@ -728,6 +735,7 @@ class DNSNSECRR extends RR
         this.typeBitMaps = typeBitMaps;
     }
 
+    @Override
     protected byte[] getBytes()
     {
         byte a[] = Utils.convertString(nextDomainName);
@@ -735,6 +743,7 @@ class DNSNSECRR extends RR
         return a;
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (super.equals(o))
@@ -744,26 +753,32 @@ class DNSNSECRR extends RR
                 return false;
             }
 
-            DNSNSECRR dnsnsecrr =(DNSNSECRR) o;
-            return(dnsnsecrr.nextDomainName.equals(nextDomainName) &&
-                Arrays.equals(dnsnsecrr.typeBitMaps, typeBitMaps));
+            DNSNSECRR dnsnsecrr = (DNSNSECRR) o;
+            return dnsnsecrr.nextDomainName.equals(nextDomainName) &&
+                Arrays.equals(dnsnsecrr.typeBitMaps, typeBitMaps);
         }
 
         return false;
     }
 
+    @Override
     public int hashCode()
     {
-        Assertion.aver(false);
-        return 42;
+        return super.hashCode() + nextDomainName.hashCode() +
+            Arrays.hashCode(typeBitMaps);
     }
 }
 
 class OPTRR extends RR
 {
     private boolean DOBit;
+    public boolean dnssecAware(){ return DOBit; }
+
     private int payloadSize;
+    public int getPayloadSize(){ return payloadSize; }
+
     private boolean valid = false;
+    public boolean isValid(){ return valid; }
 
     OPTRR(byte[] bytes) {
         super(bytes);
@@ -771,28 +786,19 @@ class OPTRR extends RR
         //OPTRR is type 41 (See RFC 6891)
         valid = (getType() == 41);
 
-        DOBit = (((getTTL() >> 15) & 1) == 1);
+        DOBit = ((getTTL() >> 15) & 1) == 1;
         payloadSize = getRrClass();
 
         if (payloadSize < 512)
             payloadSize = 512;
     }
 
-    public int getPayloadSize(){
-        return payloadSize;
-    }
-
-    public boolean dnssecAware(){
-        return DOBit;
-    }
-
-    public boolean isValid(){
-        return valid;
-    }
+    @Override
+    protected byte[] getBytes() { Assertion.aver(false); return new byte[0]; }
 
     @Override
-    protected byte[] getBytes()
-    {
-        return this.getBytes();
-    }
+    public boolean equals(Object o) { Assertion.aver(false); return false; }
+
+    @Override
+    public int hashCode() { Assertion.aver(false); return 42; }
 }

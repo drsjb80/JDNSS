@@ -16,8 +16,6 @@ class jdnssArgs
 
     boolean help;
 
-    boolean RFC2671;
-
     String DBClass;
     String DBURL;
     String DBUser;

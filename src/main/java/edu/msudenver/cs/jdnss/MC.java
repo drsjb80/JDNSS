@@ -23,8 +23,8 @@ class MC extends UDP
         this.dnsService = dnsService;
 
 
-        final int port = JDNSS.getJdnssArgs().MCport;
-        final String address = JDNSS.getJdnssArgs().MCaddress;
+        final int port = JDNSS.getJargs().MCport;
+        final String address = JDNSS.getJargs().MCaddress;
 
         // logger.fatal(port);
         // logger.fatal(address);

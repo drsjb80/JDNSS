@@ -1,13 +1,5 @@
 package edu.msudenver.cs.jdnss;
 
-/*
-import org.apache.logging.log4j.Logger;
-import edu.msudenver.cs.javaln.LineNumberFormatter;
-import edu.msudenver.cs.javaln.syslog.CLIHandler;
-import edu.msudenver.cs.javaln.syslog.SyslogdHandler;
-import edu.msudenver.cs.javaln.syslog.UNIXDomainHandler;
-*/
-
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.message.ObjectMessage;
@@ -20,32 +12,16 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
-/*
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-*/
+
+import lombok.AccessLevel;
+import lombok.Getter;
 
 public class JDNSS
 {
     // a few AOP singletons
-    private static jdnssArgs jargs;
-    public static jdnssArgs getJdnssArgs()
-    {
-        return jargs;
-    }
-
-    private static Logger logger = LogManager.getLogger("JDNSS");
-    public static Logger getLogger()
-    {
-        return logger;
-    }
-
-    private static DBConnection DBConnection;
-    public static DBConnection getDBConnection()
-    {
-        return DBConnection;
-    }
+    @Getter private static jdnssArgs jargs;
+    @Getter private static Logger logger = LogManager.getLogger("JDNSS");
+    @Getter private static DBConnection DBConnection;
 
     private Hashtable bindZones = new Hashtable();
 

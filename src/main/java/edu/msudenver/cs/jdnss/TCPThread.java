@@ -74,7 +74,10 @@ public class TCPThread implements Runnable
         }
 
         Query q = new Query(query);
-        byte b[] = q.makeResponses(dnsService, false);
+        q.parseQueries();
+        Response r = new Response(q);
+
+        byte b[] = r.makeResponses(dnsService, false);
 
         int count = b.length;
         buffer[0] = Utils.getByte(count, 2);

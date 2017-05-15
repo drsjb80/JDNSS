@@ -25,9 +25,9 @@ class UDP extends Thread
     protected DatagramSocket dsocket;
     protected JDNSS dnsService;
     protected Logger logger = JDNSS.getLogger();
-    protected int threadPoolSize = JDNSS.getJdnssArgs().threads;
-    protected int port = JDNSS.getJdnssArgs().port;
-    protected String ipaddress = JDNSS.getJdnssArgs().IPaddress;
+    protected int threadPoolSize = JDNSS.getJargs().threads;
+    protected int port = JDNSS.getJargs().port;
+    protected String ipaddress = JDNSS.getJargs().IPaddress;
 
     public UDP() {} // don't do anything, let MC() do all the work.
 
@@ -93,7 +93,6 @@ class UDP extends Thread
             try
             {
                 dsocket.receive(packet);
-                // logger.fatal("Received a packet");
                 q = new Query(Utils.trimByteArray(packet.getData(),
                     packet.getLength()));
             }
@@ -115,7 +114,7 @@ class UDP extends Thread
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.getJdnssArgs().once)
+            if (JDNSS.getJargs().once)
             {   
                 try 
                 {   

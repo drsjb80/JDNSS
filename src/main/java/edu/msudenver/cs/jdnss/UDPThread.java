@@ -58,7 +58,9 @@ public class UDPThread implements Runnable
     {
         logger.traceEntry();
 
-        byte b[] = query.makeResponses(dnsService, true);
+        query.parseQueries();
+        Response r = new Response(query);
+        byte b[] = r.makeResponses(dnsService, true);
 
         logger.trace(port);
         logger.trace(address);

@@ -20,10 +20,10 @@ class TCP extends Thread
     private ServerSocket ssocket;
     private JDNSS dnsService;
     private Logger logger = JDNSS.getLogger();
-    private int threadPoolSize = JDNSS.getJdnssArgs().threads;
-    private int port = JDNSS.getJdnssArgs().port;
-    private int backlog = JDNSS.getJdnssArgs().backlog;
-    private String ipaddress = JDNSS.getJdnssArgs().IPaddress;
+    private int threadPoolSize = JDNSS.getJargs().threads;
+    private int port = JDNSS.getJargs().port;
+    private int backlog = JDNSS.getJargs().backlog;
+    private String ipaddress = JDNSS.getJargs().IPaddress;
 
     public TCP(JDNSS dnsService) throws UnknownHostException, IOException
     {
@@ -85,7 +85,7 @@ class TCP extends Thread
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.getJdnssArgs().once)
+            if (JDNSS.getJargs().once)
             {
                 try
                 {

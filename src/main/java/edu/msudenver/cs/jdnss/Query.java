@@ -30,13 +30,10 @@ public class Query
 
     @Getter private Header header;
     @Getter private byte [] buffer;
-
     @Getter private Queries[] queries;
     @Getter private Zone zone;
-    private SOARR SOA; // remove
 
     private boolean QU;     // unicast response requested
-    private int minimum;
 
     private byte[] additional = new byte[0];
     private byte[] authority = new byte[0];

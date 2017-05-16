@@ -45,8 +45,7 @@ public class Response
         for (int i = 0; i < v.size(); i++)
         {
             RR rr = v.elementAt(i);
-            additional =
-                Utils.combine(additional, rr.getBytes(host, minimum));
+            additional = Utils.combine(additional, rr.getBytes(host, minimum));
             header.incrementNumAdditionals();
         }
     }
@@ -55,7 +54,7 @@ public class Response
      * Given a zone and an MX or NS hostname, see if there is an A or AAAA
      * record we can also send back...
      */
-    private void createAdditional(String host, String name)
+    private void addAorAAAA(String host, String name)
     {
         Vector v = null;
         try
@@ -101,7 +100,7 @@ public class Response
                 minimum));
             header.incrementNumAuthorities();
 
-            createAdditional(nsrr.getString(), name);
+            addAorAAAA(nsrr.getString(), name);
         }
 
         if (DNSSEC)
@@ -149,14 +148,9 @@ public class Response
 
             firsttime = false;
 
-            if (which == Utils.MX)
+            if (which == Utils.MX || which == Utils.NS)
             {
-                createAdditional(((MXRR) rr).getHost(), name);
-
-            }
-            else if (which == Utils.NS)
-            {
-                createAdditional(((NSRR) rr).getString(), name);
+                addAorAAAA(rr.getHost(), name);
             }
         }
     }

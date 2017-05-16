@@ -77,11 +77,6 @@ class UDP extends Thread
         */
 
         int size = this instanceof MC ? 1500 : 512;
-        if (this instanceof MC)
-        {
-            // logger.fatal("In MC run");
-            // logger.fatal(Utils.toString((MulticastSocket)dsocket));
-        }
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -107,8 +102,6 @@ class UDP extends Thread
                 continue;
             }
 
-            // logger.fatal("Port: " + packet.getPort());
-            // logger.fatal("Address: " + packet.getAddress());
             Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),
                 packet.getAddress(), dnsService));
 

@@ -10,6 +10,20 @@ import java.net.DatagramPacket;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+class Queries
+{
+    @Getter private String name;
+    @Getter private int type;
+    @Getter private int qclass;
+
+    public Queries(String name, int type, int qclass)
+    {
+        this.name = name;
+        this.type = type;
+        this.qclass = qclass;
+    }
+}
+
 public class Query
 {
     private Logger logger = JDNSS.getLogger();
@@ -17,10 +31,7 @@ public class Query
     @Getter private Header header;
     @Getter private byte [] buffer;
 
-    @Getter private String qnames[];
-    @Getter private int qtypes[];
-    @Getter private int qclasses[];
-
+    @Getter private Queries[] queries;
     @Getter private Zone zone;
     private SOARR SOA; // remove
 
@@ -88,17 +99,17 @@ public class Query
         */
 
         int location = 12;
-        qnames = new String[numQuestions];
-        qtypes = new int[numQuestions];
-        qclasses = new int[numQuestions];
+        queries = new Queries[numQuestions];
 
         for (int i = 0; i < numQuestions; i++)
         {
             StringAndNumber sn = Utils.parseName(location, buffer);
 
             location = sn.getNumber();
-            qnames[i] = sn.getString();
-            qtypes[i] = Utils.addThem(buffer[location], buffer[location + 1]);
+
+            queries[i] = new Queries(sn.getString(), sn.getNumber(),
+                Utils.addThem(buffer[location], buffer[location + 1]));
+
             location += 2;
 
             /*
@@ -111,8 +122,7 @@ public class Query
             ** "QU" questions, to distinguish them from the more usual
             ** questions requesting multicast responses ("QM" questions).
             */
-            qclasses[i] = Utils.addThem(buffer[location], buffer[location + 1]);
-            QU = (qclasses[i] & 0xc000) == 0xc000;
+            QU = (queries[i].getQclass() & 0xc000) == 0xc000;
             location += 2;
         }
 
@@ -150,7 +160,8 @@ public class Query
                 }
                 rrLocation = rrLocation + tempRR.getByteSize() + 1;
             }
-        } catch(Exception ex)
+        }
+        catch(Exception ex)
         {
             // FIXME
         }
@@ -160,13 +171,12 @@ public class Query
     {
         String s = header.toString();
 
-        for (int i = 0; i < numQuestions; i++)
+        for (Queries q: queries)
         {
-            s += "\nName: " + qnames[i] +
-                " Type: " + qtypes[i] +
-                " Class: " + qclasses[i];
+            s += "\nName: " + q.getName() +
+                " Type: " + q.getType() +
+                " Class: " + q.getQclass();
         }
         return s;
     }
-
 }

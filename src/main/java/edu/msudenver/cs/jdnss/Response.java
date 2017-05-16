@@ -24,18 +24,17 @@ public class Response
     private byte[] savedAdditional;
     private int savedNumAdditionals;
     private SOARR SOA;
-    private String qnames[];
-    private int qtypes[];
-    private int qclasses[];
     private boolean UDP = false;
+    private Query query;
 
     public Response (Query query)
     {
+        this.query = query;
         this.header = query.getHeader();
         this.zone = query.getZone();
         this.buffer = query.getBuffer();
-        numAnswers = header.getNumAnswers();
-        numAuthorities = header.getNumAuthorities();
+        this.numAnswers = header.getNumAnswers();
+        this.numAuthorities = header.getNumAuthorities();
     }
 
     private void addThem(Vector<RR>v, String host, int type)
@@ -95,23 +94,19 @@ public class Response
         Vector<NSRR> v = zone.get(Utils.NS, zone.getName());
         logger.trace(v);
 
-        if (v != null)
+        for (NSRR nsrr: v)
         {
-            for (int i = 0; i < v.size(); i++)
-            {
-                NSRR rr = v.elementAt(i);
-                logger.trace(rr);
-                authority = Utils.combine(authority, rr.getBytes(rr.getName(),
-                    minimum));
-                header.incrementNumAuthorities();
+            logger.trace(nsrr);
+            authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(),
+                minimum));
+            header.incrementNumAuthorities();
 
-                createAdditional(rr.getString(), name);
-            }
+            createAdditional(nsrr.getString(), name);
+        }
 
-            if (DNSSEC)
-            {
-                addRRSignature(Utils.NS, name, authority, Utils.AUTHORITY);
-            }
+        if (DNSSEC)
+        {
+            addRRSignature(Utils.NS, name, authority, Utils.AUTHORITY);
         }
     }
 
@@ -127,11 +122,11 @@ public class Response
 
         boolean firsttime = true;
 
-        for (int i = 0; i < v.size(); i++)
+        for (RR rr: v)
         {
-            RR rr = v.elementAt(i);
             byte add[] = rr.getBytes(name, minimum);
 
+            // will we be too big and need to switch to TCP?
             if (UDP && (buffer.length + add.length > maximumPayload))
             {
                 header.setTC();
@@ -156,12 +151,12 @@ public class Response
 
             if (which == Utils.MX)
             {
-                createAdditional(((MXRR) v.elementAt(i)).getHost(), name);
+                createAdditional(((MXRR) rr).getHost(), name);
 
             }
             else if (which == Utils.NS)
             {
-                createAdditional(((NSRR) v.elementAt(i)).getString(), name);
+                createAdditional(((NSRR) rr).getString(), name);
             }
         }
     }
@@ -455,10 +450,11 @@ public class Response
         header.setAuthoritative();
         header.setNoRecurse();
 
-        for (int i = 0; i < qnames.length; i++)
+        for (Queries q: query.getQueries())
+        // for (int i = 0; i < qnames.length; i++)
         {
-            String name = qnames[i];
-            int type = qtypes[i];
+            String name = q.getName();
+            int type = q.getType();
 
             try
             {

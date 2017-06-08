@@ -9,16 +9,13 @@ public class TCPThread implements Runnable
 {
     private final Socket socket;
     private final Logger logger = JDNSS.getLogger();
-    private final JDNSS dnsService;
 
     /**
      * @param socket	the socket to talk to
-     * @param dnsService the JDNSS service to use for zone info
      */
-    public TCPThread(Socket socket, JDNSS dnsService)
+    public TCPThread(Socket socket)
     {
         this.socket = socket;
-        this.dnsService = dnsService;
     }
 
     public void run()
@@ -75,9 +72,9 @@ public class TCPThread implements Runnable
 
         Query q = new Query(query);
         q.parseQueries();
-        Response r = new Response(q);
 
-        byte b[] = r.makeResponses(dnsService, false);
+        Response r = new Response(q);
+        byte b[] = r.makeResponses(false);
 
         int count = b.length;
         buffer[0] = Utils.getByte(count, 2);

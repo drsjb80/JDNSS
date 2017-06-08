@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+
 /*
 **                                        1  1  1  1  1  1
 **          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -26,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 **        |                      TTL                      |
 **        |                                               |
 **        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-**        |                   RDLENGTH                    |
+**        |                   length                    |
 **        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
 **        /                     RDATA                     /
 **        /                                               /
@@ -35,18 +38,18 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class RR
 {
-    private String rrname;
-    private int rrtype;
-    private int rrclass = 1;        // IN
-    private int TTL;
-    private int rdlength;
-    private int byteSize;
+    @Getter private String name;
+    @Getter private int type;
+    @Getter private int rrclass = 1;        // IN
+    @Getter private int ttl;
+    @Getter private int length;
+    @Getter private int byteSize;
 
-    public RR(String rrname, int rrtype, int TTL)
+    public RR(String name, int type, int ttl)
     {
-        this.rrname = rrname;
-        this.rrtype = rrtype;
-        this.TTL = TTL;
+        this.name = name;
+        this.type = type;
+        this.ttl = ttl;
     }
 
     public RR(byte[] bytes)
@@ -56,14 +59,14 @@ public abstract class RR
         StringAndNumber san = Utils.parseName(location, bytes);
 
         location = san.getNumber();
-        this.rrname = san.getString();
+        this.name = san.getString();
 
-        this.rrtype = Utils.addThem(bytes[location++], bytes[location++]);
+        this.type = Utils.addThem(bytes[location++], bytes[location++]);
         this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
-        this.TTL = Utils.addThem(bytes[location++], bytes[location++],
+        this.ttl = Utils.addThem(bytes[location++], bytes[location++],
             bytes[location++], bytes[location++]);
-        this.rdlength = Utils.addThem(bytes[location++], bytes[location++]);
-        this.byteSize = location - 1 + rdlength;
+        this.length = Utils.addThem(bytes[location++], bytes[location++]);
+        this.byteSize = location - 1 + length;
     }
 
     public boolean equals(Object o)
@@ -74,26 +77,19 @@ public abstract class RR
         }
 
         RR rr = (RR) o;
-        return rr.rrname.equals(this.rrname) &&
+        return rr.name.equals(this.name) &&
             rr.rrclass == rrclass &&
-            rr.rrtype == rrtype &&
-            rr.TTL == TTL &&
-            rr.rdlength == rdlength &&
+            rr.type == type &&
+            rr.ttl == ttl &&
+            rr.length == length &&
             rr.byteSize == byteSize;
     }
 
     public int hashCode()
     {
-        return rrname.hashCode() + rrtype + rrclass + TTL + rdlength +
+        return name.hashCode() + type + rrclass + ttl + length +
             byteSize;
     }
-
-    public int getType() { return rrtype; }
-    public String getName() { return rrname; }
-    protected int getTTL() { return TTL; }
-    protected int getRrClass() { return rrclass; }
-    protected int rdlength() { return rdlength; }
-    public int getByteSize() { return byteSize; }
 
     // to enhance polymorphism and decrease casting for derived classes
     protected String getString() { Assertion.aver(false); return null; }
@@ -106,7 +102,7 @@ public abstract class RR
     public byte[] getBytes(String question, int TTLminimum)
     {
         int type = getType();
-        int ttl = TTL == 0 ? TTLminimum : TTL;
+        int minttl = ttl == 0 ? TTLminimum : ttl;
 
         byte name[] = Utils.convertString(question);
 
@@ -124,10 +120,10 @@ public abstract class RR
         a[where++] = Utils.getByte(type, 1);
         a[where++] = Utils.getByte(rrclass, 2);
         a[where++] = Utils.getByte(rrclass, 1);
-        a[where++] = Utils.getByte(ttl, 4);
-        a[where++] = Utils.getByte(ttl, 3);
-        a[where++] = Utils.getByte(ttl, 2);
-        a[where++] = Utils.getByte(ttl, 1);
+        a[where++] = Utils.getByte(minttl, 4);
+        a[where++] = Utils.getByte(minttl, 3);
+        a[where++] = Utils.getByte(minttl, 2);
+        a[where++] = Utils.getByte(minttl, 1);
         a[where++] = Utils.getByte(rdatalen, 2);
         a[where++] = Utils.getByte(rdatalen, 1);
         System.arraycopy(rdata, 0, a, where, rdata.length);
@@ -139,8 +135,8 @@ public abstract class RR
 
     public String toString()
     {
-        return("name = " + rrname + ", type = " +
-            Utils.mapTypeToString(rrtype) + ", TTL = " + TTL);
+        return("name = " + name + ", type = " +
+            Utils.mapTypeToString(type) + ", TTL = " + ttl);
     }
 }
 
@@ -149,9 +145,9 @@ public abstract class RR
  */
 class QRR extends RR
 {
-    public QRR(String rrname, int rrtype)
+    public QRR(String name, int type)
     {
-        super(rrname, rrtype, 0);
+        super(name, type, 0);
     }
 
     @Override
@@ -170,9 +166,9 @@ class SOARR extends RR
     private int minimum;
 
     SOARR(String domain, String server, String contact, int serial,
-        int refresh, int retry, int expire, int minimum, int TTL)
+        int refresh, int retry, int expire, int minimum, int ttl)
     {
-        super(domain, Utils.SOA, TTL);
+        super(domain, Utils.SOA, ttl);
 
         this.domain = domain;
         this.server = server;
@@ -265,9 +261,9 @@ class HINFORR extends RR
 {
     private String CPU, OS;
 
-    HINFORR(String name, int TTL, String CPU, String OS)
+    HINFORR(String name, int ttl, String CPU, String OS)
     {
-        super(name, Utils.HINFO, TTL);
+        super(name, Utils.HINFO, ttl);
         this.CPU = CPU;
         this.OS = OS;
     }
@@ -314,9 +310,9 @@ class MXRR extends RR
     private String host;
     private int preference;
 
-    MXRR(String name, int TTL, String host, int preference)
+    MXRR(String name, int ttl, String host, int preference)
     {
-        super(name, Utils.MX, TTL);
+        super(name, Utils.MX, ttl);
         this.host = host;
         this.preference = preference;
     }
@@ -368,9 +364,9 @@ abstract class STRINGRR extends RR
 {
     protected String string;
 
-    STRINGRR(String name, int type, int TTL)
+    STRINGRR(String name, int type, int ttl)
     {
-        super(name, type, TTL);
+        super(name, type, ttl);
     }
 
     @Override
@@ -410,9 +406,9 @@ abstract class STRINGRR extends RR
 
 class TXTRR extends STRINGRR
 {
-    TXTRR(String name, int TTL, String text)
+    TXTRR(String name, int ttl, String text)
     {
-        super(name, Utils.TXT, TTL);
+        super(name, Utils.TXT, ttl);
         this.string = text;
     }
 
@@ -422,27 +418,27 @@ class TXTRR extends STRINGRR
 
 class NSRR extends STRINGRR
 {
-    NSRR(String domain, int TTL, String nameserver)
+    NSRR(String domain, int ttl, String nameserver)
     {
-        super(domain, Utils.NS, TTL);
+        super(domain, Utils.NS, ttl);
         this.string = nameserver;
     }
 }
 
 class CNAMERR extends STRINGRR
 {
-    CNAMERR(String alias, int TTL, String canonical)
+    CNAMERR(String alias, int ttl, String canonical)
     {
-        super(alias, Utils.CNAME, TTL);
+        super(alias, Utils.CNAME, ttl);
         this.string = canonical;
     }
 }
 
 class PTRRR extends STRINGRR
 {
-    PTRRR(String address, int TTL, String host)
+    PTRRR(String address, int ttl, String host)
     {
-        super(address, Utils.PTR, TTL);
+        super(address, Utils.PTR, ttl);
         this.string = host;
     }
 }
@@ -451,9 +447,9 @@ abstract class ADDRRR extends RR
 {
     protected String address;
 
-    ADDRRR(String name, int type, int TTL)
+    ADDRRR(String name, int type, int ttl)
     {
-        super(name, type, TTL);
+        super(name, type, ttl);
     }
 
     @Override
@@ -490,10 +486,9 @@ abstract class ADDRRR extends RR
 
 class ARR extends ADDRRR
 {
-    ARR(String name, int TTL, String address)
+    ARR(String name, int ttl, String address)
     {
-        super(name, Utils.A, TTL);
-        System.out.println("A TTL = " + TTL);
+        super(name, Utils.A, ttl);
         this.address = address;
     }
 
@@ -503,9 +498,9 @@ class ARR extends ADDRRR
 
 class AAAARR extends ADDRRR
 {
-    AAAARR(String name, int TTL, String address)
+    AAAARR(String name, int ttl, String address)
     {
-        super(name, Utils.AAAA, TTL);
+        super(name, Utils.AAAA, ttl);
         this.address = address;
     }
 
@@ -520,10 +515,10 @@ class DNSKEYRR extends RR
     private int algorithm;
     private String publicKey;
 
-    DNSKEYRR(String domain, int TTL, int flags, int protocol, int algorithm,
+    DNSKEYRR(String domain, int ttl, int flags, int protocol, int algorithm,
         String publicKey)
     {
-        super(domain, Utils.DNSKEY, TTL);
+        super(domain, Utils.DNSKEY, ttl);
 
         this.flags = flags;
         this.protocol = protocol;
@@ -580,11 +575,11 @@ class NSEC3RR extends RR
     private String nextHashedOwnerName;
     private ArrayList<Integer> types;
 
-    NSEC3RR(String domain, int TTL, int hashAlgorithm, int flags,
+    NSEC3RR(String domain, int ttl, int hashAlgorithm, int flags,
             int iterations, String salt, String nextHashedOwnerName,
             ArrayList<Integer> types)
     {
-        super(domain, Utils.NSEC3, TTL);
+        super(domain, Utils.NSEC3, ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
         this.iterations = iterations;
@@ -628,10 +623,10 @@ class NSEC3PARAMRR extends RR
     private int iterations;
     private String salt;
 
-    NSEC3PARAMRR(String domain, int TTL, int hashAlgorithm, int flags,
+    NSEC3PARAMRR(String domain, int ttl, int hashAlgorithm, int flags,
         int iterations, String salt)
     {
-        super(domain, Utils.NSEC3PARAM, TTL);
+        super(domain, Utils.NSEC3PARAM, ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
         this.iterations = iterations;
@@ -654,23 +649,23 @@ class DNSRRSIGRR extends RR
     private int typeCovered;
     private int algorithm;
     private int labels;
-    private int originalTTL;
+    private int originalttl;
     private int expiration;
     private int inception;
     private int keyTag;
     private String signersName;
     private String signature;
 
-    DNSRRSIGRR(String domain, int TTL, int typeCovered, int algorithm,
-        int labels, int originalTTL, int expiration, int inception,
+    DNSRRSIGRR(String domain, int ttl, int typeCovered, int algorithm,
+        int labels, int originalttl, int expiration, int inception,
         String signersName, String signature)
     {
-        super(domain, Utils.RRSIG, TTL);
+        super(domain, Utils.RRSIG, ttl);
 
         this.typeCovered = typeCovered;
         this.algorithm = algorithm;
         this.labels = labels;
-        this.originalTTL = originalTTL;
+        this.originalttl = originalttl;
         this.expiration = expiration;
         this.inception = inception;
         this.signersName = signersName;
@@ -684,7 +679,7 @@ class DNSRRSIGRR extends RR
         a = Utils.combine(a, Utils.getTwoBytes(typeCovered, 2));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, Utils.getByte(labels, 1));
-        a = Utils.combine(a, Utils.getBytes(originalTTL));
+        a = Utils.combine(a, Utils.getBytes(originalttl));
         a = Utils.combine(a, Utils.getBytes(expiration));
         a = Utils.combine(a, Utils.getBytes(inception));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
@@ -715,7 +710,7 @@ class DNSRRSIGRR extends RR
             return dnsrrsigrr.typeCovered == typeCovered &&
                 dnsrrsigrr.algorithm == algorithm &&
                 dnsrrsigrr.labels == labels &&
-                dnsrrsigrr.originalTTL == originalTTL &&
+                dnsrrsigrr.originalttl == originalttl &&
                 dnsrrsigrr.expiration == expiration &&
                 dnsrrsigrr.inception == inception &&
                 dnsrrsigrr.keyTag == keyTag &&
@@ -730,7 +725,7 @@ class DNSRRSIGRR extends RR
     public int hashCode()
     {
         return super.hashCode() + typeCovered + algorithm + labels +
-            originalTTL + expiration + inception + keyTag +
+            originalttl + expiration + inception + keyTag +
             signersName.hashCode() + signature.hashCode();
     }
 
@@ -740,7 +735,7 @@ class DNSRRSIGRR extends RR
         return " typeCovered = " + typeCovered +
             ", algorithm = " + algorithm +
             ", labels = " + labels +
-            ", originalTTL = " + originalTTL +
+            ", originalttl = " + originalttl +
             ", expiration = " + expiration +
             ", inception = " + inception +
             ", signersName = " + signersName +
@@ -754,10 +749,10 @@ class DNSNSECRR extends RR
     private String nextDomainName;
     private byte[] typeBitMaps;
 
-    DNSNSECRR(String domain, int TTL, String nextDomainName,
+    DNSNSECRR(String domain, int ttl, String nextDomainName,
         byte[] typeBitMaps)
     {
-        super(domain, Utils.NSEC, TTL);
+        super(domain, Utils.NSEC, ttl);
 
         this.nextDomainName = nextDomainName;
         this.typeBitMaps = typeBitMaps;
@@ -799,23 +794,18 @@ class DNSNSECRR extends RR
 
 class OPTRR extends RR
 {
-    private boolean DOBit;
-    public boolean dnssecAware(){ return DOBit; }
-
-    private int payloadSize;
-    public int getPayloadSize(){ return payloadSize; }
-
-    private boolean valid = false;
-    public boolean isValid(){ return valid; }
+    @Getter private boolean DNSSEC;
+    @Getter private int payloadSize;
+    @Getter private boolean valid = false;
 
     OPTRR(byte[] bytes) {
         super(bytes);
 
-        //OPTRR is type 41 (See RFC 6891)
+        // OPTRR is type 41 (See RFC 6891)
         valid = (getType() == 41);
 
-        DOBit = ((getTTL() >> 15) & 1) == 1;
-        payloadSize = getRrClass();
+        DNSSEC = ((getTtl() >> 15) & 1) == 1;
+        payloadSize = getRrclass();
 
         if (payloadSize < 512)
             payloadSize = 512;

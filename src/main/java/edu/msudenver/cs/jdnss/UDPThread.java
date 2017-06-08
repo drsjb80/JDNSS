@@ -17,21 +17,19 @@ public class UDPThread implements Runnable
     private DatagramSocket socket;
     private int port;
     private InetAddress address;
-    private Query query;
-    private JDNSS dnsService;
+    private byte[] packet;
 
     /**
      * @param socket	the socket to respond through
      * @param packet	the query
      */
-    public UDPThread(Query query, DatagramSocket socket, int port,
-        InetAddress address, JDNSS dnsService)
+    public UDPThread(byte[] packet, DatagramSocket socket, int port,
+        InetAddress address)
     {
-        this.query = query;
+        this.packet = packet;
         this.socket = socket;
         this.port = port;
         this.address = address;
-        this.dnsService = dnsService;
 
         /*
         if (socket instanceof MulticastSocket)
@@ -58,16 +56,13 @@ public class UDPThread implements Runnable
     {
         logger.traceEntry();
 
+        Query query = new Query (packet);
         query.parseQueries();
+
         Response r = new Response(query);
-        byte b[] = r.makeResponses(dnsService, true);
+        byte b[] = r.makeResponses(true);
 
-        logger.trace(port);
-        logger.trace(address);
-        logger.trace(b.length);
-
-        DatagramPacket reply = new DatagramPacket(b, b.length,
-            address, port);
+        DatagramPacket reply = new DatagramPacket(b, b.length, address, port);
 
         logger.trace("\n" + Utils.toString(reply.getData()));
         logger.trace(reply.getLength());

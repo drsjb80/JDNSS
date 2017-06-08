@@ -116,7 +116,7 @@ class BindZone implements Zone
 
     private Hashtable<String, Vector> getTable(final int type)
     {
-        logger.traceEntry(new ObjectMessage(type));
+        logger.traceEntry(Utils.mapTypeToString(type));
 
         final Hashtable ret = tableOfTables.get(type);
 
@@ -132,8 +132,8 @@ class BindZone implements Zone
      */
     public void add(final String name, final RR rr)
     {
-        logger.traceEntry(new ObjectMessage(name));
-        logger.traceEntry(new ObjectMessage(rr));
+        logger.traceEntry(name);
+        logger.traceEntry(rr.toString());
 
         if ((rr instanceof SOARR) && ! name.equals(this.name))
         {
@@ -173,8 +173,8 @@ class BindZone implements Zone
      */
     public Vector get(final int type, final String name)
     {
-        logger.traceEntry(new ObjectMessage(type));
-        logger.traceEntry(new ObjectMessage(name));
+        logger.traceEntry(Utils.mapTypeToString(type));
+        logger.traceEntry(name);
 
         final Hashtable<String, Vector> h = getTable(type);
         logger.trace(h);

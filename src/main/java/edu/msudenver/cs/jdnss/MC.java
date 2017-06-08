@@ -16,18 +16,10 @@ import org.apache.logging.log4j.message.ObjectMessage;
 
 class MC extends UDP
 {
-    public MC(JDNSS dnsService) throws SocketException, UnknownHostException,
-        IOException
+    public MC() throws SocketException, UnknownHostException, IOException
     {
-        logger.traceEntry(new ObjectMessage(dnsService));
-        this.dnsService = dnsService;
-
-
         final int port = JDNSS.getJargs().MCport;
         final String address = JDNSS.getJargs().MCaddress;
-
-        // logger.fatal(port);
-        // logger.fatal(address);
 
         MulticastSocket msocket = new MulticastSocket(port);
 

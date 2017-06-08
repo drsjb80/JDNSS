@@ -23,19 +23,15 @@ import org.apache.logging.log4j.message.ObjectMessage;
 class UDP extends Thread
 {
     protected DatagramSocket dsocket;
-    protected JDNSS dnsService;
     protected Logger logger = JDNSS.getLogger();
     protected int threadPoolSize = JDNSS.getJargs().threads;
     protected int port = JDNSS.getJargs().port;
     protected String ipaddress = JDNSS.getJargs().IPaddress;
 
-    public UDP() {} // don't do anything, let MC() do all the work.
+    // public UDP() {} // don't do anything, let MC() do all the work.
 
-    public UDP(JDNSS dnsService) throws SocketException, UnknownHostException
+    public UDP() throws SocketException, UnknownHostException
     {
-        logger.traceEntry(new ObjectMessage(dnsService));
-        this.dnsService = dnsService;
-
         try
         {
             if (ipaddress != null)
@@ -84,26 +80,22 @@ class UDP extends Thread
 
         while (true)
         {
-            Query q = null;
             try
             {
                 dsocket.receive(packet);
-                q = new Query(Utils.trimByteArray(packet.getData(),
-                    packet.getLength()));
             }
             catch (IOException ioe)
             {
                 logger.catching(ioe);
                 continue;
             }
-            catch (AssertionError ae)
-            {
-                logger.catching(ae);
-                continue;
-            }
 
-            Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),
-                packet.getAddress(), dnsService));
+            Future f = pool.submit(
+                new UDPThread(
+                    Utils.trimByteArray(packet.getData(), packet.getLength()),
+                    dsocket, packet.getPort(), packet.getAddress()
+                )
+            );
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.

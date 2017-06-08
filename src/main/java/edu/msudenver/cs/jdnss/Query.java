@@ -47,7 +47,7 @@ public class Query
 
     public OPTRR optrr;
     private int maximumPayload = 512;
-    private boolean doDNSSEC = false;
+    private boolean DNSSEC = false;
 
     /**
      * creates a Query from a packet
@@ -104,10 +104,9 @@ public class Query
 
             location = sn.getNumber();
 
-            queries[i] = new Queries(sn.getString(), sn.getNumber(),
-                Utils.addThem(buffer[location], buffer[location + 1]));
-
-            location += 2;
+            queries[i] = new Queries(sn.getString(),
+                Utils.addThem(buffer[location++], buffer[location++]),
+                Utils.addThem(buffer[location++], buffer[location++]));
 
             /*
             ** Multicast DNS defines the top bit in the class field of a
@@ -120,7 +119,6 @@ public class Query
             ** questions requesting multicast responses ("QM" questions).
             */
             QU = (queries[i].getQclass() & 0xc000) == 0xc000;
-            location += 2;
         }
 
         if (header.getNumAdditionals() > 0)
@@ -136,6 +134,7 @@ public class Query
         }
     }
 
+    // FIXME
     public void parseAdditional(byte[] additional, int rrCount)
     {
         try
@@ -145,17 +144,15 @@ public class Query
             for (int i = 0; i < rrCount; i++)
             {
                 byte[] bytes = new byte[additional.length - rrLocation];
-                System.arraycopy(additional, rrLocation, bytes, 0,
-                    additional.length - rrLocation);
-                OPTRR tempRR = new OPTRR(bytes);
+                OPTRR optrr = new OPTRR(bytes);
 
-                if (tempRR.isValid())
+                if (optrr.isValid())
                 {
-                    optrr = new OPTRR(bytes);
+                    DNSSEC = optrr.isDNSSEC();
                     maximumPayload = optrr.getPayloadSize();
-                    doDNSSEC = optrr.dnssecAware();
                 }
-                rrLocation = rrLocation + tempRR.getByteSize() + 1;
+
+                rrLocation = rrLocation + optrr.getByteSize() + 1;
             }
         }
         catch(Exception ex)

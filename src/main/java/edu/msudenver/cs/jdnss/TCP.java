@@ -18,18 +18,14 @@ import org.apache.logging.log4j.message.ObjectMessage;
 class TCP extends Thread
 {
     private ServerSocket ssocket;
-    private JDNSS dnsService;
     private Logger logger = JDNSS.getLogger();
     private int threadPoolSize = JDNSS.getJargs().threads;
     private int port = JDNSS.getJargs().port;
     private int backlog = JDNSS.getJargs().backlog;
     private String ipaddress = JDNSS.getJargs().IPaddress;
 
-    public TCP(JDNSS dnsService) throws UnknownHostException, IOException
+    public TCP() throws UnknownHostException, IOException
     {
-        this.dnsService = dnsService;
-        logger.traceEntry(new ObjectMessage(dnsService));
-
         try
         {
             if (ipaddress != null)
@@ -81,7 +77,7 @@ class TCP extends Thread
 
             logger.trace("Received TCP packet");
 
-            Future f = pool.submit(new TCPThread(socket, dnsService));
+            Future f = pool.submit(new TCPThread(socket));
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.

@@ -19,8 +19,6 @@ public class Response
     private boolean DNSSEC = false;
     private byte[] buffer;
     private int maximumPayload = 512;
-    private int numAnswers;
-    private int numAuthorities;
     private byte[] savedAdditional;
     private int savedNumAdditionals;
     private SOARR SOA;
@@ -33,8 +31,6 @@ public class Response
         this.header = query.getHeader();
         this.zone = query.getZone();
         this.buffer = query.getBuffer();
-        this.numAnswers = header.getNumAnswers();
-        this.numAuthorities = header.getNumAuthorities();
     }
 
     private void addThem(Vector<RR>v, String host, int type)
@@ -133,7 +129,7 @@ public class Response
             }
 
             buffer = Utils.combine(buffer, add);
-            numAnswers++;
+            header.incrementNumAnswers();
 
             //Add RRSIG Records Corresponding to Type
             if (DNSSEC)
@@ -184,7 +180,7 @@ public class Response
                             return;
                         }
                         buffer = Utils.combine(destination, add);
-                        numAnswers++;
+                        header.incrementNumAnswers();
                         break;
                     case Utils.ADDITIONAL:
                         additional = Utils.combine(destination, add);
@@ -304,11 +300,11 @@ public class Response
     }
 
 
-    private void setZone(JDNSS dnsService, String name)
+    private void setZone(String name)
     {
         try
         {
-            zone = dnsService.getZone(name);
+            zone = JDNSS.getJdnss().getZone(name);
         }
         catch (AssertionError AE)
         {
@@ -436,7 +432,7 @@ public class Response
     /**
      * create a byte array that is a Response to a Query
      */
-    public byte[] makeResponses(JDNSS dnsService, boolean UDP)
+    public byte[] makeResponses(boolean UDP)
     {
         this.UDP = UDP;
 
@@ -445,23 +441,25 @@ public class Response
         header.setNoRecurse();
 
         for (Queries q: query.getQueries())
-        // for (int i = 0; i < qnames.length; i++)
         {
             String name = q.getName();
             int type = q.getType();
 
+            logger.trace(name);
+            logger.trace(Utils.mapTypeToString(type));
+
             try
             {
-                setZone(dnsService, name);
+                setZone(name);
+                logger.trace(zone);
                 setMinimum();
+                logger.trace(minimum);
             }
             catch (AssertionError AE)
             {
+                logger.catching(AE);
                 return Arrays.copyOf(buffer, buffer.length);
             }
-
-            logger.trace(name);
-            logger.trace(type);
 
             Vector v = null;
             try
@@ -475,18 +473,18 @@ public class Response
                 return Arrays.copyOf(buffer, buffer.length);
             }
 
-            addDNSKeys(name);
+            // addDNSKeys(name);
 
             createResponses(v, name, type);
         }
 
-        if (header.getNumAuthorities() > 0)
-        {
+        // if (header.getNumAuthorities() > 0)
+        // {
             addAuthorities();
-        }
+        // }
 
         addAdditionals();
-        header.rebuild();
+
         return Arrays.copyOf(buffer, buffer.length);
     }
 }

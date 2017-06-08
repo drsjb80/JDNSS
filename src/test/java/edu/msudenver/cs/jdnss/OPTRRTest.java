@@ -28,12 +28,12 @@ public class OPTRRTest {
 
         OPTRR rr = new OPTRR(bytes);
 
-        Assert.assertTrue(rr.dnssecAware());
+        Assert.assertTrue(rr.isDNSSEC());
 
         //Set DO Bit to a 0
         bytes[12] = (byte) 0;
         rr = new OPTRR(bytes);
-        Assert.assertFalse(rr.dnssecAware());
+        Assert.assertFalse(rr.isDNSSEC());
     }
 
     @Test

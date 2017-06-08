@@ -22,6 +22,7 @@ public class JDNSS
     @Getter private static jdnssArgs jargs;
     @Getter private static Logger logger = LogManager.getLogger("JDNSS");
     @Getter private static DBConnection DBConnection;
+    @Getter private static JDNSS jdnss;
 
     private Hashtable bindZones = new Hashtable();
 
@@ -80,9 +81,9 @@ public class JDNSS
             {
                 switch (i)
                 {
-                    case 0: if (jargs.UDP) new UDP(this).start(); break;
-                    case 1: if (jargs.TCP) new TCP(this).start(); break;
-                    case 2: if (jargs.MC) new MC(this).start(); break;
+                    case 0: if (jargs.UDP) new UDP().start(); break;
+                    case 1: if (jargs.TCP) new TCP().start(); break;
+                    case 2: if (jargs.MC) new MC().start(); break;
                     default: Assertion.aver(false);
                 }
             }
@@ -166,10 +167,9 @@ public class JDNSS
      */
     public static void main(String[] args)
     {
-        JDNSS dnsService = new JDNSS();
-
+        jdnss = new JDNSS();
         jargs = new jdnssArgs();
-        JCLO jclo = new JCLO(dnsService.jargs);
+        JCLO jclo = new JCLO(jdnss.jargs);
         jclo.parse(args);
 
         if (jargs.help)
@@ -178,14 +178,14 @@ public class JDNSS
             System.exit(0);
         }
 
-        dnsService.doargs();
+        jdnss.doargs();
 
-        if (dnsService.bindZones.size() == 0 && dnsService.DBConnection == null)
+        if (jdnss.bindZones.size() == 0 && jdnss.DBConnection == null)
         {
-            dnsService.logger.fatal("No zone files, traceExit.");
+            logger.fatal("No zone files, traceExit.");
             System.exit(1);
         }
 
-        dnsService.start();
+        jdnss.start();
     }
 }

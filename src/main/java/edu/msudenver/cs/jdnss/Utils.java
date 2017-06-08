@@ -104,6 +104,7 @@ public class Utils
         }
         catch (java.lang.NullPointerException NPE)
         {
+            // FIXME
             return 0;
         }
     }

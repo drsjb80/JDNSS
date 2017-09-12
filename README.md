@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=master)](https://travis-ci.org/drsjb80/JDNSS)
+[![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=dev)](https://travis-ci.org/drsjb80/JDNSS)
 
 # JDNSS
 An authoritative-only leaf DNS server in Java

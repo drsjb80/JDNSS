@@ -1,13 +1,9 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
-import java.util.Vector;
 import java.util.Arrays;
-import java.net.DatagramPacket;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 
 class Queries {
@@ -28,16 +24,11 @@ class Queries {
 class Query {
     private final Logger logger = JDNSS.getLogger();
 
-    @Getter
-    private Header header;
-    @Getter
-    private byte[] buffer;
-    @Getter
-    private Queries[] queries;
-    @Getter
-    private byte[] rawQueries;
-    @Getter
-    private Zone zone;
+    @Getter private Header header;
+    @Getter private byte[] buffer;
+    @Getter private Queries[] queries;
+    @Getter private byte[] rawQueries;
+    @Getter private Zone zone;
 
     private boolean QU;     // unicast response requested
 
@@ -69,13 +60,6 @@ class Query {
 
         // FIXME: put a bunch of avers here
     }
-
-    /*
-    public byte[] getBuffer()
-    {
-        return Arrays.copyOf(buffer, buffer.length);
-    }
-    */
 
     /**
      * Evaluates and saves all questions
@@ -123,7 +107,7 @@ class Query {
             ** "QU" questions, to distinguish them from the more usual
             ** questions requesting multicast responses ("QM" questions).
             */
-            boolean QU = (queries[i].getQclass() & 0xc000) == 0xc000;
+            QU = (queries[i].getQclass() & 0xc000) == 0xc000;
         }
 
         /*

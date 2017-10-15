@@ -1,31 +1,26 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
-
 import java.util.Vector;
-import java.util.Arrays;
 
-class Response
-{
-    private Logger logger = JDNSS.getLogger();
+class Response {
+    private final Logger logger = JDNSS.getLogger();
 
-    private Header header;
+    private final Header header;
     private byte[] additional;
     private byte[] authority;
     private Zone zone;
     private int minimum;
-    private boolean DNSSEC = false;
+    private final boolean DNSSEC = false;
     private byte[] responses;
-    private int maximumPayload = 512;
+    private final int maximumPayload = 512;
     // private byte[] savedAdditional;
     // private int savedNumAdditionals;
     private SOARR SOA;
     private boolean UDP = false;
-    private Query query;
+    private final Query query;
 
-    public Response (Query query)
-    {
+    public Response(Query query) {
         this.query = query;
         this.header = query.getHeader(); // pass these in
         this.zone = query.getZone();
@@ -33,16 +28,14 @@ class Response
         // logger.debug(this.responses);
     }
 
-    private void addAdditional(Vector<RR>v, String host, int type)
-    {
+    private void addAdditional(Vector<RR> v, String host) {
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
 
-        for (int i = 0; i < v.size(); i++)
-        {
+        for (int i = 0; i < v.size(); i++) {
             RR rr = v.elementAt(i);
             additional = Utils.combine(additional, rr.getBytes(host, minimum));
-            header.setNumAdditionals(header.getNumAdditionals()+1);
+            header.setNumAdditionals(header.getNumAdditionals() + 1);
         }
     }
 
@@ -50,65 +43,53 @@ class Response
      * Given a zone and an MX or NS hostname, see if there is an A or AAAA
      * record we can also send back...
      */
-    private void addAorAAAA(String host, String name)
-    {
+    private void addAorAAAA(String host, String name) {
         Assertion.aver(host != null);
         Assertion.aver(name != null);
-        Vector v = null;
-        try
-        {
-            v = zone.get(Utils.A, host);
-            addAdditional(v, host, Utils.A);
+        Vector<RR> v;
 
-            if (DNSSEC)
-            {
+        try {
+            v = zone.get(Utils.A, host);
+            addAdditional(v, host);
+
+            if (DNSSEC) {
                 addRRSignature(Utils.A, name, additional, Utils.ADDITIONAL);
             }
-        }
-        catch (AssertionError AE1)
-        {
+        } catch (AssertionError AE1) {
             // try the AAAA
         }
 
-        try
-        {
+        try {
             v = zone.get(Utils.AAAA, host);
-            addAdditional(v, host, Utils.AAAA);
+            addAdditional(v, host);
 
-            if (DNSSEC)
-            {
+            if (DNSSEC) {
                 addRRSignature(Utils.AAAA, name, additional, Utils.ADDITIONAL);
             }
-        }
-        catch (AssertionError AE2)
-        {
+        } catch (AssertionError AE2) {
             // maybe we found an A
         }
     }
 
-    private void createAuthorities(String name)
-    {
-        Vector<NSRR> v = zone.get(Utils.NS, zone.getName());
+    private void createAuthorities(String name) {
+        Vector<RR> v = zone.get(Utils.NS, zone.getName());
         logger.trace(v);
 
-        for (NSRR nsrr: v)
-        {
+        for (RR nsrr : v) {
             logger.trace(nsrr);
             authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(),
-                minimum));
-            header.setNumAuthorities(header.getNumAuthorities()+1);
+                    minimum));
+            header.setNumAuthorities(header.getNumAuthorities() + 1);
 
             addAorAAAA(nsrr.getString(), name);
         }
 
-        if (DNSSEC)
-        {
+        if (DNSSEC) {
             addRRSignature(Utils.NS, name, authority, Utils.AUTHORITY);
         }
     }
 
-    private void createResponses(Vector<RR> v, String name, int which)
-    {
+    private void createResponses(Vector<RR> v, String name, int which) {
         Assertion.aver(zone != null, "zone == null");
         Assertion.aver(v != null, "v == null");
         Assertion.aver(name != null, "name == null");
@@ -119,116 +100,100 @@ class Response
 
         boolean firsttime = true;
 
-        for (RR rr: v)
-        {
+        for (RR rr : v) {
             byte add[] = rr.getBytes(name, minimum);
 
             // will we be too big and need to switch to TCP?
-            if (UDP && responses != null && (responses.length + add.length > maximumPayload))
-            {
+            if (UDP && responses != null && (responses.length + add.length > maximumPayload)) {
                 header.setTC(true);
                 return;
             }
 
             responses = Utils.combine(responses, add);
-            header.setNumAnswers(header.getNumAnswers()+1);
+            header.setNumAnswers(header.getNumAnswers() + 1);
 
             //Add RRSIG Records Corresponding to Type
-            if (DNSSEC)
-            {
+            if (DNSSEC) {
                 addRRSignature(rr.getType(), name, responses, Utils.ANSWER);
             }
 
-            if (firsttime && which != Utils.NS)
-            {
+            if (firsttime && which != Utils.NS) {
                 createAuthorities(name);
             }
 
             firsttime = false;
 
-            if (which == Utils.MX || which == Utils.NS)
-            {
+            if (which == Utils.MX || which == Utils.NS) {
                 addAorAAAA(rr.getHost(), name);
             }
         }
         logger.traceExit();
     }
 
-    public void addDNSKeys(String host)
-    {
+    public void addDNSKeys(String host) {
         Vector v = zone.get(Utils.DNSKEY, host);
-        addAdditional(v, host, Utils.DNSKEY);
+        addAdditional(v, host);
 
         addRRSignature(Utils.DNSKEY, host, additional, Utils.ADDITIONAL);
     }
 
-    private void addRRSignature(int type, String name,
-        byte[] destination, int section)
-    {
-        Vector<DNSRRSIGRR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
 
-        for (DNSRRSIGRR rrsig: rrsigv)
-        // for (int i = 0; i < rrsigv.size(); i++)
-        {
+    private void addRRSignature(int type, String name,
+                                byte[] destination, int section) {
+        Vector<RR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
+
+        for (RR foo : rrsigv) {
+            DNSRRSIGRR rrsig = (DNSRRSIGRR) foo;
             // DNSRRSIGRR rrsig = rrsigv.elementAt(i);
-            if (rrsig.getTypeCovered() == type)
-            {
+            if (rrsig.getTypeCovered() == type) {
                 byte add[] = rrsig.getBytes(name, minimum);
-                switch(section)
-                {
+                switch (section) {
                     case Utils.ANSWER:
-                        if (UDP && (responses.length+add.length > maximumPayload))
-                        {
+                        if (UDP && (responses.length + add.length > maximumPayload)) {
                             header.setTC(true);
                             return;
                         }
                         responses = Utils.combine(destination, add);
-                        header.setNumAnswers(header.getNumAnswers()+1);
+                        header.setNumAnswers(header.getNumAnswers() + 1);
                         break;
                     case Utils.ADDITIONAL:
                         additional = Utils.combine(destination, add);
-                        header.setNumAdditionals(header.getNumAdditionals()+1);
+                        header.setNumAdditionals(header.getNumAdditionals() + 1);
                         break;
                     case Utils.AUTHORITY:
                         authority = Utils.combine(destination, add);
-                        header.setNumAuthorities(header.getNumAuthorities()+1);
+                        header.setNumAuthorities(header.getNumAuthorities() + 1);
                         break;
                 }
             }
         }
     }
 
-    private void addNSECRecords(String name)
-    {
+    private void addNSECRecords(String name) {
         Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
 
-        DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
+        DNSNSECRR nsec = (DNSNSECRR) nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
         authority = Utils.combine(authority, add);
-        header.setNumAuthorities(header.getNumAuthorities()+1);
+        header.setNumAuthorities(header.getNumAuthorities() + 1);
     }
 
-    private void addAuthorities()
-    {
+    private void addAuthorities() {
         logger.trace(UDP);
         logger.trace(responses.length);
         logger.trace(authority.length);
 
-        if (!UDP ||(UDP && (responses.length+authority.length < maximumPayload)))
-        {
+        if (!UDP || responses.length + authority.length < maximumPayload) {
             logger.trace("adding in authorities");
             responses = Utils.combine(responses, authority);
-            header.setNumAuthorities(header.getNumAuthorities()+1);
-        }
-        else
-        {
+            header.setNumAuthorities(header.getNumAuthorities() + 1);
+        } else {
             logger.trace("NOT adding in authorities");
             header.setNumAuthorities(0);
         }
     }
 
-    private void addAdditionals()
-    {
+    private void addAdditionals() {
         /*
         if (savedNumAdditionals > 0)
         {
@@ -238,23 +203,19 @@ class Response
         }
         */
 
-        if (header.getNumAdditionals() > 0)
-        {
-            if (!UDP || (UDP && (responses.length+additional.length < maximumPayload)))
-            {
+        if (header.getNumAdditionals() > 0) {
+            if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);
-                header.setNumAdditionals(header.getNumAdditionals()+1);
-            }
-            else {
+                header.setNumAdditionals(header.getNumAdditionals() + 1);
+            } else {
                 header.setNumAdditionals(0);
             }
         }
     }
 
-    private void addSOA(SOARR SOA)
-    {
-        authority = Utils.combine (authority, SOA.getBytes(zone.getName(), minimum));
-        header.setNumAuthorities(header.getNumAuthorities()+1);
+    private void addSOA(SOARR SOA) {
+        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+        header.setNumAuthorities(header.getNumAuthorities() + 1);
     }
 
     /*
@@ -270,81 +231,65 @@ class Response
     no AAAA RR(but may have other types of RRs), and thus improve the response
     time to further queries for an AAAA RR of the name.
     */
-    private void dealWithOther(int type, String name)
-    {
+    private void dealWithOther(int type, String name) {
         int other = type == Utils.A ? Utils.AAAA : Utils.A;
 
-        Vector v = null;
-        try
-        {
-            v = zone.get(other, name);
-        }
-        catch (AssertionError AE)
-        {
+        try {
+            zone.get(other, name);
+        } catch (AssertionError AE) {
             logger.debug(Utils.mapTypeToString(type) + " lookup of " +
-                name + " failed");
+                    name + " failed");
 
             header.setRcode(Utils.NAMEERROR);
-            throw(AE);
+            throw (AE);
         }
 
         logger.debug(Utils.mapTypeToString(type) +
-            " lookup of " + name + " failed but " +
-            Utils.mapTypeToString(other) + " record found");
+                " lookup of " + name + " failed but " +
+                Utils.mapTypeToString(other) + " record found");
 
         header.setRcode(Utils.NOERROR);
     }
 
     // Just keeping it DRY.
-    private void errLookupFailed(int type, String name, int rcode)
-    {
+    private void errLookupFailed(int type, String name, int rcode) {
         logger.debug("'" + Utils.mapTypeToString(type) +
-            "' lookup of " + name + " failed");
+                "' lookup of " + name + " failed");
         header.setRcode(rcode);
     }
 
 
-    private void setZone(String name)
-    {
-        try
-        {
+    private void setZone(String name) {
+        try {
             zone = JDNSS.getJdnss().getZone(name);
-        }
-        catch (AssertionError AE)
-        {
+        } catch (AssertionError AE) {
             logger.debug("Zone lookup of " + name + " failed");
             header.setRcode(Utils.REFUSED);
             header.setAA(false);
-            throw(AE);
+            throw (AE);
             // return Arrays.copyOf(responses, responses.length);
         }
     }
 
-    private void setMinimum()
-    {
-        Vector<SOARR> w = null;
-        try
-        {
+    private void setMinimum() {
+        Vector<RR> w;
+        try {
             w = zone.get(Utils.SOA, zone.getName());
-            SOA = w.elementAt(0);
+            SOA = (SOARR) w.elementAt(0);
             minimum = SOA.getMinimum();
-        }
-        catch (AssertionError AE)
-        {
+        } catch (AssertionError AE) {
             logger.debug("SOA lookup in " + zone.getName() + " failed");
             header.setRcode(Utils.SERVFAIL);
-            throw(AE);
+            throw (AE);
         }
     }
 
-    private void nameNotFound(int type, String name)
-    {
+    private void nameNotFound(int type, String name) {
         logger.debug(name + " not A or AAAA, giving up");
         errLookupFailed(type, name, Utils.NOERROR);
         addSOA(SOA);
 
-        if (DNSSEC)
-        {
+        if (DNSSEC) {
             addNSECRecords(name);
             addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
         }
@@ -352,12 +297,10 @@ class Response
         addAuthorities();
     }
 
-    private StringAndVector lookForCNAME(int type, String name)
-    {
+    private StringAndVector lookForCNAME(int type, String name) {
         logger.debug("Looking for a CNAME for " + name);
 
-        try
-        {
+        try {
             Vector<RR> u = zone.get(Utils.CNAME, name);
 
             // grab the first one as they all should work. maybe we should
@@ -373,9 +316,7 @@ class Response
             // then continue the lookup on the original type
             // with the new name
             return new StringAndVector(s, v);
-        }
-        catch (AssertionError AE)
-        {
+        } catch (AssertionError AE) {
             logger.debug("Didn't find a CNAME for " + name);
 
             // no CNAME, but maybe we can look for A <=> AAAA and return no
@@ -401,33 +342,25 @@ class Response
         return null;
     }
 
-    private StringAndVector findRR(int type, String name)
-    {
-        Vector v = null;
-        try
-        {
+    private StringAndVector findRR(int type, String name) {
+        Vector v;
+        try {
             v = zone.get(type, name);
 
             // is this where this belongs?
-            if (DNSSEC)
-            {
+            if (DNSSEC) {
                 addNSECRecords(name);
                 addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
             }
 
             return new StringAndVector(name, v);
-        }
-        catch (AssertionError AE)
-        {
+        } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
 
-            if (type != Utils.AAAA && type != Utils.A)
-            {
+            if (type != Utils.AAAA && type != Utils.A) {
                 nameNotFound(type, name);
-                throw(AE);
-            }
-            else
-            {
+                throw (AE);
+            } else {
                 return lookForCNAME(type, name);
             }
         }
@@ -436,44 +369,36 @@ class Response
     /**
      * create a byte array that is a Response to a Query
      */
-    public byte[] makeResponses(boolean UDP)
-    {
+    public byte[] makeResponses(boolean UDP) {
         this.UDP = UDP;
 
         header.setQR(true);
         header.setAA(true);
         header.setRA(false);
 
-        for (Queries q: query.getQueries())
-        {
+        for (Queries q : query.getQueries()) {
             String name = q.getName();
             int type = q.getType();
 
             logger.trace(name);
             logger.trace(Utils.mapTypeToString(type));
 
-            try
-            {
+            try {
                 setZone(name);
                 logger.trace(zone);
                 setMinimum();
                 logger.trace(minimum);
-            }
-            catch (AssertionError AE)
-            {
+            } catch (AssertionError AE) {
                 logger.catching(AE);
                 return query.getBuffer();
             }
 
-            Vector v = null;
-            try
-            {
+            Vector v;
+            try {
                 StringAndVector snv = findRR(type, name);
                 name = snv.getString();
                 v = snv.getVector();
-            }
-            catch (AssertionError AE2)
-            {
+            } catch (AssertionError AE2) {
                 return query.getBuffer();
             }
 

@@ -9,6 +9,6 @@ import java.util.Vector;
 
 interface Zone
 {
-    Vector get(int type, String name);
+    Vector<RR> get(int type, String name);
     String getName();
 }

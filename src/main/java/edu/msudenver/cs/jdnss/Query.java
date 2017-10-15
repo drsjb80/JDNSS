@@ -7,12 +7,9 @@ import java.util.Arrays;
 import lombok.Getter;
 
 class Queries {
-    @Getter
-    private String name;
-    @Getter
-    private int type;
-    @Getter
-    private int qclass;
+    @Getter private String name;
+    @Getter private int type;
+    @Getter private int qclass;
 
     public Queries(String name, int type, int qclass) {
         this.name = name;

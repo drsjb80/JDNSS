@@ -1,6 +1,8 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
+
 import java.util.Vector;
 
 class Response {

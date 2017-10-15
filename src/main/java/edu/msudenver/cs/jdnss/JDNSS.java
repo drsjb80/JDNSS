@@ -1,7 +1,9 @@
 package edu.msudenver.cs.jdnss;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.message.ObjectMessage;
 import edu.msudenver.cs.jclo.JCLO;
 
@@ -16,8 +18,9 @@ import java.util.Map;
 
 import lombok.Getter;
 
-public class JDNSS
-{
+import static edu.msudenver.cs.jdnss.JDNSSLogLevels.*;
+
+public class JDNSS {
     // a few AOP singletons
     @Getter static jdnssArgs jargs;
     @Getter static Logger logger = LogManager.getLogger("JDNSS");
@@ -29,118 +32,117 @@ public class JDNSS
     /**
      * Finds the Zone associated with the domain name passed in
      *
-     * @param name	the name of the domain to find
-     * @return		the associated Zone
+     * @param name the name of the domain to find
+     * @return the associated Zone
      * @see Zone
      */
-    public Zone getZone(String name)
-    {
+     Zone getZone(String name) {
         logger.traceEntry(new ObjectMessage(name));
 
         String longest = null;
 
         // first, see if it's in the files
-        try
-        {
+        try {
             longest = Utils.findLongest(bindZones.keySet(), name);
-        }
-        catch (AssertionError AE)
-        {
+        } catch (AssertionError AE) {
             // see if we have a DB connection and try there
-            if (DBConnection != null)
-            {
+            if (DBConnection != null) {
                 DBZone d = null;
-                try
-                {
+                try {
                     d = DBConnection.getZone(name);
                     return (Zone) d;
-                }
-                catch (AssertionError AE2)
-                {
-                    Assertion.aver(false);
+                } catch (AssertionError AE2) {
+                    Assertion.fail();
                 }
             }
 
             // it's not
-            Assertion.aver(false);
+            Assertion.fail();
         }
-            
+
         return (Zone) bindZones.get(longest);
     }
 
-    private void start()
-    {
+    private void start() {
         /*
         ** Yeah, I know this is a little messy, but it does keep it DRY. I
         ** need to start each thread independently of whether any of the
         ** others are started.
         */
-        for (int i = 0; i < 3; i++)
-        {
-            try
-            {
-                switch (i)
-                {
-                    case 0: if (jargs.UDP) new UDP().start(); break;
-                    case 1: if (jargs.TCP) new TCP().start(); break;
-                    case 2: if (jargs.MC) new MC().start(); break;
-                    default: Assertion.aver(false);
+        for (int i = 0; i < 3; i++) {
+            try {
+                switch (i) {
+                    case 0:
+                        if (jargs.UDP) new UDP().start();
+                        break;
+                    case 1:
+                        if (jargs.TCP) new TCP().start();
+                        break;
+                    case 2:
+                        if (jargs.MC) new MC().start();
+                        break;
+                    default:
+                        Assertion.fail();
                 }
-            }
-            catch (SocketException se)
-            {
-                logger.catching (se);
-            }
-            catch (UnknownHostException uhe)
-            {
-                logger.catching (uhe);
-            }
-            catch (IOException ie)
-            {
-                logger.catching (ie);
+            } catch (SocketException se) {
+                logger.catching(se);
+            } catch (UnknownHostException uhe) {
+                logger.catching(uhe);
+            } catch (IOException ie) {
+                logger.catching(ie);
             }
         }
     }
 
-    private void doargs()
-    {
+    private void setLogLevel() {
+        Level level = Level.OFF;
+
+        switch (jargs.logLevel) {
+            case OFF: level = Level.OFF; break;
+            case FATAL: level = Level.FATAL; break;
+            case ERROR: level = Level.ERROR; break;
+            case WARN: level = Level.WARN; break;
+            case INFO: level = Level.INFO; break;
+            case DEBUG: level = Level.DEBUG; break;
+            case TRACE: level = Level.TRACE; break;
+            case ALL: level = Level.ALL; break;
+        }
+
+        Configurator.setLevel("JDNSS", level);
+    }
+
+    private void doargs() {
         logger.traceEntry();
         logger.trace(jargs.toString());
 
-        if (jargs.version)
-        {
+        if (jargs.version) {
+            // FIXME: get from resources
             logger.fatal(new Version().getVersion());
             System.exit(0);
         }
 
         logger.info("Starting JDNSS version " + new Version().getVersion());
 
-        if (jargs.DBClass != null && jargs.DBURL != null)
-        {
+        if (jargs.DBClass != null && jargs.DBURL != null) {
             DBConnection = new DBConnection(jargs.DBClass, jargs.DBURL,
-                jargs.DBUser, jargs.DBPass);
+                    jargs.DBUser, jargs.DBPass);
         }
 
         String additional[] = jargs.additional;
 
-        if (additional == null)
-        {
+        if (additional == null) {
             return;
         }
 
-        for (int i = 0; i < additional.length; i++)
-        {
-            try
-            {
+        for (int i = 0; i < additional.length; i++) {
+            try {
                 String name = new File(additional[i]).getName();
 
                 logger.info("Parsing: " + additional[i]);
 
-                if (name.endsWith(".db"))
-                {
+                if (name.endsWith(".db")) {
                     name = name.replaceFirst("\\.db$", "");
-                    if (Character.isDigit(name.charAt(0)))
-                    {
+                    if (Character.isDigit(name.charAt(0))) {
                         name = Utils.reverseIP(name);
                         name = name + ".in-addr.arpa";
                     }
@@ -153,11 +155,8 @@ public class JDNSS
                 // the name of the zone can change while parsing, so use
                 // the name from the zone
                 bindZones.put(zone.getName(), zone);
-            }
-            catch (FileNotFoundException e)
-            {
-                logger.warn("Couldn't open file " + additional[i] +
-                '\n' + e);
+            } catch (FileNotFoundException e) {
+                logger.warn("Couldn't open file " + additional[i] + '\n' + e);
             }
         }
     }
@@ -165,23 +164,21 @@ public class JDNSS
     /**
      * The main driver for the server; creates threads for TCP and UDP.
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         jdnss = new JDNSS();
         jargs = new jdnssArgs();
         JCLO jclo = new JCLO(jdnss.jargs);
         jclo.parse(args);
 
-        if (jargs.help)
-        {
+        if (jargs.help) {
             System.out.println(jclo.usage());
             System.exit(0);
         }
 
+        jdnss.setLogLevel();
         jdnss.doargs();
 
-        if (jdnss.bindZones.size() == 0 && jdnss.DBConnection == null)
-        {
+        if (jdnss.bindZones.size() == 0 && jdnss.DBConnection == null) {
             logger.fatal("No zone files, traceExit.");
             System.exit(1);
         }

@@ -1,5 +1,9 @@
 package edu.msudenver.cs.jdnss;
 
+import org.apache.logging.log4j.Level;
+
+enum JDNSSLogLevels {OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL}
+
 class jdnssArgs
 {
     final boolean once = false;
@@ -13,6 +17,7 @@ class jdnssArgs
     boolean version;
     String IPaddress;
     final int backlog = 4;
+    final JDNSSLogLevels logLevel = JDNSSLogLevels.OFF;
 
     boolean help;
 

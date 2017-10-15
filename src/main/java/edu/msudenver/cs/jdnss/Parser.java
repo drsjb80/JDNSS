@@ -634,7 +634,7 @@ class Parser {
             Assertion.aver(getNextToken() == LPAREN,
                     "Expecting left paren at line " + st.lineno());
         } else {
-            Assertion.aver(false, "Unknown syntax at line " + st.lineno());
+            Assertion.fail("Unknown syntax at line " + st.lineno());
         }
 
         Assertion.aver(getNextToken() == DATE,

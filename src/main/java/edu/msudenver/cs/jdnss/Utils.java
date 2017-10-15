@@ -576,7 +576,7 @@ class Utils {
 
         if (start >= buffer.length) {
             logger.warn("Illegal name");
-            Assertion.aver(false);
+            Assertion.fail();
         }
 
         int current = start;
@@ -589,7 +589,7 @@ class Utils {
 
             if (tmp >= start) {
                 logger.warn("Illegal name");
-                Assertion.aver(false);
+                Assertion.fail();
             }
 
             name += parseName(tmp, buffer).getString();
@@ -620,7 +620,7 @@ class Utils {
 
                 if (tmp >= start) {
                     logger.warn("Illegal name");
-                    Assertion.aver(false);
+                    Assertion.fail();
                 }
 
                 name += parseName(tmp, buffer).getString();

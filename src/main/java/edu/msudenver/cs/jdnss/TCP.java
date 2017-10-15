@@ -18,16 +18,15 @@ import org.apache.logging.log4j.message.ObjectMessage;
 class TCP extends Thread
 {
     private ServerSocket ssocket;
-    private Logger logger = JDNSS.getLogger();
-    private int threadPoolSize = JDNSS.getJargs().threads;
-    private int port = JDNSS.getJargs().port;
-    private int backlog = JDNSS.getJargs().backlog;
-    private String ipaddress = JDNSS.getJargs().IPaddress;
+    private final Logger logger = JDNSS.getLogger();
 
     public TCP() throws UnknownHostException, IOException
     {
         try
         {
+            String ipaddress = JDNSS.getJargs().IPaddress;
+            int backlog = JDNSS.getJargs().backlog;
+            int port = JDNSS.getJargs().port;
             if (ipaddress != null)
             {
                 ssocket = new ServerSocket (port, backlog,
@@ -61,6 +60,7 @@ class TCP extends Thread
         logger.traceEntry();
 
         Socket socket = null;
+        int threadPoolSize = JDNSS.getJargs().threads;
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true)

@@ -10,55 +10,62 @@ import java.net.DatagramPacket;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-class Queries
-{
-    @Getter private String name;
-    @Getter private int type;
-    @Getter private int qclass;
+class Queries {
+    @Getter
+    private String name;
+    @Getter
+    private int type;
+    @Getter
+    private int qclass;
 
-    public Queries(String name, int type, int qclass)
-    {
+    public Queries(String name, int type, int qclass) {
         this.name = name;
         this.type = type;
         this.qclass = qclass;
     }
 }
 
-public class Query
-{
-    private Logger logger = JDNSS.getLogger();
+class Query {
+    private final Logger logger = JDNSS.getLogger();
 
-    @Getter private Header header;
-    @Getter private byte [] buffer;
-    @Getter private Queries[] queries;
-    @Getter private Zone zone;
+    @Getter
+    private Header header;
+    @Getter
+    private byte[] buffer;
+    @Getter
+    private Queries[] queries;
+    @Getter
+    private byte[] rawQueries;
+    @Getter
+    private Zone zone;
 
     private boolean QU;     // unicast response requested
 
-    private byte[] additional = new byte[0];
-    private byte[] authority = new byte[0];
+    // private byte[] additional = new byte[0];
+    // private byte[] authority = new byte[0];
 
-    private int numQuestions;
-    private int numAnswers;
-    private int numAuthorities;
+    private final int numQuestions;
 
-    private byte[] savedAdditional;
-    private int savedNumAdditionals;
+    // private boolean DNSSEC = false;
+    // private int numAnswers;
+    // private int numAuthorities;
+    // private byte[] savedAdditional;
+    // private int savedNumAdditionals;
+    // public OPTRR optrr;
 
-    public OPTRR optrr;
     private int maximumPayload = 512;
-    private boolean DNSSEC = false;
 
     /**
      * creates a Query from a packet
      */
-    public Query(byte b[])
-    {
-        buffer = Arrays.copyOf(b, b.length);
-        header = new Header(buffer);
-        numQuestions = header.getNumQuestions();
-        numAnswers = header.getNumAnswers();
-        numAuthorities = header.getNumAuthorities();
+    public Query(byte buffer[]) {
+        this.buffer = buffer;
+        logger.trace(buffer);
+        this.header = new Header(buffer);
+        this.numQuestions = header.getNumQuestions();
+        this.rawQueries = Arrays.copyOfRange(buffer, 12, buffer.length);
+        // numAnswers = header.getNumAnswers();
+        // numAuthorities = header.getNumAuthorities();
 
         // FIXME: put a bunch of avers here
     }
@@ -73,8 +80,7 @@ public class Query
     /**
      * Evaluates and saves all questions
      */
-    public void parseQueries()
-    {
+    public void parseQueries() {
         logger.traceEntry();
 
         /*
@@ -98,15 +104,14 @@ public class Query
         int location = 12;
         queries = new Queries[numQuestions];
 
-        for (int i = 0; i < numQuestions; i++)
-        {
+        for (int i = 0; i < numQuestions; i++) {
             StringAndNumber sn = Utils.parseName(location, buffer);
 
             location = sn.getNumber();
 
             queries[i] = new Queries(sn.getString(),
-                Utils.addThem(buffer[location++], buffer[location++]),
-                Utils.addThem(buffer[location++], buffer[location++]));
+                    Utils.addThem(buffer[location++], buffer[location++]),
+                    Utils.addThem(buffer[location++], buffer[location++]));
 
             /*
             ** Multicast DNS defines the top bit in the class field of a
@@ -118,23 +123,25 @@ public class Query
             ** "QU" questions, to distinguish them from the more usual
             ** questions requesting multicast responses ("QM" questions).
             */
-            QU = (queries[i].getQclass() & 0xc000) == 0xc000;
+            boolean QU = (queries[i].getQclass() & 0xc000) == 0xc000;
         }
 
+        /*
         if (header.getNumAdditionals() > 0)
         {
             // for
             int length = buffer.length - location;
-            savedNumAdditionals = header.getNumAdditionals();
-            savedAdditional = new byte[length];
+            int savedNumAdditionals = header.getNumAdditionals();
+            byte[] savedAdditional = new byte[length];
             System.arraycopy(buffer, location, savedAdditional, 0, length);
             parseAdditional(savedAdditional, savedNumAdditionals);
             buffer = Utils.trimByteArray(buffer, location);
-            header.clearNumAdditionals();
+            header.setNumAdditionals(0);
         }
+        */
     }
 
-    // FIXME
+    /*
     public void parseAdditional(byte[] additional, int rrCount)
     {
         try
@@ -148,8 +155,8 @@ public class Query
 
                 if (optrr.isValid())
                 {
-                    DNSSEC = optrr.isDNSSEC();
-                    maximumPayload = optrr.getPayloadSize();
+                    boolean DNSSEC = optrr.isDNSSEC();
+                    int maximumPayload = optrr.getPayloadSize();
                 }
 
                 rrLocation = rrLocation + optrr.getByteSize() + 1;
@@ -160,16 +167,15 @@ public class Query
             // FIXME
         }
     }
+    */
 
-    public String toString()
-    {
+    public String toString() {
         String s = header.toString();
 
-        for (Queries q: queries)
-        {
+        for (Queries q : queries) {
             s += "\nName: " + q.getName() +
-                " Type: " + q.getType() +
-                " Class: " + q.getQclass();
+                    " Type: " + q.getType() +
+                    " Class: " + q.getQclass();
         }
         return s;
     }

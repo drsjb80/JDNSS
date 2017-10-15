@@ -12,19 +12,19 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
+import java.util.Map;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 
 public class JDNSS
 {
     // a few AOP singletons
-    @Getter private static jdnssArgs jargs;
-    @Getter private static Logger logger = LogManager.getLogger("JDNSS");
-    @Getter private static DBConnection DBConnection;
-    @Getter private static JDNSS jdnss;
+    @Getter static jdnssArgs jargs;
+    @Getter static Logger logger = LogManager.getLogger("JDNSS");
+    @Getter static DBConnection DBConnection;
+    @Getter static JDNSS jdnss;
 
-    private Hashtable bindZones = new Hashtable();
+    private final Map<String, Zone> bindZones = new Hashtable();
 
     /**
      * Finds the Zone associated with the domain name passed in
@@ -42,7 +42,7 @@ public class JDNSS
         // first, see if it's in the files
         try
         {
-            longest = Utils.findLongest(bindZones.keys(), name);
+            longest = Utils.findLongest(bindZones.keySet(), name);
         }
         catch (AssertionError AE)
         {
@@ -68,7 +68,7 @@ public class JDNSS
         return (Zone) bindZones.get(longest);
     }
 
-    public void start()
+    private void start()
     {
         /*
         ** Yeah, I know this is a little messy, but it does keep it DRY. I

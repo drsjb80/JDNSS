@@ -45,14 +45,14 @@ public abstract class RR
     @Getter private int length;
     @Getter private int byteSize;
 
-    public RR(String name, int type, int ttl)
+    RR(String name, int type, int ttl)
     {
         this.name = name;
         this.type = type;
         this.ttl = ttl;
     }
 
-    public RR(byte[] bytes)
+    RR(byte[] bytes)
     {
         int location = 0;
 
@@ -69,6 +69,7 @@ public abstract class RR
         this.byteSize = location - 1 + length;
     }
 
+    @Override
     public boolean equals(Object o)
     {
         if (!(o instanceof RR))
@@ -85,6 +86,7 @@ public abstract class RR
             rr.byteSize == byteSize;
     }
 
+    @Override
     public int hashCode()
     {
         return name.hashCode() + type + rrclass + ttl + length +
@@ -92,8 +94,8 @@ public abstract class RR
     }
 
     // to enhance polymorphism and decrease casting for derived classes
-    protected String getString() { Assertion.aver(false); return null; }
-    protected String getHost() { Assertion.aver(false); return null; }
+    String getString() { Assertion.aver(false); return null; }
+    String getHost() { Assertion.aver(false); return null; }
 
     /**
      * converts all the internal data to a byte array
@@ -156,14 +158,14 @@ class QRR extends RR
 
 class SOARR extends RR
 {
-    private String domain;
-    private String server;
-    private String contact;
-    private int serial;
-    private int refresh;
-    private int retry;
-    private int expire;
-    private int minimum;
+    private final String domain;
+    private final String server;
+    private final String contact;
+    private final int serial;
+    private final int refresh;
+    private final int retry;
+    private final int expire;
+    private final int minimum;
 
     SOARR(String domain, String server, String contact, int serial,
         int refresh, int retry, int expire, int minimum, int ttl)
@@ -259,7 +261,8 @@ class SOARR extends RR
 
 class HINFORR extends RR
 {
-    private String CPU, OS;
+    private final String CPU;
+    private final String OS;
 
     HINFORR(String name, int ttl, String CPU, String OS)
     {
@@ -307,8 +310,8 @@ class HINFORR extends RR
 
 class MXRR extends RR
 {
-    private String host;
-    private int preference;
+    private final String host;
+    private final int preference;
 
     MXRR(String name, int ttl, String host, int preference)
     {
@@ -362,7 +365,7 @@ class MXRR extends RR
 
 abstract class STRINGRR extends RR
 {
-    protected String string;
+    String string;
 
     STRINGRR(String name, int type, int ttl)
     {
@@ -445,7 +448,7 @@ class PTRRR extends STRINGRR
 
 abstract class ADDRRR extends RR
 {
-    protected String address;
+    String address;
 
     ADDRRR(String name, int type, int ttl)
     {
@@ -510,10 +513,10 @@ class AAAARR extends ADDRRR
 
 class DNSKEYRR extends RR
 {
-    private int flags;
-    private int protocol;
-    private int algorithm;
-    private String publicKey;
+    private final int flags;
+    private final int protocol;
+    private final int algorithm;
+    private final String publicKey;
 
     DNSKEYRR(String domain, int ttl, int flags, int protocol, int algorithm,
         String publicKey)
@@ -568,12 +571,12 @@ class DNSKEYRR extends RR
 // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 class NSEC3RR extends RR
 {
-    private int hashAlgorithm;
-    private int flags;
-    private int iterations;
-    private String salt;
-    private String nextHashedOwnerName;
-    private ArrayList<Integer> types;
+    private final int hashAlgorithm;
+    private final int flags;
+    private final int iterations;
+    private final String salt;
+    private final String nextHashedOwnerName;
+    private final ArrayList<Integer> types;
 
     NSEC3RR(String domain, int ttl, int hashAlgorithm, int flags,
             int iterations, String salt, String nextHashedOwnerName,
@@ -618,19 +621,15 @@ class NSEC3RR extends RR
 }
 class NSEC3PARAMRR extends RR
 {
-    private int hashAlgorithm;
-    private int flags;
-    private int iterations;
-    private String salt;
 
     NSEC3PARAMRR(String domain, int ttl, int hashAlgorithm, int flags,
         int iterations, String salt)
     {
         super(domain, Utils.NSEC3PARAM, ttl);
-        this.hashAlgorithm = hashAlgorithm;
-        this.flags = flags;
-        this.iterations = iterations;
-        this.salt = salt;
+        int hashAlgorithm1 = hashAlgorithm;
+        int flags1 = flags;
+        int iterations1 = iterations;
+        String salt1 = salt;
     }
 
     @Override
@@ -646,15 +645,15 @@ class NSEC3PARAMRR extends RR
 
 class DNSRRSIGRR extends RR
 {
-    private int typeCovered;
-    private int algorithm;
-    private int labels;
-    private int originalttl;
-    private int expiration;
-    private int inception;
+    private final int typeCovered;
+    private final int algorithm;
+    private final int labels;
+    private final int originalttl;
+    private final int expiration;
+    private final int inception;
     private int keyTag;
-    private String signersName;
-    private String signature;
+    private final String signersName;
+    private final String signature;
 
     DNSRRSIGRR(String domain, int ttl, int typeCovered, int algorithm,
         int labels, int originalttl, int expiration, int inception,
@@ -746,8 +745,8 @@ class DNSRRSIGRR extends RR
 
 class DNSNSECRR extends RR
 {
-    private String nextDomainName;
-    private byte[] typeBitMaps;
+    private final String nextDomainName;
+    private final byte[] typeBitMaps;
 
     DNSNSECRR(String domain, int ttl, String nextDomainName,
         byte[] typeBitMaps)

@@ -4,20 +4,20 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 import java.util.Arrays;
 
-public class RRs
+class RRs
 {
     private int location;
-    private byte buffer[];
-    private static Logger logger = JDNSS.getLogger();
-    private int numQuestions;
-    private int numAnswers;
-    private int numAuthorities;
-    private int numAdditionals;
+    private final byte[] buffer;
+    private static final Logger logger = JDNSS.getLogger();
+    private final int numQuestions;
+    private final int numAnswers;
+    private final int numAuthorities;
+    private final int numAdditionals;
 
-    private RR questions[];
-    private RR answers[];
-    private RR authorities[];
-    private RR additionals[];
+    private final RR[] questions;
+    private final RR[] answers;
+    private final RR[] authorities;
+    private final RR[] additionals;
 
     public RRs(byte buffer[], int numQuestions, int numAnswers,
         int numAuthorities, int numAdditionals)

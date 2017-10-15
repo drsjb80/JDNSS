@@ -1,5 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,7 +16,7 @@ class DBConnection
 {
     private Connection conn;
     private Statement stmt;
-    private static Logger logger = JDNSS.getLogger();
+    private static final Logger logger = JDNSS.getLogger();
 
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS
@@ -67,7 +69,7 @@ class DBConnection
     {
         logger.traceEntry(new ObjectMessage(name));
 
-        Vector v = new Vector();
+        Set<String> v = new HashSet<>();
 
         // first, get them all
         ResultSet rs = null;
@@ -97,7 +99,7 @@ class DBConnection
         Assertion.aver(v.size() != 0);
 
         // then, find the longest that matches
-        String s = Utils.findLongest(v.elements(), name);
+        String s = Utils.findLongest(v, name);
         logger.trace(s);
 
         // then, populate a DBZone with what we found.
@@ -144,7 +146,7 @@ class DBConnection
         {
             String stype = Utils.mapTypeToString(type);
             logger.trace(stype);
-            Vector ret = new Vector();
+            Vector<RR> ret = new Vector();
             ResultSet rs = stmt.executeQuery(
                 "SELECT * FROM records where domain_id = " + domainId +
                 " AND name = \"" + name + "\"" +

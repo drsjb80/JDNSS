@@ -12,12 +12,12 @@ import org.apache.logging.log4j.message.ObjectMessage;
 
 public class UDPThread implements Runnable
 {
-    private Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.getLogger();
 
-    private DatagramSocket socket;
-    private int port;
-    private InetAddress address;
-    private byte[] packet;
+    private final DatagramSocket socket;
+    private final int port;
+    private final InetAddress address;
+    private final byte[] packet;
 
     /**
      * @param socket	the socket to respond through

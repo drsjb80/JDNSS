@@ -2,10 +2,10 @@ package edu.msudenver.cs.jdnss;
 
 import java.util.Vector;
 
-public class StringAndVector
+class StringAndVector
 {
-    private String string;
-    private Vector vector;
+    private final String string;
+    private final Vector vector;
 
     StringAndVector(final String s, final Vector v)
     {

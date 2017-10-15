@@ -6,10 +6,10 @@ package edu.msudenver.cs.jdnss;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 class BindZone implements Zone
 {
@@ -114,11 +114,11 @@ class BindZone implements Zone
         return s;
     }
 
-    private Hashtable<String, Vector> getTable(final int type)
+    private Map getTable(final int type)
     {
         logger.traceEntry(Utils.mapTypeToString(type));
 
-        final Hashtable ret = tableOfTables.get(type);
+        final Map ret = tableOfTables.get(type);
 
         Assertion.aver(ret != null);
 
@@ -140,7 +140,7 @@ class BindZone implements Zone
             this.name = name;
         }
 
-        Hashtable<String, Vector> h = getTable(rr.getType());
+        Map<String, Vector> h = getTable(rr.getType());
 
         logger.trace(h.get(name));
 
@@ -176,7 +176,7 @@ class BindZone implements Zone
         logger.traceEntry(Utils.mapTypeToString(type));
         logger.traceEntry(name);
 
-        final Hashtable<String, Vector> h = getTable(type);
+        final Map<String, Vector> h = getTable(type);
         logger.trace(h);
 
         Vector v = null;

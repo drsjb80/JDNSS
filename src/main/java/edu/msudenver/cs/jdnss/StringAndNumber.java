@@ -2,8 +2,8 @@ package edu.msudenver.cs.jdnss;
 
 public class StringAndNumber
 {
-    private String string;
-    private int number;
+    private final String string;
+    private final int number;
 
     StringAndNumber(final String s, final int n)
     {

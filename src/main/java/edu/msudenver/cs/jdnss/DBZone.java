@@ -12,10 +12,10 @@ import java.util.Vector;
 
 class DBZone implements Zone
 {
-    private static Logger logger = JDNSS.getLogger();
-    private String zoneName;
-    private int domainId;
-    private DBConnection dbConnection;
+    private static final Logger logger = JDNSS.getLogger();
+    private final String zoneName;
+    private final int domainId;
+    private final DBConnection dbConnection;
 
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS
@@ -29,7 +29,7 @@ class DBZone implements Zone
 
     public String getName() { return zoneName; }
 
-    public Vector get(final int type, final String name)
+    public Vector<RR> get(final int type, final String name)
     {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));

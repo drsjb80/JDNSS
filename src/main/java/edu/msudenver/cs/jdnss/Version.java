@@ -6,7 +6,7 @@ import java.io.InputStream;
 // https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 // http://stackoverflow.com/questions/3104617/what-is-the-path-to-resource-files-in-a-maven-project
 
-public class Version
+class Version
 {
     public String getVersion()
     {

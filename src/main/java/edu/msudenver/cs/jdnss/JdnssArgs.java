@@ -2,17 +2,17 @@ package edu.msudenver.cs.jdnss;
 
 class jdnssArgs
 {
-    boolean once = false;
-    int port = 53;
-    int threads = 10;
-    boolean TCP = true;
-    boolean UDP = true;
-    boolean MC = false;
-    int MCport = 5353;
-    String MCaddress = "224.0.0.251";
+    final boolean once = false;
+    final int port = 53;
+    final int threads = 10;
+    final boolean TCP = true;
+    final boolean UDP = true;
+    final boolean MC = false;
+    final int MCport = 5353;
+    final String MCaddress = "224.0.0.251";
     boolean version;
     String IPaddress;
-    int backlog = 4;
+    final int backlog = 4;
 
     boolean help;
 

@@ -1,6 +1,8 @@
 package edu.msudenver.cs.jdnss;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +24,9 @@ public class UtilsTest
     {
         Assert.assertEquals (Utils.mapStringToType ("a"), Utils.A);
         Assert.assertEquals (Utils.mapStringToType ("A"), Utils.A);
-        Assert.assertEquals (Utils.mapStringToType ("foo"), 0);
+
+        exception.expect (IllegalArgumentException.class);
+        Utils.mapStringToType ("foo");
     }
 
     @Test
@@ -250,34 +254,34 @@ public class UtilsTest
         ** find the one that is the longest match for a requested domain.
         */
 
-        Vector<String> v = new Vector<String>();
+        Set<String> v = new HashSet<>();
 
         v.add ("b.c.d.e");
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "a.b.c.d.e").equals("b.c.d.e"));
+            Utils.findLongest (v, "a.b.c.d.e").equals("b.c.d.e"));
 
-        v = new Vector<String>();
+        v = new HashSet<>();
         v.add ("d.e");
         v.add ("b.c.d.e");
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "z.d.e").equals("d.e"));
+            Utils.findLongest (v, "z.d.e").equals("d.e"));
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "z.c.d.e").equals("d.e"));
+            Utils.findLongest (v, "z.c.d.e").equals("d.e"));
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "a.b.c.d.e").equals("b.c.d.e"));
+            Utils.findLongest (v, "a.b.c.d.e").equals("b.c.d.e"));
 
         exception.expect (AssertionError.class);
 
-        v = new Vector<String>();
+        v = new HashSet<>();
         v.add ("");
         Utils.findLongest (null, "string");
-        Utils.findLongest (v.elements(), "string");
+        Utils.findLongest (v, "string");
 
-        v = new Vector<String>();
+        v = new HashSet<>();
         v.add ("foo");
-        Utils.findLongest (v.elements(), "bar");
-        Utils.findLongest (v.elements(), null);
-        Utils.findLongest (v.elements(), "");
+        Utils.findLongest (v, "bar");
+        Utils.findLongest (v, null);
+        Utils.findLongest (v, "");
     }
 
     @Test

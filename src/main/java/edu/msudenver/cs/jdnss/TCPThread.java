@@ -5,7 +5,7 @@ import java.io.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
-public class TCPThread implements Runnable
+class TCPThread implements Runnable
 {
     private final Socket socket;
     private final Logger logger = JDNSS.getLogger();

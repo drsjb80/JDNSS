@@ -3,7 +3,7 @@ package edu.msudenver.cs.jdnss;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class QueryTest
+class QueryTest
 {
     /*
     @Test

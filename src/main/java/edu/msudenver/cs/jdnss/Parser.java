@@ -19,7 +19,7 @@ import org.apache.logging.log4j.message.ObjectMessage;
 // IPV6 addresses: http://www.faqs.org/rfcs/rfc1884.html
 // IPV6 DNS: http://www.faqs.org/rfcs/rfc1886.html
 
-public class Parser
+class Parser
 {
     /*
     ** the range from 0 to 255 are used for query/response codes
@@ -56,11 +56,11 @@ public class Parser
     private int currentTTL = -1;
 
     private StreamTokenizer st;
-    private Hashtable<String, Integer> tokens =
+    private final Hashtable<String, Integer> tokens =
             new Hashtable<String, Integer>();
 
-    private BindZone zone;
-    private Logger logger = JDNSS.getLogger();
+    private final BindZone zone;
+    private final Logger logger = JDNSS.getLogger();
     private boolean inBase64 = false;
 
     /**
@@ -149,11 +149,11 @@ public class Parser
         ** any number of hex digits separated by colons that
         ** end in an IPv4 address
         */
-        if (a.matches("(\\p{XDigit}*\\:)+\\p{XDigit}+") ||
-                a.matches("(\\p{XDigit}*\\:)+(\\d+\\.){3}+\\d+"))
+        if (a.matches("(\\p{XDigit}*:)+\\p{XDigit}+") ||
+                a.matches("(\\p{XDigit}*:)+(\\d+\\.){3}+\\d+"))
         {
-            StringValue = a.replaceFirst("(\\:0+)+", ":");
-            StringValue = StringValue.replaceFirst("^0+\\:", ":");
+            StringValue = a.replaceFirst("(:0+)+", ":");
+            StringValue = StringValue.replaceFirst("^0+:", ":");
             logger.trace(StringValue);
             logger.traceExit("IPV6ADDR");
             return IPV6ADDR;

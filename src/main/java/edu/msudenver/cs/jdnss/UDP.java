@@ -22,11 +22,8 @@ import org.apache.logging.log4j.message.ObjectMessage;
  */
 class UDP extends Thread
 {
-    protected DatagramSocket dsocket;
-    protected Logger logger = JDNSS.getLogger();
-    protected int threadPoolSize = JDNSS.getJargs().threads;
-    protected int port = JDNSS.getJargs().port;
-    protected String ipaddress = JDNSS.getJargs().IPaddress;
+    DatagramSocket dsocket;
+    final Logger logger = JDNSS.getLogger();
 
     // public UDP() {} // don't do anything, let MC() do all the work.
 
@@ -34,6 +31,8 @@ class UDP extends Thread
     {
         try
         {
+            String ipaddress = JDNSS.getJargs().IPaddress;
+            int port = JDNSS.getJargs().port;
             if (ipaddress != null)
             {
                 dsocket = new DatagramSocket(port,
@@ -76,6 +75,7 @@ class UDP extends Thread
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        int threadPoolSize = JDNSS.getJargs().threads;
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true)

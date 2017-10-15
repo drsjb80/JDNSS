@@ -5,22 +5,21 @@ import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.util.Vector;
 import java.util.Arrays;
-import java.net.DatagramPacket;
 
-public class Response
+class Response
 {
     private Logger logger = JDNSS.getLogger();
 
     private Header header;
-    private byte[] additional = new byte[0];
-    private byte[] authority = new byte[0];
+    private byte[] additional;
+    private byte[] authority;
     private Zone zone;
     private int minimum;
     private boolean DNSSEC = false;
-    private byte[] buffer;
+    private byte[] responses;
     private int maximumPayload = 512;
-    private byte[] savedAdditional;
-    private int savedNumAdditionals;
+    // private byte[] savedAdditional;
+    // private int savedNumAdditionals;
     private SOARR SOA;
     private boolean UDP = false;
     private Query query;
@@ -28,12 +27,13 @@ public class Response
     public Response (Query query)
     {
         this.query = query;
-        this.header = query.getHeader();
+        this.header = query.getHeader(); // pass these in
         this.zone = query.getZone();
-        this.buffer = query.getBuffer();
+        // this.responses = query.getBuffer();
+        // logger.debug(this.responses);
     }
 
-    private void addThem(Vector<RR>v, String host, int type)
+    private void addAdditional(Vector<RR>v, String host, int type)
     {
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
@@ -42,7 +42,7 @@ public class Response
         {
             RR rr = v.elementAt(i);
             additional = Utils.combine(additional, rr.getBytes(host, minimum));
-            header.incrementNumAdditionals();
+            header.setNumAdditionals(header.getNumAdditionals()+1);
         }
     }
 
@@ -52,11 +52,13 @@ public class Response
      */
     private void addAorAAAA(String host, String name)
     {
+        Assertion.aver(host != null);
+        Assertion.aver(name != null);
         Vector v = null;
         try
         {
             v = zone.get(Utils.A, host);
-            addThem(v, host, Utils.A);
+            addAdditional(v, host, Utils.A);
 
             if (DNSSEC)
             {
@@ -71,7 +73,7 @@ public class Response
         try
         {
             v = zone.get(Utils.AAAA, host);
-            addThem(v, host, Utils.AAAA);
+            addAdditional(v, host, Utils.AAAA);
 
             if (DNSSEC)
             {
@@ -94,7 +96,7 @@ public class Response
             logger.trace(nsrr);
             authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(),
                 minimum));
-            header.incrementNumAuthorities();
+            header.setNumAuthorities(header.getNumAuthorities()+1);
 
             addAorAAAA(nsrr.getString(), name);
         }
@@ -112,8 +114,8 @@ public class Response
         Assertion.aver(name != null, "name == null");
 
         logger.traceEntry(new ObjectMessage(v));
-        logger.traceEntry(new ObjectMessage(name));
-        logger.traceEntry(new ObjectMessage(which));
+        logger.traceEntry(name);
+        logger.traceEntry(Integer.toString(which));
 
         boolean firsttime = true;
 
@@ -122,19 +124,19 @@ public class Response
             byte add[] = rr.getBytes(name, minimum);
 
             // will we be too big and need to switch to TCP?
-            if (UDP && (buffer.length + add.length > maximumPayload))
+            if (UDP && responses != null && (responses.length + add.length > maximumPayload))
             {
-                header.setTC();
+                header.setTC(true);
                 return;
             }
 
-            buffer = Utils.combine(buffer, add);
-            header.incrementNumAnswers();
+            responses = Utils.combine(responses, add);
+            header.setNumAnswers(header.getNumAnswers()+1);
 
             //Add RRSIG Records Corresponding to Type
             if (DNSSEC)
             {
-                addRRSignature(rr.getType(), name, buffer, Utils.ANSWER);
+                addRRSignature(rr.getType(), name, responses, Utils.ANSWER);
             }
 
             if (firsttime && which != Utils.NS)
@@ -149,12 +151,13 @@ public class Response
                 addAorAAAA(rr.getHost(), name);
             }
         }
+        logger.traceExit();
     }
 
     public void addDNSKeys(String host)
     {
         Vector v = zone.get(Utils.DNSKEY, host);
-        addThem(v, host, Utils.DNSKEY);
+        addAdditional(v, host, Utils.DNSKEY);
 
         addRRSignature(Utils.DNSKEY, host, additional, Utils.ADDITIONAL);
     }
@@ -174,21 +177,21 @@ public class Response
                 switch(section)
                 {
                     case Utils.ANSWER:
-                        if (UDP && (buffer.length+add.length > maximumPayload))
+                        if (UDP && (responses.length+add.length > maximumPayload))
                         {
-                            header.setTC();
+                            header.setTC(true);
                             return;
                         }
-                        buffer = Utils.combine(destination, add);
-                        header.incrementNumAnswers();
+                        responses = Utils.combine(destination, add);
+                        header.setNumAnswers(header.getNumAnswers()+1);
                         break;
                     case Utils.ADDITIONAL:
                         additional = Utils.combine(destination, add);
-                        header.incrementNumAdditionals();
+                        header.setNumAdditionals(header.getNumAdditionals()+1);
                         break;
                     case Utils.AUTHORITY:
                         authority = Utils.combine(destination, add);
-                        header.incrementNumAuthorities();
+                        header.setNumAuthorities(header.getNumAuthorities()+1);
                         break;
                 }
             }
@@ -202,55 +205,56 @@ public class Response
         DNSNSECRR nsec = (DNSNSECRR)nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
         authority = Utils.combine(authority, add);
-        header.incrementNumAuthorities();
+        header.setNumAuthorities(header.getNumAuthorities()+1);
     }
 
     private void addAuthorities()
     {
         logger.trace(UDP);
-        logger.trace(buffer.length);
+        logger.trace(responses.length);
         logger.trace(authority.length);
 
-        if (!UDP ||(UDP && (buffer.length+authority.length < maximumPayload)))
+        if (!UDP ||(UDP && (responses.length+authority.length < maximumPayload)))
         {
             logger.trace("adding in authorities");
-            buffer = Utils.combine(buffer, authority);
+            responses = Utils.combine(responses, authority);
+            header.setNumAuthorities(header.getNumAuthorities()+1);
         }
         else
         {
             logger.trace("NOT adding in authorities");
-            header.clearNumAuthorities();
+            header.setNumAuthorities(0);
         }
     }
 
     private void addAdditionals()
     {
+        /*
         if (savedNumAdditionals > 0)
         {
             additional = Utils.combine(additional, savedAdditional);
             header.setNumAdditionals (header.getNumAdditionals()
                 + savedNumAdditionals);
         }
+        */
 
         if (header.getNumAdditionals() > 0)
         {
-            if (!UDP || 
-                (UDP && (buffer.length+additional.length < maximumPayload)))
+            if (!UDP || (UDP && (responses.length+additional.length < maximumPayload)))
             {
-                buffer = Utils.combine(buffer, additional);
+                responses = Utils.combine(responses, additional);
+                header.setNumAdditionals(header.getNumAdditionals()+1);
             }
-            else
-            {
-                header.clearNumAdditionals();
+            else {
+                header.setNumAdditionals(0);
             }
         }
     }
 
     private void addSOA(SOARR SOA)
     {
-        authority = Utils.combine (authority, SOA.getBytes(zone.getName(),
-            minimum));
-        header.incrementNumAuthorities();
+        authority = Utils.combine (authority, SOA.getBytes(zone.getName(), minimum));
+        header.setNumAuthorities(header.getNumAuthorities()+1);
     }
 
     /*
@@ -310,9 +314,9 @@ public class Response
         {
             logger.debug("Zone lookup of " + name + " failed");
             header.setRcode(Utils.REFUSED);
-            header.setNotAuthoritative();
+            header.setAA(false);
             throw(AE);
-            // return Arrays.copyOf(buffer, buffer.length);
+            // return Arrays.copyOf(responses, responses.length);
         }
     }
 
@@ -436,9 +440,9 @@ public class Response
     {
         this.UDP = UDP;
 
-        header.setResponse();
-        header.setAuthoritative();
-        header.setNoRecurse();
+        header.setQR(true);
+        header.setAA(true);
+        header.setRA(false);
 
         for (Queries q: query.getQueries())
         {
@@ -458,7 +462,7 @@ public class Response
             catch (AssertionError AE)
             {
                 logger.catching(AE);
-                return Arrays.copyOf(buffer, buffer.length);
+                return query.getBuffer();
             }
 
             Vector v = null;
@@ -470,7 +474,7 @@ public class Response
             }
             catch (AssertionError AE2)
             {
-                return Arrays.copyOf(buffer, buffer.length);
+                return query.getBuffer();
             }
 
             // addDNSKeys(name);
@@ -478,13 +482,10 @@ public class Response
             createResponses(v, name, type);
         }
 
-        // if (header.getNumAuthorities() > 0)
-        // {
-            addAuthorities();
-        // }
-
+        addAuthorities();
         addAdditionals();
+        header.build();
 
-        return Arrays.copyOf(buffer, buffer.length);
+        return Utils.combine(Utils.combine(header.getHeader(), query.getRawQueries()), responses);
     }
 }

@@ -10,11 +10,13 @@ class Queries {
     @Getter private String name;
     @Getter private int type;
     @Getter private int qclass;
+    @Getter private boolean QU;
 
-    public Queries(String name, int type, int qclass) {
+    public Queries(String name, int type, int qclass, boolean QU) {
         this.name = name;
         this.type = type;
         this.qclass = qclass;
+        this.QU = QU;
     }
 }
 
@@ -25,21 +27,6 @@ class Query {
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
     @Getter private byte[] rawQueries;
-    @Getter private Zone zone;
-
-    private boolean QU;     // unicast response requested
-
-    // private byte[] additional = new byte[0];
-    // private byte[] authority = new byte[0];
-
-    private final int numQuestions;
-
-    // private boolean DNSSEC = false;
-    // private int numAnswers;
-    // private int numAuthorities;
-    // private byte[] savedAdditional;
-    // private int savedNumAdditionals;
-    // public OPTRR optrr;
 
     private int maximumPayload = 512;
 
@@ -48,14 +35,8 @@ class Query {
      */
     public Query(byte buffer[]) {
         this.buffer = buffer;
-        logger.trace(buffer);
         this.header = new Header(buffer);
-        this.numQuestions = header.getNumQuestions();
         this.rawQueries = Arrays.copyOfRange(buffer, 12, buffer.length);
-        // numAnswers = header.getNumAnswers();
-        // numAuthorities = header.getNumAuthorities();
-
-        // FIXME: put a bunch of avers here
     }
 
     /**
@@ -83,16 +64,17 @@ class Query {
         */
 
         int location = 12;
-        queries = new Queries[numQuestions];
+        queries = new Queries[header.getNumQuestions()];
 
-        for (int i = 0; i < numQuestions; i++) {
+        for (int i = 0; i < header.getNumQuestions(); i++) {
             StringAndNumber sn = Utils.parseName(location, buffer);
 
             location = sn.getNumber();
+            int qtype = Utils.addThem(buffer[location++], buffer[location++]);
+            int qclass = Utils.addThem(buffer[location++], buffer[location++]);
+            boolean QU = (qclass & 0xc000) == 0xc000;
 
-            queries[i] = new Queries(sn.getString(),
-                    Utils.addThem(buffer[location++], buffer[location++]),
-                    Utils.addThem(buffer[location++], buffer[location++]));
+            queries[i] = new Queries(sn.getString(), qtype, qclass, QU);
 
             /*
             ** Multicast DNS defines the top bit in the class field of a
@@ -104,22 +86,10 @@ class Query {
             ** "QU" questions, to distinguish them from the more usual
             ** questions requesting multicast responses ("QM" questions).
             */
-            QU = (queries[i].getQclass() & 0xc000) == 0xc000;
         }
 
-        /*
-        if (header.getNumAdditionals() > 0)
-        {
-            // for
-            int length = buffer.length - location;
-            int savedNumAdditionals = header.getNumAdditionals();
-            byte[] savedAdditional = new byte[length];
-            System.arraycopy(buffer, location, savedAdditional, 0, length);
-            parseAdditional(savedAdditional, savedNumAdditionals);
-            buffer = Utils.trimByteArray(buffer, location);
-            header.setNumAdditionals(0);
+        for (int i = 0; i < header.getNumAdditionals(); i++) {
         }
-        */
     }
 
     /*

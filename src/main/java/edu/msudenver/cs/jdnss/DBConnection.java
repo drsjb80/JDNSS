@@ -35,7 +35,7 @@ class DBConnection {
             conn = DriverManager.getConnection(dbURL, user, pass);
         } catch (SQLException sqle) {
             logger.catching(sqle);
-            Assertion.aver(false);
+            Assertion.fail();
         }
 
         try {
@@ -46,7 +46,7 @@ class DBConnection {
                 conn.close();
             } catch (SQLException sqle2) {
                 logger.catching(sqle);
-                Assertion.aver(false);
+                Assertion.fail();
             }
         }
     }
@@ -70,7 +70,7 @@ class DBConnection {
                 conn.close();
             } catch (SQLException sqle2) {
                 logger.catching(sqle);
-                Assertion.aver(false);
+                Assertion.fail();
             }
         }
 
@@ -101,15 +101,15 @@ class DBConnection {
                 conn.close();
             } catch (SQLException sqle2) {
                 logger.catching(sqle);
-                Assertion.aver(false);
+                Assertion.fail();
             }
         }
 
-        Assertion.aver(false, "DBConnection failed");
+        Assertion.fail("DBConnection failed");
         return null;    // have to have this or javac complains
     }
 
-    public Vector get(final int type, final String name, final int domainId) {
+    public Vector<RR> get(final int type, final String name, final int domainId) {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(domainId));
@@ -117,7 +117,7 @@ class DBConnection {
         try {
             String stype = Utils.mapTypeToString(type);
             logger.trace(stype);
-            Vector<RR> ret = new Vector();
+            Vector<RR> ret = new Vector<RR>();
             ResultSet rs = stmt.executeQuery(
                     "SELECT * FROM records where domain_id = " + domainId +
                             " AND name = \"" + name + "\"" +
@@ -174,7 +174,7 @@ class DBConnection {
                     default: {
                         logger.warn("requested type " + type +
                                 " for " + name + " not found");
-                        Assertion.aver(false);
+                        Assertion.fail();
                     }
                 }
             }
@@ -183,7 +183,7 @@ class DBConnection {
             return ret;
         } catch (SQLException sqle) {
             logger.catching(sqle);
-            Assertion.aver(false);
+            Assertion.fail();
         }
 
         Assertion.aver(false);

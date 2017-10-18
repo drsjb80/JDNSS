@@ -25,9 +25,9 @@ public class JDNSS {
     @Getter static jdnssArgs jargs;
     @Getter static Logger logger = LogManager.getLogger("JDNSS");
     @Getter static DBConnection DBConnection;
-    @Getter static JDNSS jdnss;
+    // @Getter static JDNSS jdnss;
 
-    private final Map<String, Zone> bindZones = new Hashtable();
+    private static final Map<String, Zone> bindZones = new Hashtable();
 
     /**
      * Finds the Zone associated with the domain name passed in
@@ -36,7 +36,7 @@ public class JDNSS {
      * @return the associated Zone
      * @see Zone
      */
-     Zone getZone(String name) {
+     static Zone getZone(String name) {
         logger.traceEntry(new ObjectMessage(name));
 
         String longest = null;
@@ -47,10 +47,10 @@ public class JDNSS {
         } catch (AssertionError AE) {
             // see if we have a DB connection and try there
             if (DBConnection != null) {
-                DBZone d = null;
+                DBZone d;
                 try {
                     d = DBConnection.getZone(name);
-                    return (Zone) d;
+                    return d;
                 } catch (AssertionError AE2) {
                     Assertion.fail();
                 }
@@ -60,41 +60,22 @@ public class JDNSS {
             Assertion.fail();
         }
 
-        return (Zone) bindZones.get(longest);
+        return bindZones.get(longest);
     }
 
-    private void start() {
-        /*
-        ** Yeah, I know this is a little messy, but it does keep it DRY. I
-        ** need to start each thread independently of whether any of the
-        ** others are started.
-        */
-        for (int i = 0; i < 3; i++) {
-            try {
-                switch (i) {
-                    case 0:
-                        if (jargs.UDP) new UDP().start();
-                        break;
-                    case 1:
-                        if (jargs.TCP) new TCP().start();
-                        break;
-                    case 2:
-                        if (jargs.MC) new MC().start();
-                        break;
-                    default:
-                        Assertion.fail();
-                }
-            } catch (SocketException se) {
-                logger.catching(se);
-            } catch (UnknownHostException uhe) {
-                logger.catching(uhe);
-            } catch (IOException ie) {
-                logger.catching(ie);
-            }
+    private static void start() {
+        try {
+            if (jargs.UDP) new UDP().start();
+            if (jargs.TCP) new TCP().start();
+            if (jargs.MC) new MC().start();
+        } catch (SocketException | UnknownHostException se) {
+            logger.catching(se);
+        } catch (IOException ie) {
+            logger.catching(ie);
         }
     }
 
-    private void setLogLevel() {
+    private static void setLogLevel() {
         Level level = Level.OFF;
 
         switch (jargs.logLevel) {
@@ -111,13 +92,12 @@ public class JDNSS {
         Configurator.setLevel("JDNSS", level);
     }
 
-    private void doargs() {
+    private static void doargs() {
         logger.traceEntry();
         logger.trace(jargs.toString());
 
         if (jargs.version) {
-            // FIXME: get from resources
-            logger.fatal(new Version().getVersion());
+            System.out.println(new Version().getVersion());
             System.exit(0);
         }
 
@@ -134,11 +114,11 @@ public class JDNSS {
             return;
         }
 
-        for (int i = 0; i < additional.length; i++) {
+        for (String anAdditional : additional) {
             try {
-                String name = new File(additional[i]).getName();
+                String name = new File(anAdditional).getName();
 
-                logger.info("Parsing: " + additional[i]);
+                logger.info("Parsing: " + anAdditional);
 
                 if (name.endsWith(".db")) {
                     name = name.replaceFirst("\\.db$", "");
@@ -149,14 +129,14 @@ public class JDNSS {
                 }
 
                 BindZone zone = new BindZone(name);
-                new Parser(new FileInputStream(additional[i]), zone).RRs();
+                new Parser(new FileInputStream(anAdditional), zone).RRs();
                 logger.trace(zone);
 
                 // the name of the zone can change while parsing, so use
                 // the name from the zone
                 bindZones.put(zone.getName(), zone);
             } catch (FileNotFoundException e) {
-                logger.warn("Couldn't open file " + additional[i] + '\n' + e);
+                logger.warn("Couldn't open file " + anAdditional + '\n' + e);
             }
         }
     }
@@ -165,9 +145,9 @@ public class JDNSS {
      * The main driver for the server; creates threads for TCP and UDP.
      */
     public static void main(String[] args) {
-        jdnss = new JDNSS();
+        // jdnss = new JDNSS();
         jargs = new jdnssArgs();
-        JCLO jclo = new JCLO(jdnss.jargs);
+        JCLO jclo = new JCLO(jargs);
         jclo.parse(args);
 
         if (jargs.help) {
@@ -175,14 +155,14 @@ public class JDNSS {
             System.exit(0);
         }
 
-        jdnss.setLogLevel();
-        jdnss.doargs();
+        setLogLevel();
+        doargs();
 
-        if (jdnss.bindZones.size() == 0 && jdnss.DBConnection == null) {
+        if (bindZones.size() == 0 && DBConnection == null) {
             logger.fatal("No zone files, traceExit.");
             System.exit(1);
         }
 
-        jdnss.start();
+        start();
     }
 }

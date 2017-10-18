@@ -19,12 +19,7 @@ class Version
             properties.load(in);
             in.close();
             return properties.getProperty("version");
-        }
-        catch (java.io.FileNotFoundException FNFE)
-        {
-            return "unknown";
-        }
-        catch (java.io.IOException IOE)
+        } catch (java.io.IOException IOE)
         {
             return "unknown";
         }

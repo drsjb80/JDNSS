@@ -1,12 +1,9 @@
 package edu.msudenver.cs.jdnss;
 
 import java.io.IOException;
-import java.lang.AssertionError;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.MulticastSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +12,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 /**
  * This class is used by UDP and for extended for MC queries.
@@ -43,15 +39,10 @@ class UDP extends Thread
                 dsocket = new DatagramSocket(port);
             }
         }
-        catch (UnknownHostException uhe)
+        catch (UnknownHostException | SocketException uhe)
         {
             logger.catching(uhe);
             throw uhe;
-        }
-        catch (SocketException se)
-        {
-            logger.catching(se);
-            throw se;
         }
     }
 
@@ -105,13 +96,9 @@ class UDP extends Thread
                 {   
                     f.get();
                 }
-                catch (InterruptedException ie)
+                catch (InterruptedException | ExecutionException ie)
                 {   
                     logger.catching(ie);
-                }
-                catch (ExecutionException ee)
-                {   
-                    logger.catching(ee);
                 }
 
                 System.exit(0);

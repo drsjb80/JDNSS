@@ -36,39 +36,17 @@ import lombok.Getter;
 */
 
 public abstract class RR {
-    @Getter
-    private String name;
-    @Getter
-    private int type;
-    @Getter
-    private int rrclass = 1;        // IN
-    @Getter
-    private int ttl;
-    @Getter
-    private int length;
-    @Getter
-    private int byteSize;
+    @Getter private String name;
+    @Getter private int type;
+    @Getter private int rrclass = 1;
+    @Getter private int ttl;
+    @Getter private int length;
+    @Getter private int byteSize;
 
     RR(String name, int type, int ttl) {
         this.name = name;
         this.type = type;
         this.ttl = ttl;
-    }
-
-    RR(byte[] bytes) {
-        int location = 0;
-
-        StringAndNumber san = Utils.parseName(location, bytes);
-
-        location = san.getNumber();
-        this.name = san.getString();
-
-        this.type = Utils.addThem(bytes[location++], bytes[location++]);
-        this.rrclass = Utils.addThem(bytes[location++], bytes[location++]);
-        this.ttl = Utils.addThem(bytes[location++], bytes[location++],
-                bytes[location++], bytes[location++]);
-        this.length = Utils.addThem(bytes[location++], bytes[location++]);
-        this.byteSize = location - 1 + length;
     }
 
     @Override
@@ -94,12 +72,12 @@ public abstract class RR {
 
     // to enhance polymorphism and decrease casting for derived classes
     String getString() {
-        Assertion.aver(false);
+        Assertion.fail();
         return null;
     }
 
     String getHost() {
-        Assertion.aver(false);
+        Assertion.fail();
         return null;
     }
 
@@ -108,7 +86,6 @@ public abstract class RR {
      * @return the resource record to put in the response
      */
     public byte[] getBytes(String question, int TTLminimum) {
-        int type = getType();
         int minttl = ttl == 0 ? TTLminimum : ttl;
 
         byte name[] = Utils.convertString(question);
@@ -447,10 +424,6 @@ abstract class ADDRRR extends RR {
         return super.hashCode() + address.hashCode();
     }
 
-    public String getAddress() {
-        return address;
-    }
-
     @Override
     public String toString() {
         return "ADDR: address = " + address + ", " + super.toString();
@@ -574,13 +547,13 @@ class NSEC3RR extends RR {
 
     @Override
     public boolean equals(Object o) {
-        Assertion.aver(false);
+        Assertion.fail();
         return false;
     }
 
     @Override
     public int hashCode() {
-        Assertion.aver(false);
+        Assertion.fail();
         return 42;
     }
 }
@@ -602,19 +575,19 @@ class NSEC3PARAMRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        Assertion.aver(false);
+        Assertion.fail();
         return null;
     }
 
     @Override
     public boolean equals(Object o) {
-        Assertion.aver(false);
+        Assertion.fail();
         return false;
     }
 
     @Override
     public int hashCode() {
-        Assertion.aver(false);
+        Assertion.fail();
         return 42;
     }
 }
@@ -747,42 +720,53 @@ class DNSNSECRR extends RR {
     }
 }
 
-class OPTRR extends RR {
-    @Getter
-    private boolean DNSSEC;
-    @Getter
+// When an OPT RR is included within any DNS message, it MUST be the
+// only OPT RR in that message.
+class OPTRR {
+    @Getter private boolean DNSSEC = false;
     private int payloadSize;
-    @Getter
-    private boolean valid = false;
+    private int rcodeAndFlags;
+    private int rdLength;
+    private byte rcode;
+    private byte version;
+    private int flags;
+    private int optionCode;
+    @Getter private byte[] clientCookie;
+    @Getter private byte[] serverCookie;
 
     OPTRR(byte[] bytes) {
-        super(bytes);
+        Assertion.aver(bytes[0] == 0);
 
-        // OPTRR is type 41 (See RFC 6891)
-        valid = (getType() == 41);
+        int location = 1;
 
-        DNSSEC = ((getTtl() >> 15) & 1) == 1;
-        payloadSize = getRrclass();
+        int type = Utils.addThem(bytes[location++], bytes[location++]);
+        Assertion.aver(type == 41);
 
-        if (payloadSize < 512)
-            payloadSize = 512;
-    }
+        payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
+        rcode = bytes[location++];
+        version = bytes[location++];
+        Assertion.aver(version == 0);
 
-    @Override
-    protected byte[] getBytes() {
-        Assertion.aver(false);
-        return new byte[0];
-    }
+        flags = Utils.addThem(bytes[location++], bytes[location++]);
+        DNSSEC = flags >> 15 == 1;
 
-    @Override
-    public boolean equals(Object o) {
-        Assertion.aver(false);
-        return false;
-    }
+        rdLength = Utils.addThem(bytes[location++], bytes[location++]);
 
-    @Override
-    public int hashCode() {
-        Assertion.aver(false);
-        return 42;
+        optionCode = Utils.addThem(bytes[location++], bytes[location++]);
+        Assertion.aver(optionCode == 10);
+
+        int optionLength = Utils.addThem(bytes[location++], bytes[location++]);
+        clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
+        location += 8;
+
+        if (optionLength > 8) { // server cookie returned
+            Assertion.aver(optionLength == 16);
+            /*
+            The Server Cookie is an integer number of bytes, with a minimum size
+            of 8 bytes for security and a
+            maximum size of 32 bytes for convenience of implementation.
+            */
+            serverCookie = Arrays.copyOfRange(bytes, location, location+8);
+        }
     }
 }

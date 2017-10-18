@@ -34,7 +34,7 @@ class Utils {
     public static final int AAAA = 28;
     public static final int A6 = 38;
     public static final int DNAME = 39;
-    private static final int OPT = 41;
+    public static final int OPT = 41;
     public static final int DS = 43;
     public static final int RRSIG = 46;
     public static final int NSEC = 47;
@@ -58,8 +58,8 @@ class Utils {
     public static final int ADDITIONAL = 1;
     public static final int AUTHORITY = 2;
 
-    private static final Map<String, Integer> StringToType = new HashMap<String, Integer>();
-    private static final Map<Integer, String> TypeToString = new HashMap<Integer, String>();
+    private static final Map<String, Integer> StringToType = new HashMap<>();
+    private static final Map<Integer, String> TypeToString = new HashMap<>();
 
     static {
         StringToType.put("A", A);
@@ -92,7 +92,7 @@ class Utils {
 
     public static int mapStringToType(String s) throws IllegalArgumentException {
         Assertion.aver(s != null);
-        Assertion.aver(s != "");
+        Assertion.aver(! s.equals(""));
 
         if (! StringToType.containsKey(s.toUpperCase()))
             throw new IllegalArgumentException(s + " not in map");
@@ -158,7 +158,7 @@ class Utils {
             char c = (char) buffer[i];
             s += (c >= 33 && c <= 126) ? c + " " : ". ";
 
-            s += df.format((int) (buffer[i] & 0xFF)) + " ";
+            s += df.format(buffer[i] & 0xFF) + " ";
         }
 
         return s;
@@ -464,7 +464,7 @@ class Utils {
             return ret;
         }
 
-        String split[] = s.split("\\:");
+        String split[] = s.split(":");
         // System.out.println("split.length = " + split.length);
 
         /*
@@ -560,9 +560,6 @@ class Utils {
             s += "getNetworkInterface() = " + mcs.getNetworkInterface() + "\n";
             s += "getTimeToLive() = " + mcs.getTimeToLive() + "\n";
             s += "getLoopbackMode() = " + mcs.getLoopbackMode();
-        } catch (java.net.SocketException se) {
-            logger.catching(se);
-            return null;
         } catch (java.io.IOException ioe) {
             logger.catching(ioe);
             return null;

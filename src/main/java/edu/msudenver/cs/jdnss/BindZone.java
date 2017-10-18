@@ -18,21 +18,6 @@ class BindZone implements Zone {
     ** in the single table...
     */
 
-    private final Map<String, Vector<RR>> hA = new Hashtable<>();
-    private final Map<String, Vector<RR>> hAAAA = new Hashtable<>();
-    private final Map<String, Vector<RR>> hNS = new Hashtable<>();
-    private final Map<String, Vector<RR>> hMX = new Hashtable<>();
-    private final Map<String, Vector<RR>> hCNAME = new Hashtable<>();
-    private final Map<String, Vector<RR>> hPTR = new Hashtable<>();
-    private final Map<String, Vector<RR>> hTXT = new Hashtable<>();
-    private final Map<String, Vector<RR>> hHINFO = new Hashtable<>();
-    private final Map<String, Vector<RR>> hSOA = new Hashtable<>();
-    private final Map<String, Vector<RR>> hDNSKEY = new Hashtable<>();
-    private final Map<String, Vector<RR>> hDNSRRSIG = new Hashtable<>();
-    private final Map<String, Vector<RR>> hNSEC = new Hashtable<>();
-    private final Map<String, Vector<RR>> hNSEC3 = new Hashtable<>();
-    private final Map<String, Vector<RR>> hNSEC3PARAM = new Hashtable<>();
-
     private final Map<Integer, Map<String, Vector<RR>>> tableOfTables = new Hashtable<>();
 
     private final Logger logger = JDNSS.getLogger();
@@ -40,19 +25,33 @@ class BindZone implements Zone {
     public BindZone(final String name) {
         this.name = name;
 
+        Map<String, Vector<RR>> hA = new Hashtable<>();
         tableOfTables.put(Utils.A, hA);
+        Map<String, Vector<RR>> hAAAA = new Hashtable<>();
         tableOfTables.put(Utils.AAAA, hAAAA);
+        Map<String, Vector<RR>> hNS = new Hashtable<>();
         tableOfTables.put(Utils.NS, hNS);
+        Map<String, Vector<RR>> hMX = new Hashtable<>();
         tableOfTables.put(Utils.MX, hMX);
+        Map<String, Vector<RR>> hCNAME = new Hashtable<>();
         tableOfTables.put(Utils.CNAME, hCNAME);
+        Map<String, Vector<RR>> hPTR = new Hashtable<>();
         tableOfTables.put(Utils.PTR, hPTR);
+        Map<String, Vector<RR>> hTXT = new Hashtable<>();
         tableOfTables.put(Utils.TXT, hTXT);
+        Map<String, Vector<RR>> hHINFO = new Hashtable<>();
         tableOfTables.put(Utils.HINFO, hHINFO);
+        Map<String, Vector<RR>> hSOA = new Hashtable<>();
         tableOfTables.put(Utils.SOA, hSOA);
+        Map<String, Vector<RR>> hDNSKEY = new Hashtable<>();
         tableOfTables.put(Utils.DNSKEY, hDNSKEY);
+        Map<String, Vector<RR>> hDNSRRSIG = new Hashtable<>();
         tableOfTables.put(Utils.RRSIG, hDNSRRSIG);
+        Map<String, Vector<RR>> hNSEC = new Hashtable<>();
         tableOfTables.put(Utils.NSEC, hNSEC);
+        Map<String, Vector<RR>> hNSEC3 = new Hashtable<>();
         tableOfTables.put(Utils.NSEC3, hNSEC3);
+        Map<String, Vector<RR>> hNSEC3PARAM = new Hashtable<>();
         tableOfTables.put(Utils.NSEC3PARAM, hNSEC3PARAM);
     }
 
@@ -148,7 +147,7 @@ class BindZone implements Zone {
         Assertion.aver(h != null);
         logger.trace(h);
 
-        Vector v = h.get(name);
+        Vector<RR> v = h.get(name);
         logger.traceExit(v);
 
         Assertion.aver(v != null);

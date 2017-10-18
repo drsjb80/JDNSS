@@ -1,18 +1,10 @@
 package edu.msudenver.cs.jdnss;
 
 import java.io.IOException;
-import java.lang.AssertionError;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.MulticastSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 class MC extends UDP
 {

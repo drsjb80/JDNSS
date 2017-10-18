@@ -1,11 +1,10 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
+
 import java.util.Arrays;
 
-class RRs
-{
+class RRs {
     private int location;
     private final byte[] buffer;
     private static final Logger logger = JDNSS.getLogger();
@@ -20,8 +19,7 @@ class RRs
     private final RR[] additionals;
 
     public RRs(byte buffer[], int numQuestions, int numAnswers,
-        int numAuthorities, int numAdditionals)
-    {
+               int numAuthorities, int numAdditionals) {
         this.buffer = Arrays.copyOf(buffer, buffer.length);
         this.numQuestions = numQuestions;
         this.numAnswers = numAnswers;
@@ -36,8 +34,7 @@ class RRs
         parseQuestions();
     }
 
-    private void parseQuestions()
-    {
+    private void parseQuestions() {
         logger.traceEntry();
 
         /*
@@ -58,24 +55,20 @@ class RRs
         +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
         */
 
-        for (int i = 0; i < numQuestions; i++)
-        {
+        for (int i = 0; i < numQuestions; i++) {
             StringAndNumber sn = null;
 
-            try
-            {
+            try {
                 sn = Utils.parseName(location, buffer);
-            }
-            catch (AssertionError ae)
-            {
+            } catch (AssertionError ae) {
                 questions[i] = null;
-                Assertion.aver(false);
+                Assertion.fail();
             }
 
             location = sn.getNumber();
             int qtype = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
-            // QU/QM
+            // FIXME: QU/QM
             // logger.fatal(buffer[location] & 0x80);
             int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
@@ -84,8 +77,7 @@ class RRs
         }
     }
 
-    public void parseAnswers(int location)
-    {
+    public void parseAnswers(int location) {
         logger.traceEntry();
 
         /*
@@ -128,37 +120,30 @@ class RRs
         */
     }
 
-    private String display(String title, RR rrs[])
-    {
+    private String display(String title, RR rrs[]) {
         String s = title + "\n";
 
-        for (int i = 0; i < rrs.length; i++)
-        {
+        for (int i = 0; i < rrs.length; i++) {
             // put a newline on all except the last
-            s += rrs[i] + (i < rrs.length-1 ? "\n" : "");
+            s += rrs[i] + (i < rrs.length - 1 ? "\n" : "");
         }
 
         return s;
     }
 
-    public String toString()
-    {
+    public String toString() {
         String s = "";
 
-        if (numQuestions > 0)
-        {
+        if (numQuestions > 0) {
             s += display("Questions:", questions);
         }
-        if (numAnswers > 0)
-        {
+        if (numAnswers > 0) {
             s += display("Answers:", answers);
         }
-        if (numAuthorities > 0)
-        {
+        if (numAuthorities > 0) {
             s += display("Authorities:", authorities);
         }
-        if (numAdditionals > 0)
-        {
+        if (numAdditionals > 0) {
             s += display("Additional:", additionals);
         }
 

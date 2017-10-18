@@ -1,11 +1,9 @@
 package edu.msudenver.cs.jdnss;
 
 import java.io.IOException;
-import java.lang.AssertionError;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,41 +11,25 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
-class TCP extends Thread
-{
+class TCP extends Thread {
     private ServerSocket ssocket;
     private final Logger logger = JDNSS.getLogger();
 
-    public TCP() throws UnknownHostException, IOException
-    {
-        try
-        {
+    public TCP() throws UnknownHostException, IOException {
+        try {
             String ipaddress = JDNSS.getJargs().IPaddress;
             int backlog = JDNSS.getJargs().backlog;
             int port = JDNSS.getJargs().port;
-            if (ipaddress != null)
-            {
-                ssocket = new ServerSocket (port, backlog,
-                    InetAddress.getByName(ipaddress));
-            }
-            else if (backlog != 0)
-            {
+            if (ipaddress != null) {
+                ssocket = new ServerSocket(port, backlog,
+                        InetAddress.getByName(ipaddress));
+            } else if (backlog != 0) {
                 ssocket = new ServerSocket(port, backlog);
-            }
-            else
-            {
+            } else {
                 ssocket = new ServerSocket(port);
             }
-        }
-        catch (UnknownHostException uhe)
-        {
-            logger.catching(uhe);
-            throw uhe;
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             throw ioe;
         }
@@ -55,22 +37,17 @@ class TCP extends Thread
         logger.traceExit();
     }
 
-    public void run()
-    {
+    public void run() {
         logger.traceEntry();
 
-        Socket socket = null;
+        Socket socket;
         int threadPoolSize = JDNSS.getJargs().threads;
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
-        while (true)
-        {
-            try
-            {
+        while (true) {
+            try {
                 socket = ssocket.accept();
-            }
-            catch (IOException ioe)
-            {
+            } catch (IOException ioe) {
                 logger.catching(ioe);
                 return;
             }
@@ -81,19 +58,11 @@ class TCP extends Thread
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.getJargs().once)
-            {
-                try
-                {
+            if (JDNSS.getJargs().once) {
+                try {
                     f.get();
-                }
-                catch (InterruptedException ie)
-                {
+                } catch (InterruptedException | ExecutionException ie) {
                     logger.catching(ie);
-                }
-                catch (ExecutionException ee)
-                {
-                    logger.catching(ee);
                 }
 
                 System.exit(0);

@@ -240,7 +240,6 @@ class Parser {
         }
 
         logger.fatal("Unknown token on line " + st.lineno() + ": " + a);
-        Assertion.aver(false);
         return NOTOK;
     }
 
@@ -275,7 +274,6 @@ class Parser {
                 return EOF;
             case StreamTokenizer.TT_NUMBER:
                 // numbers are counted as words...
-                Assertion.aver(false);
                 logger.traceExit("NOTOK");
                 return NOTOK;
             case StreamTokenizer.TT_WORD: {

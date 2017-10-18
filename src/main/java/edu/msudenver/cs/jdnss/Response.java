@@ -10,14 +10,14 @@ class Response {
 
     private final Header header;
     private byte[] additional;
+    private int numAdditionals;
     private byte[] authority;
+    private int numAuthorities;
     private Zone zone;
     private int minimum;
     private final boolean DNSSEC = false;
     private byte[] responses;
     private final int maximumPayload = 512;
-    // private byte[] savedAdditional;
-    // private int savedNumAdditionals;
     private SOARR SOA;
     private boolean UDP = false;
     private final Query query;
@@ -25,19 +25,19 @@ class Response {
     public Response(Query query) {
         this.query = query;
         this.header = query.getHeader(); // pass these in
-        this.zone = query.getZone();
         // this.responses = query.getBuffer();
         // logger.debug(this.responses);
     }
 
-    private void addAdditional(Vector<RR> v, String host) {
+    // put the possible additionals in, but don't add to response until we know there is room for them.
+    private void createAdditionals(Vector<RR> v, String host) {
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
 
         for (int i = 0; i < v.size(); i++) {
             RR rr = v.elementAt(i);
             additional = Utils.combine(additional, rr.getBytes(host, minimum));
-            header.setNumAdditionals(header.getNumAdditionals() + 1);
+            numAdditionals++;
         }
     }
 
@@ -45,14 +45,14 @@ class Response {
      * Given a zone and an MX or NS hostname, see if there is an A or AAAA
      * record we can also send back...
      */
-    private void addAorAAAA(String host, String name) {
+    private void createAorAAAA(String host, String name) {
         Assertion.aver(host != null);
         Assertion.aver(name != null);
         Vector<RR> v;
 
         try {
             v = zone.get(Utils.A, host);
-            addAdditional(v, host);
+            createAdditionals(v, host);
 
             if (DNSSEC) {
                 addRRSignature(Utils.A, name, additional, Utils.ADDITIONAL);
@@ -63,7 +63,7 @@ class Response {
 
         try {
             v = zone.get(Utils.AAAA, host);
-            addAdditional(v, host);
+            createAdditionals(v, host);
 
             if (DNSSEC) {
                 addRRSignature(Utils.AAAA, name, additional, Utils.ADDITIONAL);
@@ -73,17 +73,16 @@ class Response {
         }
     }
 
+    // put the possible authorities in, but don't add to response until we know there is room for them.
     private void createAuthorities(String name) {
         Vector<RR> v = zone.get(Utils.NS, zone.getName());
         logger.trace(v);
 
         for (RR nsrr : v) {
             logger.trace(nsrr);
-            authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(),
-                    minimum));
-            header.setNumAuthorities(header.getNumAuthorities() + 1);
-
-            addAorAAAA(nsrr.getString(), name);
+            authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(), minimum));
+            numAuthorities++;
+            createAorAAAA(nsrr.getString(), name);
         }
 
         if (DNSSEC) {
@@ -126,7 +125,7 @@ class Response {
             firsttime = false;
 
             if (which == Utils.MX || which == Utils.NS) {
-                addAorAAAA(rr.getHost(), name);
+                createAorAAAA(rr.getHost(), name);
             }
         }
         logger.traceExit();
@@ -134,14 +133,13 @@ class Response {
 
     public void addDNSKeys(String host) {
         Vector v = zone.get(Utils.DNSKEY, host);
-        addAdditional(v, host);
+        createAdditionals(v, host);
 
         addRRSignature(Utils.DNSKEY, host, additional, Utils.ADDITIONAL);
     }
 
 
-    private void addRRSignature(int type, String name,
-                                byte[] destination, int section) {
+    private void addRRSignature(int type, String name, byte[] destination, int section) {
         Vector<RR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
 
         for (RR foo : rrsigv) {
@@ -181,36 +179,20 @@ class Response {
     }
 
     private void addAuthorities() {
-        logger.trace(UDP);
-        logger.trace(responses.length);
-        logger.trace(authority.length);
-
-        if (!UDP || responses.length + authority.length < maximumPayload) {
-            logger.trace("adding in authorities");
-            responses = Utils.combine(responses, authority);
-            header.setNumAuthorities(header.getNumAuthorities() + 1);
-        } else {
-            logger.trace("NOT adding in authorities");
-            header.setNumAuthorities(0);
+        if (numAuthorities > 0) {
+            if (!UDP || responses.length + authority.length < maximumPayload) {
+                responses = Utils.combine(responses, authority);
+                header.setNumAuthorities(numAuthorities);
+            }
         }
     }
 
+    // DRY with above?
     private void addAdditionals() {
-        /*
-        if (savedNumAdditionals > 0)
-        {
-            additional = Utils.combine(additional, savedAdditional);
-            header.setNumAdditionals (header.getNumAdditionals()
-                + savedNumAdditionals);
-        }
-        */
-
-        if (header.getNumAdditionals() > 0) {
+        if (numAdditionals > 0) {
             if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);
-                header.setNumAdditionals(header.getNumAdditionals() + 1);
-            } else {
-                header.setNumAdditionals(0);
+                header.setNumAdditionals(numAdditionals);
             }
         }
     }
@@ -255,15 +237,13 @@ class Response {
 
     // Just keeping it DRY.
     private void errLookupFailed(int type, String name, int rcode) {
-        logger.debug("'" + Utils.mapTypeToString(type) +
-                "' lookup of " + name + " failed");
+        logger.debug("'" + Utils.mapTypeToString(type) + "' lookup of " + name + " failed");
         header.setRcode(rcode);
     }
 
-
     private void setZone(String name) {
         try {
-            zone = JDNSS.getJdnss().getZone(name);
+            zone = JDNSS.getZone(name);
         } catch (AssertionError AE) {
             logger.debug("Zone lookup of " + name + " failed");
             header.setRcode(Utils.REFUSED);

@@ -2,45 +2,36 @@ package edu.msudenver.cs.jdnss;
 
 import java.net.*;
 import java.io.*;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
-class TCPThread implements Runnable
-{
+import org.apache.logging.log4j.Logger;
+
+class TCPThread implements Runnable {
     private final Socket socket;
     private final Logger logger = JDNSS.getLogger();
 
     /**
-     * @param socket	the socket to talk to
+     * @param socket the socket to talk to
      */
-    public TCPThread(Socket socket)
-    {
+    public TCPThread(Socket socket) {
         this.socket = socket;
     }
 
-    public void run()
-    {
+    public void run() {
         logger.traceEntry();
 
-        InputStream is = null;
-        OutputStream os = null;
+        InputStream is;
+        OutputStream os;
 
-        try
-        {
+        try {
             is = socket.getInputStream();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
 
-        try
-        {
+        try {
             os = socket.getOutputStream();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
@@ -48,24 +39,18 @@ class TCPThread implements Runnable
         // in TCP, the first two bytes signify the length of the request
         byte buffer[] = new byte[2];
 
-        try
-        {
+        try {
             Assertion.aver(is.read(buffer, 0, 2) == 2);
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
 
-        byte query[] = new byte [Utils.addThem(buffer[0], buffer[1])];
+        byte query[] = new byte[Utils.addThem(buffer[0], buffer[1])];
 
-        try
-        {
+        try {
             Assertion.aver(is.read(query) == query.length);
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
@@ -80,42 +65,30 @@ class TCPThread implements Runnable
         buffer[0] = Utils.getByte(count, 2);
         buffer[1] = Utils.getByte(count, 1);
 
-        try
-        {
+        try {
             os.write(Utils.combine(buffer, b));
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
 
-        try
-        {
+        try {
             is.close();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
 
-        try
-        {
+        try {
             os.close();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }
 
-        try
-        {
+        try {
             socket.close();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             logger.catching(ioe);
             return;
         }

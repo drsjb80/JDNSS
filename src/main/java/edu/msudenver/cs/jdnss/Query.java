@@ -27,6 +27,7 @@ class Query {
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
     @Getter private byte[] rawQueries;
+    @Getter private OPTRR optrr;
 
     private int maximumPayload = 512;
 
@@ -89,36 +90,12 @@ class Query {
         }
 
         for (int i = 0; i < header.getNumAdditionals(); i++) {
+            // for now, it has to be 1
+            Assertion.aver(header.getNumAdditionals() == 1);
+
+            optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
         }
     }
-
-    /*
-    public void parseAdditional(byte[] additional, int rrCount)
-    {
-        try
-        {
-            int rrLocation = 0;
-
-            for (int i = 0; i < rrCount; i++)
-            {
-                byte[] bytes = new byte[additional.length - rrLocation];
-                OPTRR optrr = new OPTRR(bytes);
-
-                if (optrr.isValid())
-                {
-                    boolean DNSSEC = optrr.isDNSSEC();
-                    int maximumPayload = optrr.getPayloadSize();
-                }
-
-                rrLocation = rrLocation + optrr.getByteSize() + 1;
-            }
-        }
-        catch(Exception ex)
-        {
-            // FIXME
-        }
-    }
-    */
 
     public String toString() {
         String s = header.toString();

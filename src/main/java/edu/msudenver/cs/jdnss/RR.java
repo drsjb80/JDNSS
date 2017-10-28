@@ -9,8 +9,8 @@ package edu.msudenver.cs.jdnss;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
-
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 
 /*
 **                                        1  1  1  1  1  1
@@ -36,6 +36,7 @@ import lombok.Getter;
 */
 
 public abstract class RR {
+    final static Logger logger = JDNSS.getLogger();
     @Getter private String name;
     @Getter private int type;
     @Getter private int rrclass = 1;
@@ -724,6 +725,7 @@ class DNSNSECRR extends RR {
 // only OPT RR in that message.
 class OPTRR {
     @Getter private boolean DNSSEC = false;
+    final static Logger logger = JDNSS.getLogger();
     private int payloadSize;
     private int rcodeAndFlags;
     private int rdLength;
@@ -748,7 +750,9 @@ class OPTRR {
         Assertion.aver(version == 0);
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
+        logger.error(flags);
         DNSSEC = flags >> 15 == 1;
+        logger.error(DNSSEC);
 
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
 

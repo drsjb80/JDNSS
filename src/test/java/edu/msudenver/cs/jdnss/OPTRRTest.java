@@ -13,7 +13,7 @@ public class OPTRRTest {
             (byte) 0x9c, (byte) 0xd1, (byte) 0xf3, (byte) 0xaf,
             (byte) 0x36, (byte) 0x46, (byte) 0x21
     };
-    byte[] cookie = { (byte) 0x33,
+    byte[] cookie = {(byte) 0x33,
             (byte) 0x9c, (byte) 0xd1, (byte) 0xf3, (byte) 0xaf,
             (byte) 0x36, (byte) 0x46, (byte) 0x21};
 

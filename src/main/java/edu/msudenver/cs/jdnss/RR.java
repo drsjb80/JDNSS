@@ -759,16 +759,61 @@ class OPTRR {
         optionCode = Utils.addThem(bytes[location++], bytes[location++]);
         Assertion.aver(optionCode == 10);
 
+        /*
+        At a server where DNS Cookies are not implemented and enabled, the
+        presence of a COOKIE option is ignored and the server responds as if
+        no COOKIE option had been included in the request.
+        */
+
         int optionLength = Utils.addThem(bytes[location++], bytes[location++]);
+        /*
+        If the COOKIE option is too short to contain a Client Cookie, then
+        FORMERR is generated.  If the COOKIE option is longer than that
+        required to hold a COOKIE option with just a Client Cookie (8 bytes)
+        but is shorter than the minimum COOKIE option with both a
+        Client Cookie and a Server Cookie (16 bytes), then FORMERR is
+        generated.  If the COOKIE option is longer than the maximum valid
+        COOKIE option (40 bytes), then FORMERR is generated.
+        */
         clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
         location += 8;
 
         if (optionLength > 8) { // server cookie returned
             Assertion.aver(optionLength == 16);
             /*
+            The Server Cookie SHOULD consist of or include a 64-bit or larger
+            pseudorandom function of the request source (client) IP address, a
+            secret quantity known only to the server, and the request
+            Client Cookie.
+
             The Server Cookie is an integer number of bytes, with a minimum size
-            of 8 bytes for security and a
-            maximum size of 32 bytes for convenience of implementation.
+            of 8 bytes for security and a maximum size of 32 bytes for convenience
+            of implementation.
+
+            Thus, clients and servers are configured with a
+            lifetime setting for their secret, and they roll over to a new secret
+            when that lifetime expires, or earlier due to deliberate jitter as
+            described below.  The default lifetime is one day, and the maximum
+            permitted is one month.
+
+            For servers with DNS Cookies enabled, the QUERY opcode behavior is
+            extended to support queries with an empty Question Section (a QDCOUNT
+            of zero (0)), provided that an OPT record is present with a COOKIE
+            option.  Such servers will send a reply that has an empty
+            Answer Section and has a COOKIE option containing the Client Cookie
+            and a valid Server Cookie.
+
+            An example of a simple method producing a 64-bit Server Cookie is the
+            FNV64 [FNV] of the request IP address, the Client Cookie, and the
+            Server Secret.
+
+               Server Cookie =
+                  FNV64( Client IP Address | Client Cookie | Server Secret )
+
+            where "|" represents concatenation.
+
+
+            https://github.com/jakedouglas/fnv-java/tree/master/src/main/java/com/bitlove
             */
             serverCookie = Arrays.copyOfRange(bytes, location, location+8);
         }

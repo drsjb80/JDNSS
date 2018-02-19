@@ -127,15 +127,15 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+              <groupId>org.eluder.coveralls</groupId>
+              <artifactId>coveralls-maven-plugin</artifactId>
+              <version>4.3.0</version>
+              <configuration>
+                  <repoToken>mMde1Ri9mGjCLYHHa1426df5cx3MLQ9qa</repoToken>
+              </configuration>
+          </plugin>     
       </plugins>
-      <plugin>
-          <groupId>org.eluder.coveralls</groupId>
-          <artifactId>coveralls-maven-plugin</artifactId>
-          <version>4.3.0</version>
-          <configuration>
-              <repoToken>mMde1Ri9mGjCLYHHa1426df5cx3MLQ9qa</repoToken>
-          </configuration>
-      </plugin>  
         <resources>
           <resource>
             <directory>src/main/resources</directory>

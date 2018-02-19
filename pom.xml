@@ -134,7 +134,20 @@
               <configuration>
                   <repoToken>mMde1Ri9mGjCLYHHa1426df5cx3MLQ9qa</repoToken>
               </configuration>
-          </plugin>     
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.6.201602180812</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>     
       </plugins>
         <resources>
           <resource>

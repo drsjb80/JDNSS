@@ -751,7 +751,7 @@ class OPTRR {
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
         logger.error(flags);
-        DNSSEC = flags >> 15 == 1;
+        DNSSEC = flags >> 15 == 1; // DNSSEC OK bit as defined by [RFC3225].
         logger.error(DNSSEC);
 
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
@@ -765,7 +765,10 @@ class OPTRR {
         no COOKIE option had been included in the request.
         */
 
+
         int optionLength = Utils.addThem(bytes[location++], bytes[location++]);
+
+
         /*
         If the COOKIE option is too short to contain a Client Cookie, then
         FORMERR is generated.  If the COOKIE option is longer than that
@@ -779,7 +782,8 @@ class OPTRR {
         location += 8;
 
         if (optionLength > 8) { // server cookie returned
-            Assertion.aver(optionLength == 16);
+            // OPTION-LENGTH >= 16, <= 40 [rfc7873]
+            Assertion.aver(optionLength >= 16 && optionLength <= 40);
             /*
             The Server Cookie SHOULD consist of or include a 64-bit or larger
             pseudorandom function of the request source (client) IP address, a

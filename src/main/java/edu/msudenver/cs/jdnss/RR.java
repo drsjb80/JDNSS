@@ -778,12 +778,38 @@ class OPTRR {
         generated.  If the COOKIE option is longer than the maximum valid
         COOKIE option (40 bytes), then FORMERR is generated.
         */
+
+        if (optionLength < 8){
+            rcode = Utils.FORMERROR;
+        }
+        else if( optionLength > 8 && optionLength < 16){
+            rcode = Utils.FORMERROR;
+        }
+        else if( optionLength > 40){
+            rcode = Utils.FORMERROR;
+        }
         clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
         location += 8;
+
+        logger.error(clientCookie);
 
         if (optionLength > 8) { // server cookie returned
             // OPTION-LENGTH >= 16, <= 40 [rfc7873]
             Assertion.aver(optionLength >= 16 && optionLength <= 40);
+
+            /*
+            (1) There is no OPT RR at all in the request, or there is an OPT RR
+            but the COOKIE option is absent from the OPT RR.
+            (2) A COOKIE option is present but is not a legal length or is
+            otherwise malformed.
+            (3) There is a COOKIE option of valid length in the request with no
+            Server Cookie.
+            (4) There is a COOKIE option of valid length in the request with a
+            Server Cookie, but that Server Cookie is invalid.
+            (5) There is a COOKIE option of valid length in the request with a
+            correct Server Cookie.
+            */
+
             /*
             The Server Cookie SHOULD consist of or include a 64-bit or larger
             pseudorandom function of the request source (client) IP address, a
@@ -819,7 +845,7 @@ class OPTRR {
 
             https://github.com/jakedouglas/fnv-java/tree/master/src/main/java/com/bitlove
             */
-            serverCookie = Arrays.copyOfRange(bytes, location, location+8);
+            serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8 );
         }
     }
 }

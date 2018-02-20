@@ -15,7 +15,7 @@ import org.apache.logging.log4j.message.ObjectMessage;
 class DBConnection {
     private Connection conn;
     private Statement stmt;
-    private static final Logger logger = JDNSS.getLogger();
+    private static final Logger logger = JDNSS.logger;
 
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS

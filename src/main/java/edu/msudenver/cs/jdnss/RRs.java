@@ -3,11 +3,12 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Vector;
 
 class RRs {
     private int location;
     private final byte[] buffer;
-    private static final Logger logger = JDNSS.getLogger();
+    private static final Logger logger = JDNSS.logger;
     private final int numQuestions;
     private final int numAnswers;
     private final int numAuthorities;
@@ -56,16 +57,16 @@ class RRs {
         */
 
         for (int i = 0; i < numQuestions; i++) {
-            StringAndNumber sn = null;
+            Vector<Object> StringAndNumber = null;
 
             try {
-                sn = Utils.parseName(location, buffer);
+                StringAndNumber = Utils.parseName(location, buffer);
             } catch (AssertionError ae) {
                 questions[i] = null;
                 Assertion.fail();
             }
 
-            location = sn.getNumber();
+            location = (int) StringAndNumber.elementAt(1);
             int qtype = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
             // FIXME: QU/QM
@@ -73,7 +74,7 @@ class RRs {
             int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 
-            questions[i] = new QRR(sn.getString(), qtype);
+            questions[i] = new QRR((String) StringAndNumber.elementAt(0), qtype);
         }
     }
 

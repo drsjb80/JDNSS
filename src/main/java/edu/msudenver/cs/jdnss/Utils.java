@@ -18,7 +18,7 @@ import org.apache.logging.log4j.message.ObjectMessage;
  */
 
 class Utils {
-    private static final Logger logger = JDNSS.getLogger();
+    private static final Logger logger = JDNSS.logger;
 
     /**
      * The request/respose numbers
@@ -568,7 +568,8 @@ class Utils {
         return s;
     }
 
-    public static StringAndNumber parseName(int start, byte buffer[]) {
+    // using vector for thread safeness
+    public static Vector parseName(int start, byte buffer[]) {
         logger.traceEntry(new ObjectMessage(start));
 
         if (start >= buffer.length) {
@@ -589,14 +590,17 @@ class Utils {
                 Assertion.fail();
             }
 
-            name += parseName(tmp, buffer).getString();
+            name += (String) parseName(tmp, buffer).elementAt(0);
             current += 2;
         }
 
         int length = buffer[current++] & 0x3f;
 
         if (length == 0) {
-            return new StringAndNumber("", 1);
+            Vector<Object> StringAndNumber = new Vector<Object>();
+            StringAndNumber.add("");
+            StringAndNumber.add(1);
+            return StringAndNumber;
         }
 
         while (length > 0) {
@@ -620,7 +624,7 @@ class Utils {
                     Assertion.fail();
                 }
 
-                name += parseName(tmp, buffer).getString();
+                name += (String) parseName(tmp, buffer).elementAt(0);
                 current += 2;
             }
 
@@ -631,8 +635,11 @@ class Utils {
             }
         }
 
-        StringAndNumber sn = new StringAndNumber(name, current);
-        logger.traceExit(sn);
-        return sn;
+        Vector<Object> StringAndNumber = new Vector<Object>();
+        StringAndNumber.add(name);
+        StringAndNumber.add(current);
+
+        logger.traceExit(StringAndNumber);
+        return StringAndNumber;
     }
 }

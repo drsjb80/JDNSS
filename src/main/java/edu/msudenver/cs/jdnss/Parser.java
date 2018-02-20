@@ -59,7 +59,7 @@ class Parser {
             new Hashtable<>();
 
     private final BindZone zone;
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
     private boolean inBase64 = false;
 
     /**

@@ -6,7 +6,7 @@ import org.apache.logging.log4j.message.ObjectMessage;
 import java.util.Vector;
 
 class Response {
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     private final Header header;
     private byte[] additional;

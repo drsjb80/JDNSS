@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 class UDP extends Thread
 {
     DatagramSocket dsocket;
-    final Logger logger = JDNSS.getLogger();
+    final Logger logger = JDNSS.logger;
 
     // public UDP() {} // don't do anything, let MC() do all the work.
 
@@ -27,8 +27,9 @@ class UDP extends Thread
     {
         try
         {
-            String ipaddress = JDNSS.getJargs().IPaddress;
-            int port = JDNSS.getJargs().port;
+            jdnssArgs JdnssArgs = JDNSS.jargs;
+            String ipaddress = JdnssArgs.IPaddress;
+            int port = JdnssArgs.port;
             if (ipaddress != null)
             {
                 dsocket = new DatagramSocket(port,
@@ -66,7 +67,7 @@ class UDP extends Thread
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        int threadPoolSize = JDNSS.getJargs().threads;
+        int threadPoolSize = JDNSS.jargs.threads;
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true)
@@ -90,7 +91,7 @@ class UDP extends Thread
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.getJargs().once)
+            if (JDNSS.jargs.once)
             {   
                 try 
                 {   

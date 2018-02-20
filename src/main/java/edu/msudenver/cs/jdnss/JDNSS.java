@@ -22,10 +22,9 @@ import static edu.msudenver.cs.jdnss.JDNSSLogLevels.*;
 
 public class JDNSS {
     // a few AOP singletons
-    @Getter static jdnssArgs jargs;
-    @Getter static Logger logger = LogManager.getLogger("JDNSS");
-    @Getter static DBConnection DBConnection;
-    // @Getter static JDNSS jdnss;
+    static final jdnssArgs jargs = new jdnssArgs();
+    static final Logger logger = LogManager.getLogger("JDNSS");
+    static DBConnection DBConnection;
 
     private static final Map<String, Zone> bindZones = new Hashtable();
 
@@ -145,8 +144,6 @@ public class JDNSS {
      * The main driver for the server; creates threads for TCP and UDP.
      */
     public static void main(String[] args) {
-        // jdnss = new JDNSS();
-        jargs = new jdnssArgs();
         JCLO jclo = new JCLO(jargs);
         jclo.parse(args);
 

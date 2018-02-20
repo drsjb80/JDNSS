@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 class TCPThread implements Runnable {
     private final Socket socket;
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     /**
      * @param socket the socket to talk to

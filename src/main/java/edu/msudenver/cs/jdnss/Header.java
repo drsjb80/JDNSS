@@ -10,7 +10,7 @@ import lombok.Getter;
 
 class Header
 {
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     // http://www.networksorcery.com/enp/protocol/dns.htm
     @Getter private byte[] header = new byte[12];

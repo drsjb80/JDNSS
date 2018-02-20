@@ -12,7 +12,7 @@ import java.util.Vector;
 
 class DBZone implements Zone
 {
-    private static final Logger logger = JDNSS.getLogger();
+    private static final Logger logger = JDNSS.logger;
     private final String zoneName;
     private final int domainId;
     private final DBConnection dbConnection;

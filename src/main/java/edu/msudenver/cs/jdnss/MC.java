@@ -10,8 +10,8 @@ class MC extends UDP
 {
     public MC() throws SocketException, UnknownHostException, IOException
     {
-        final int port = JDNSS.getJargs().MCport;
-        final String address = JDNSS.getJargs().MCaddress;
+        final int port = JDNSS.jargs.MCport;
+        final String address = JDNSS.jargs.MCaddress;
 
         MulticastSocket msocket = new MulticastSocket(port);
 

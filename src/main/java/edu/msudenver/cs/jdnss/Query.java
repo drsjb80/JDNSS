@@ -3,6 +3,7 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Vector;
 
 import lombok.Getter;
 
@@ -21,7 +22,7 @@ class Queries {
 }
 
 class Query {
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     @Getter private Header header;
     @Getter private byte[] buffer;
@@ -68,14 +69,14 @@ class Query {
         queries = new Queries[header.getNumQuestions()];
 
         for (int i = 0; i < header.getNumQuestions(); i++) {
-            StringAndNumber sn = Utils.parseName(location, buffer);
+            Vector<Object> StringAndNumber = Utils.parseName(location, buffer);
 
-            location = sn.getNumber();
+            location = (int) StringAndNumber.elementAt(1);
             int qtype = Utils.addThem(buffer[location++], buffer[location++]);
             int qclass = Utils.addThem(buffer[location++], buffer[location++]);
             boolean QU = (qclass & 0xc000) == 0xc000;
 
-            queries[i] = new Queries(sn.getString(), qtype, qclass, QU);
+            queries[i] = new Queries((String) StringAndNumber.elementAt(0), qtype, qclass, QU);
 
             /*
             ** Multicast DNS defines the top bit in the class field of a

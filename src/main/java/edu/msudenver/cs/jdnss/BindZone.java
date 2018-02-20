@@ -20,7 +20,7 @@ class BindZone implements Zone {
 
     private final Map<Integer, Map<String, Vector<RR>>> tableOfTables = new Hashtable<>();
 
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     public BindZone(final String name) {
         this.name = name;

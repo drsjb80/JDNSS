@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
 */
 
 public abstract class RR {
-    final static Logger logger = JDNSS.getLogger();
+    final static Logger logger = JDNSS.logger;
     @Getter private String name;
     @Getter private int type;
     @Getter private int rrclass = 1;
@@ -725,7 +725,7 @@ class DNSNSECRR extends RR {
 // only OPT RR in that message.
 class OPTRR {
     @Getter private boolean DNSSEC = false;
-    final static Logger logger = JDNSS.getLogger();
+    final static Logger logger = JDNSS.logger;
     private int payloadSize;
     private int rcodeAndFlags;
     private int rdLength;

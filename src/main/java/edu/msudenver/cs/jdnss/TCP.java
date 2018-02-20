@@ -14,13 +14,13 @@ import org.apache.logging.log4j.Logger;
 
 class TCP extends Thread {
     private ServerSocket ssocket;
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     public TCP() throws UnknownHostException, IOException {
         try {
-            String ipaddress = JDNSS.getJargs().IPaddress;
-            int backlog = JDNSS.getJargs().backlog;
-            int port = JDNSS.getJargs().port;
+            String ipaddress = JDNSS.jargs.IPaddress;
+            int backlog = JDNSS.jargs.backlog;
+            int port = JDNSS.jargs.port;
             if (ipaddress != null) {
                 ssocket = new ServerSocket(port, backlog,
                         InetAddress.getByName(ipaddress));
@@ -41,7 +41,7 @@ class TCP extends Thread {
         logger.traceEntry();
 
         Socket socket;
-        int threadPoolSize = JDNSS.getJargs().threads;
+        int threadPoolSize = JDNSS.jargs.threads;
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true) {
@@ -58,7 +58,7 @@ class TCP extends Thread {
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.getJargs().once) {
+            if (JDNSS.jargs.once) {
                 try {
                     f.get();
                 } catch (InterruptedException | ExecutionException ie) {

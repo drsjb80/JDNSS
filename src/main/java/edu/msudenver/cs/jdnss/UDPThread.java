@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 public class UDPThread implements Runnable
 {
-    private final Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
     private final DatagramSocket socket;
     private final int port;

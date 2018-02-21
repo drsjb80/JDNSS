@@ -782,13 +782,13 @@ class OPTRR {
         */
 
         if (optionLength < 8){
-            rcode = Utils.FORMERROR;
+            rcode = 1; //FORMERR
         }
         else if( optionLength > 8 && optionLength < 16){
-            rcode = Utils.FORMERROR;
+            rcode = 1;
         }
         else if( optionLength > 40){
-            rcode = Utils.FORMERROR;
+            rcode = 1;
         }
         clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
         location += 8;

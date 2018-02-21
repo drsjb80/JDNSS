@@ -151,7 +151,7 @@ class SOARR extends RR {
 
     SOARR(String domain, String server, String contact, int serial,
           int refresh, int retry, int expire, int minimum, int ttl) {
-        super(domain, Utils.SOA, ttl);
+        super(domain, RRCodes.SOA.getCode(), ttl);
 
         this.domain = domain;
         this.server = server;
@@ -241,7 +241,7 @@ class HINFORR extends RR {
     private final String OS;
 
     HINFORR(String name, int ttl, String CPU, String OS) {
-        super(name, Utils.HINFO, ttl);
+        super(name, RRCodes.HINFO.getCode(), ttl);
         this.CPU = CPU;
         this.OS = OS;
     }
@@ -282,7 +282,7 @@ class MXRR extends RR {
     private final int preference;
 
     MXRR(String name, int ttl, String host, int preference) {
-        super(name, Utils.MX, ttl);
+        super(name, RRCodes.MX.getCode(), ttl);
         this.host = host;
         this.preference = preference;
     }
@@ -369,7 +369,7 @@ abstract class STRINGRR extends RR {
 
 class TXTRR extends STRINGRR {
     TXTRR(String name, int ttl, String text) {
-        super(name, Utils.TXT, ttl);
+        super(name, RRCodes.TXT.getCode(), ttl);
         this.string = text;
     }
 
@@ -381,21 +381,21 @@ class TXTRR extends STRINGRR {
 
 class NSRR extends STRINGRR {
     NSRR(String domain, int ttl, String nameserver) {
-        super(domain, Utils.NS, ttl);
+        super(domain, RRCodes.NS.getCode(), ttl);
         this.string = nameserver;
     }
 }
 
 class CNAMERR extends STRINGRR {
     CNAMERR(String alias, int ttl, String canonical) {
-        super(alias, Utils.CNAME, ttl);
+        super(alias, RRCodes.CNAME.getCode(), ttl);
         this.string = canonical;
     }
 }
 
 class PTRRR extends STRINGRR {
     PTRRR(String address, int ttl, String host) {
-        super(address, Utils.PTR, ttl);
+        super(address, RRCodes.PTR.getCode(), ttl);
         this.string = host;
     }
 }
@@ -434,7 +434,7 @@ abstract class ADDRRR extends RR {
 
 class ARR extends ADDRRR {
     ARR(String name, int ttl, String address) {
-        super(name, Utils.A, ttl);
+        super(name, RRCodes.A.getCode(), ttl);
         this.address = address;
     }
 
@@ -446,7 +446,7 @@ class ARR extends ADDRRR {
 
 class AAAARR extends ADDRRR {
     AAAARR(String name, int ttl, String address) {
-        super(name, Utils.AAAA, ttl);
+        super(name, RRCodes.AAAA.getCode(), ttl);
         this.address = address;
     }
 
@@ -464,7 +464,7 @@ class DNSKEYRR extends RR {
 
     DNSKEYRR(String domain, int ttl, int flags, int protocol, int algorithm,
              String publicKey) {
-        super(domain, Utils.DNSKEY, ttl);
+        super(domain, RRCodes.DNSKEY.getCode(), ttl);
 
         this.flags = flags;
         this.protocol = protocol;
@@ -518,7 +518,7 @@ class NSEC3RR extends RR {
     NSEC3RR(String domain, int ttl, int hashAlgorithm, int flags,
             int iterations, String salt, String nextHashedOwnerName,
             ArrayList<Integer> types) {
-        super(domain, Utils.NSEC3, ttl);
+        super(domain, RRCodes.NSEC3.getCode(), ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
         this.iterations = iterations;
@@ -568,7 +568,7 @@ class NSEC3PARAMRR extends RR {
 
     NSEC3PARAMRR(String domain, int ttl, int hashAlgorithm, int flags,
                  int iterations, String salt) {
-        super(domain, Utils.NSEC3PARAM, ttl);
+        super(domain, RRCodes.NSEC3PARAM.getCode(), ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
         this.iterations = iterations;
@@ -608,7 +608,7 @@ class DNSRRSIGRR extends RR {
     DNSRRSIGRR(String domain, int ttl, int typeCovered, int algorithm,
                int labels, int originalttl, int expiration, int inception,
                String signersName, String signature) {
-        super(domain, Utils.RRSIG, ttl);
+        super(domain, RRCodes.RRSIG.getCode(), ttl);
 
         this.typeCovered = typeCovered;
         this.algorithm = algorithm;
@@ -687,7 +687,7 @@ class DNSNSECRR extends RR {
 
     DNSNSECRR(String domain, int ttl, String nextDomainName,
               byte[] typeBitMaps) {
-        super(domain, Utils.NSEC, ttl);
+        super(domain, RRCodes.NSEC.getCode(), ttl);
 
         this.nextDomainName = nextDomainName;
         this.typeBitMaps = typeBitMaps;

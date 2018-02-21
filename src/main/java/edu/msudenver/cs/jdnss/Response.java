@@ -55,22 +55,22 @@ class Response {
         Vector<RR> v;
 
         try {
-            v = zone.get(Utils.A, host);
+            v = zone.get(RRCodes.A.getCode(), host);
             createAdditionals(v, host);
 
             if (DNSSEC) {
-                addRRSignature(Utils.A, name, additional, ResponseSection.ADDITIONAL);
+                addRRSignature(RRCodes.A.getCode(), name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE1) {
             // try the AAAA
         }
 
         try {
-            v = zone.get(Utils.AAAA, host);
+            v = zone.get(RRCodes.AAAA.getCode(), host);
             createAdditionals(v, host);
 
             if (DNSSEC) {
-                addRRSignature(Utils.AAAA, name, additional, ResponseSection.ADDITIONAL);
+                addRRSignature(RRCodes.AAAA.getCode(), name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE2) {
             // maybe we found an A
@@ -79,7 +79,7 @@ class Response {
 
     // put the possible authorities in, but don't add to response until we know there is room for them.
     private void createAuthorities(String name) {
-        Vector<RR> v = zone.get(Utils.NS, zone.getName());
+        Vector<RR> v = zone.get(RRCodes.NS.getCode(), zone.getName());
         logger.trace(v);
 
         for (RR nsrr : v) {
@@ -90,7 +90,7 @@ class Response {
         }
 
         if (DNSSEC) {
-            addRRSignature(Utils.NS, name, authority, ResponseSection.AUTHORITY);
+            addRRSignature(RRCodes.NS.getCode(), name, authority, ResponseSection.AUTHORITY);
         }
     }
 
@@ -122,13 +122,13 @@ class Response {
                 addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
             }
 
-            if (firsttime && which != Utils.NS) {
+            if (firsttime && which != RRCodes.NS.getCode()) {
                 createAuthorities(name);
             }
 
             firsttime = false;
 
-            if (which == Utils.MX || which == Utils.NS) {
+            if (which == RRCodes.MX.getCode() || which == RRCodes.NS.getCode()) {
                 createAorAAAA(rr.getHost(), name);
             }
         }
@@ -136,15 +136,15 @@ class Response {
     }
 
     public void addDNSKeys(String host) {
-        Vector v = zone.get(Utils.DNSKEY, host);
+        Vector v = zone.get(RRCodes.DNSKEY.getCode(), host);
         createAdditionals(v, host);
 
-        addRRSignature(Utils.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
+        addRRSignature(RRCodes.DNSKEY.getCode(), host, additional, ResponseSection.ADDITIONAL);
     }
 
 
     private void addRRSignature(int type, String name, byte[] destination, ResponseSection section) {
-        Vector<RR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
+        Vector<RR> rrsigv = zone.get(RRCodes.RRSIG.getCode(), zone.getName());
 
         for (RR foo : rrsigv) {
             DNSRRSIGRR rrsig = (DNSRRSIGRR) foo;
@@ -174,7 +174,7 @@ class Response {
     }
 
     private void addNSECRecords(String name) {
-        Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
+        Vector<RR> nsecv = zone.get(RRCodes.NSEC.getCode(), zone.getName());
 
         DNSNSECRR nsec = (DNSNSECRR) nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
@@ -220,7 +220,7 @@ class Response {
     time to further queries for an AAAA RR of the name.
     */
     private void dealWithOther(int type, String name) {
-        int other = type == Utils.A ? Utils.AAAA : Utils.A;
+        int other = type == RRCodes.A.getCode() ? RRCodes.AAAA.getCode() : RRCodes.A.getCode();
 
         try {
             zone.get(other, name);
@@ -260,7 +260,7 @@ class Response {
     private void setMinimum() {
         Vector<RR> w;
         try {
-            w = zone.get(Utils.SOA, zone.getName());
+            w = zone.get(RRCodes.SOA.getCode(), zone.getName());
             SOA = (SOARR) w.elementAt(0);
             minimum = SOA.getMinimum();
         } catch (AssertionError AE) {
@@ -277,7 +277,7 @@ class Response {
 
         if (DNSSEC) {
             addNSECRecords(name);
-            addRRSignature(Utils.NSEC, name, authority, ResponseSection.AUTHORITY);
+            addRRSignature(RRCodes.NSEC.getCode(), name, authority, ResponseSection.AUTHORITY);
         }
 
         addAuthorities();
@@ -287,7 +287,7 @@ class Response {
         logger.debug("Looking for a CNAME for " + name);
 
         try {
-            Vector<RR> u = zone.get(Utils.CNAME, name);
+            Vector<RR> u = zone.get(RRCodes.CNAME.getCode(), name);
 
             // grab the first one as they all should work. maybe we should
             // round-robin?
@@ -297,7 +297,7 @@ class Response {
             Vector<RR> v = zone.get(type, s);
 
             // yes, so first put in the CNAME
-            createResponses(u, name, Utils.CNAME);
+            createResponses(u, name, RRCodes.CNAME.getCode());
 
             // then continue the lookup on the original type
             // with the new name
@@ -315,7 +315,7 @@ class Response {
                 if (DNSSEC)
                 {
                     addNSECRecords(name);
-                    addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+                    addRRSignature(RRCodes.NSEC, name, authority, Utils.AUTHORITY);
                 }
             }
             addSOA(SOA);
@@ -336,14 +336,14 @@ class Response {
             // is this where this belongs?
             if (DNSSEC) {
                 addNSECRecords(name);
-                addRRSignature(Utils.NSEC, name, authority, ResponseSection.AUTHORITY);
+                addRRSignature(RRCodes.NSEC.getCode(), name, authority, ResponseSection.AUTHORITY);
             }
 
             return new StringAndVector(name, v);
         } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
 
-            if (type != Utils.AAAA && type != Utils.A) {
+            if (type != RRCodes.AAAA.getCode() && type != RRCodes.A.getCode()) {
                 nameNotFound(type, name);
                 throw (AE);
             } else {

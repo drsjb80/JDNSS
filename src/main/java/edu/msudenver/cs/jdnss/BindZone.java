@@ -4,10 +4,12 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: BindZone.java,v 1.1 2011/03/03 22:35:14 drb80 Exp $
  */
 
-import java.util.*;
-
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Vector;
 
 class BindZone implements Zone {
     @Getter private String name;
@@ -26,33 +28,33 @@ class BindZone implements Zone {
         this.name = name;
 
         Map<String, Vector<RR>> hA = new Hashtable<>();
-        tableOfTables.put(Utils.A, hA);
+        tableOfTables.put(RRCodes.A.getCode(), hA);
         Map<String, Vector<RR>> hAAAA = new Hashtable<>();
-        tableOfTables.put(Utils.AAAA, hAAAA);
+        tableOfTables.put(RRCodes.AAAA.getCode(), hAAAA);
         Map<String, Vector<RR>> hNS = new Hashtable<>();
-        tableOfTables.put(Utils.NS, hNS);
+        tableOfTables.put(RRCodes.NS.getCode(), hNS);
         Map<String, Vector<RR>> hMX = new Hashtable<>();
-        tableOfTables.put(Utils.MX, hMX);
+        tableOfTables.put(RRCodes.MX.getCode(), hMX);
         Map<String, Vector<RR>> hCNAME = new Hashtable<>();
-        tableOfTables.put(Utils.CNAME, hCNAME);
+        tableOfTables.put(RRCodes.CNAME.getCode(), hCNAME);
         Map<String, Vector<RR>> hPTR = new Hashtable<>();
-        tableOfTables.put(Utils.PTR, hPTR);
+        tableOfTables.put(RRCodes.PTR.getCode(), hPTR);
         Map<String, Vector<RR>> hTXT = new Hashtable<>();
-        tableOfTables.put(Utils.TXT, hTXT);
+        tableOfTables.put(RRCodes.TXT.getCode(), hTXT);
         Map<String, Vector<RR>> hHINFO = new Hashtable<>();
-        tableOfTables.put(Utils.HINFO, hHINFO);
+        tableOfTables.put(RRCodes.HINFO.getCode(), hHINFO);
         Map<String, Vector<RR>> hSOA = new Hashtable<>();
-        tableOfTables.put(Utils.SOA, hSOA);
+        tableOfTables.put(RRCodes.SOA.getCode(), hSOA);
         Map<String, Vector<RR>> hDNSKEY = new Hashtable<>();
-        tableOfTables.put(Utils.DNSKEY, hDNSKEY);
+        tableOfTables.put(RRCodes.DNSKEY.getCode(), hDNSKEY);
         Map<String, Vector<RR>> hDNSRRSIG = new Hashtable<>();
-        tableOfTables.put(Utils.RRSIG, hDNSRRSIG);
+        tableOfTables.put(RRCodes.RRSIG.getCode(), hDNSRRSIG);
         Map<String, Vector<RR>> hNSEC = new Hashtable<>();
-        tableOfTables.put(Utils.NSEC, hNSEC);
+        tableOfTables.put(RRCodes.NSEC.getCode(), hNSEC);
         Map<String, Vector<RR>> hNSEC3 = new Hashtable<>();
-        tableOfTables.put(Utils.NSEC3, hNSEC3);
+        tableOfTables.put(RRCodes.NSEC3.getCode(), hNSEC3);
         Map<String, Vector<RR>> hNSEC3PARAM = new Hashtable<>();
-        tableOfTables.put(Utils.NSEC3PARAM, hNSEC3PARAM);
+        tableOfTables.put(RRCodes.NSEC3PARAM.getCode(), hNSEC3PARAM);
     }
 
     /**

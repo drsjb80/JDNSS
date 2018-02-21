@@ -34,6 +34,7 @@ class DBZone implements Zone
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
 
-        return dbConnection.get(type, name, domainId);
+        // FIXME return dbConnection.get(type, name, domainId);
+        return null;
     }
 }

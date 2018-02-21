@@ -1,14 +1,14 @@
 package edu.msudenver.cs.jdnss;
 
-import java.text.DecimalFormat;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.MulticastSocket;
-import java.util.*;
 import java.nio.charset.StandardCharsets;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
+import java.text.DecimalFormat;
+import java.util.*;
 
 /**
  * Common methods used throughout
@@ -21,7 +21,8 @@ class Utils {
     private static final Logger logger = JDNSS.logger;
 
     /**
-     * The request/respose numbers
+     * The request/respose numbers. I looked at making this an enum, but the actual
+     * numbers are needed everywhere and one can't switch on a getCode() method call.
      */
     public static final int A = 1;
     public static final int NS = 2;
@@ -44,19 +45,6 @@ class Utils {
     public static final int INCLUDE = 256;
     public static final int ORIGIN = 257;
     public static final int TTL = 258;
-    // count == 19
-
-
-    public static final int NOERROR = 0;
-    public static final int FORMERROR = 1;
-    public static final int SERVFAIL = 2;
-    public static final int NAMEERROR = 3;
-    public static final int NOTIMPL = 4;
-    public static final int REFUSED = 5;
-
-    public static final int ANSWER = 0;
-    public static final int ADDITIONAL = 1;
-    public static final int AUTHORITY = 2;
 
     private static final Map<String, Integer> StringToType = new HashMap<>();
     private static final Map<Integer, String> TypeToString = new HashMap<>();

@@ -1,12 +1,11 @@
 package edu.msudenver.cs.jdnss;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
-
-import lombok.AccessLevel;
-import lombok.Getter;
 
 class Header
 {
@@ -34,9 +33,12 @@ class Header
     void build()
     {
         Assertion.aver(opcode == 0);
-        Assertion.aver(rcode == Utils.NOERROR || rcode == Utils.FORMERROR ||
-            rcode == Utils.SERVFAIL || rcode == Utils.NAMEERROR ||
-            rcode == Utils.NOTIMPL || rcode == Utils.REFUSED);
+        Assertion.aver(rcode == ErrorCodes.NOERROR.getCode()
+                || rcode == ErrorCodes.FORMERROR.getCode()
+                || rcode == ErrorCodes.SERVFAIL.getCode()
+                || rcode == ErrorCodes.NAMEERROR.getCode()
+                || rcode == ErrorCodes.NOTIMPL.getCode()
+                || rcode == ErrorCodes.REFUSED.getCode());
         Assertion.aver(numAnswers >= 0 && numAnswers <= 255);
         Assertion.aver(numAuthorities >= 0 && numAuthorities <= 255);
         Assertion.aver(numAdditionals >= 0 && numAdditionals <= 255);

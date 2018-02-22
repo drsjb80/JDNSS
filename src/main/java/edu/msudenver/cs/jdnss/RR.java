@@ -6,11 +6,12 @@ package edu.msudenver.cs.jdnss;
  * @see <a href="http://www.faqs.org/rfcs/rfc1035.html"> faqs.org </a>
  */
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.nio.charset.StandardCharsets;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /*
 **                                        1  1  1  1  1  1
@@ -750,9 +751,10 @@ class OPTRR {
         Assertion.aver(version == 0);
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
-        logger.error(flags);
+
+        // logger.error(flags);
         DNSSEC = flags >> 15 == 1; // DNSSEC OK bit as defined by [RFC3225].
-        logger.error(DNSSEC);
+        // logger.error(DNSSEC);
 
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
 
@@ -780,13 +782,13 @@ class OPTRR {
         */
 
         if (optionLength < 8){
-            rcode = Utils.FORMERROR;
+            rcode = 1; //FORMERR
         }
         else if( optionLength > 8 && optionLength < 16){
-            rcode = Utils.FORMERROR;
+            rcode = 1;
         }
         else if( optionLength > 40){
-            rcode = Utils.FORMERROR;
+            rcode = 1;
         }
         clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
         location += 8;

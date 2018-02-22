@@ -5,6 +5,10 @@ import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.util.Vector;
 
+enum ResponseSection {
+    ANSWER, ADDITIONAL, AUTHORITY
+}
+
 class Response {
     private final Logger logger = JDNSS.logger;
 
@@ -55,7 +59,7 @@ class Response {
             createAdditionals(v, host);
 
             if (DNSSEC) {
-                addRRSignature(Utils.A, name, additional, Utils.ADDITIONAL);
+                addRRSignature(Utils.A, name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE1) {
             // try the AAAA
@@ -66,7 +70,7 @@ class Response {
             createAdditionals(v, host);
 
             if (DNSSEC) {
-                addRRSignature(Utils.AAAA, name, additional, Utils.ADDITIONAL);
+                addRRSignature(Utils.AAAA, name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE2) {
             // maybe we found an A
@@ -86,7 +90,7 @@ class Response {
         }
 
         if (DNSSEC) {
-            addRRSignature(Utils.NS, name, authority, Utils.AUTHORITY);
+            addRRSignature(Utils.NS, name, authority, ResponseSection.AUTHORITY);
         }
     }
 
@@ -115,7 +119,7 @@ class Response {
 
             //Add RRSIG Records Corresponding to Type
             if (DNSSEC) {
-                addRRSignature(rr.getType(), name, responses, Utils.ANSWER);
+                addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
             }
 
             if (firsttime && which != Utils.NS) {
@@ -135,11 +139,11 @@ class Response {
         Vector v = zone.get(Utils.DNSKEY, host);
         createAdditionals(v, host);
 
-        addRRSignature(Utils.DNSKEY, host, additional, Utils.ADDITIONAL);
+        addRRSignature(Utils.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
     }
 
 
-    private void addRRSignature(int type, String name, byte[] destination, int section) {
+    private void addRRSignature(int type, String name, byte[] destination, ResponseSection section) {
         Vector<RR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
 
         for (RR foo : rrsigv) {
@@ -148,7 +152,7 @@ class Response {
             if (rrsig.getTypeCovered() == type) {
                 byte add[] = rrsig.getBytes(name, minimum);
                 switch (section) {
-                    case Utils.ANSWER:
+                    case ANSWER:
                         if (UDP && (responses.length + add.length > maximumPayload)) {
                             header.setTC(true);
                             return;
@@ -156,11 +160,11 @@ class Response {
                         responses = Utils.combine(destination, add);
                         header.setNumAnswers(header.getNumAnswers() + 1);
                         break;
-                    case Utils.ADDITIONAL:
+                    case ADDITIONAL:
                         additional = Utils.combine(destination, add);
                         header.setNumAdditionals(header.getNumAdditionals() + 1);
                         break;
-                    case Utils.AUTHORITY:
+                    case AUTHORITY:
                         authority = Utils.combine(destination, add);
                         header.setNumAuthorities(header.getNumAuthorities() + 1);
                         break;
@@ -224,7 +228,7 @@ class Response {
             logger.debug(Utils.mapTypeToString(type) + " lookup of " +
                     name + " failed");
 
-            header.setRcode(Utils.NAMEERROR);
+            header.setRcode(ErrorCodes.NAMEERROR.getCode());
             throw (AE);
         }
 
@@ -232,7 +236,7 @@ class Response {
                 " lookup of " + name + " failed but " +
                 Utils.mapTypeToString(other) + " record found");
 
-        header.setRcode(Utils.NOERROR);
+        header.setRcode(ErrorCodes.NOERROR.getCode());
     }
 
     // Just keeping it DRY.
@@ -246,7 +250,7 @@ class Response {
             zone = JDNSS.getZone(name);
         } catch (AssertionError AE) {
             logger.debug("Zone lookup of " + name + " failed");
-            header.setRcode(Utils.REFUSED);
+            header.setRcode(ErrorCodes.REFUSED.getCode());
             header.setAA(false);
             throw (AE);
             // return Arrays.copyOf(responses, responses.length);
@@ -261,19 +265,19 @@ class Response {
             minimum = SOA.getMinimum();
         } catch (AssertionError AE) {
             logger.debug("SOA lookup in " + zone.getName() + " failed");
-            header.setRcode(Utils.SERVFAIL);
+            header.setRcode(ErrorCodes.SERVFAIL.getCode());
             throw (AE);
         }
     }
 
     private void nameNotFound(int type, String name) {
         logger.debug(name + " not A or AAAA, giving up");
-        errLookupFailed(type, name, Utils.NOERROR);
+        errLookupFailed(type, name, ErrorCodes.NOERROR.getCode());
         addSOA(SOA);
 
         if (DNSSEC) {
             addNSECRecords(name);
-            addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+            addRRSignature(Utils.NSEC, name, authority, ResponseSection.AUTHORITY);
         }
 
         addAuthorities();
@@ -332,7 +336,7 @@ class Response {
             // is this where this belongs?
             if (DNSSEC) {
                 addNSECRecords(name);
-                addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+                addRRSignature(Utils.NSEC, name, authority, ResponseSection.AUTHORITY);
             }
 
             return new StringAndVector(name, v);

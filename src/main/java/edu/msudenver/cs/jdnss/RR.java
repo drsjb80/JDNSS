@@ -730,14 +730,16 @@ class OPTRR {
     private int payloadSize;
     private int rcodeAndFlags;
     private int rdLength;
-    private byte rcode;
+    private byte extendedrcode = 0; // extended RCODE of 0 indicates use of a regular RCODE
     private byte version;
     private int flags;
     private int optionCode;
+    @Getter private int optionLength;
     @Getter private byte[] clientCookie;
     @Getter private byte[] serverCookie;
 
     OPTRR(byte[] bytes) {
+        logger.traceEntry();
         Assertion.aver(bytes[0] == 0);
 
         int location = 1;
@@ -746,7 +748,7 @@ class OPTRR {
         Assertion.aver(type == 41);
 
         payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
-        rcode = bytes[location++];
+        extendedrcode = bytes[location++];
         version = bytes[location++];
         Assertion.aver(version == 0);
 
@@ -761,14 +763,8 @@ class OPTRR {
         optionCode = Utils.addThem(bytes[location++], bytes[location++]);
         Assertion.aver(optionCode == 10);
 
-        /*
-        At a server where DNS Cookies are not implemented and enabled, the
-        presence of a COOKIE option is ignored and the server responds as if
-        no COOKIE option had been included in the request.
-        */
-
-
-        int optionLength = Utils.addThem(bytes[location++], bytes[location++]);
+        optionLength = Utils.addThem(bytes[location++], bytes[location++]);
+        logger.traceEntry();
 
 
         /*
@@ -781,15 +777,8 @@ class OPTRR {
         COOKIE option (40 bytes), then FORMERR is generated.
         */
 
-        if (optionLength < 8){
-            rcode = 1; //FORMERR
-        }
-        else if( optionLength > 8 && optionLength < 16){
-            rcode = 1;
-        }
-        else if( optionLength > 40){
-            rcode = 1;
-        }
+
+
         clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
         location += 8;
 
@@ -797,20 +786,10 @@ class OPTRR {
 
         if (optionLength > 8) { // server cookie returned
             // OPTION-LENGTH >= 16, <= 40 [rfc7873]
-            Assertion.aver(optionLength >= 16 && optionLength <= 40);
-
-            /*
-            (1) There is no OPT RR at all in the request, or there is an OPT RR
-            but the COOKIE option is absent from the OPT RR.
-            (2) A COOKIE option is present but is not a legal length or is
-            otherwise malformed.
-            (3) There is a COOKIE option of valid length in the request with no
-            Server Cookie.
-            (4) There is a COOKIE option of valid length in the request with a
-            Server Cookie, but that Server Cookie is invalid.
-            (5) There is a COOKIE option of valid length in the request with a
-            correct Server Cookie.
-            */
+            Assertion.aver(optionLength == 16
+                                || optionLength == 24
+                                || optionLength == 32
+                                || optionLength == 40);
 
             /*
             The Server Cookie SHOULD consist of or include a 64-bit or larger
@@ -850,4 +829,35 @@ class OPTRR {
             serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8 );
         }
     }
+
+    /*
+    public byte[] getBytes() {
+        int minttl = ttl == 0 ? TTLminimum : ttl;
+
+        byte name[] = Utils.convertString(question);
+
+        byte rdata[] = getBytes();
+        int rdatalen = rdata.length;
+
+        int count = name.length + 2 + 2 + 4 + 2 + rdatalen;
+
+        byte a[] = new byte[count];
+        System.arraycopy(name, 0, a, 0, name.length);
+
+        int where = name.length;
+
+        a[where++] = Utils.getByte(type, 2);
+        a[where++] = Utils.getByte(type, 1);
+        a[where++] = Utils.getByte(rrclass, 2);
+        a[where++] = Utils.getByte(rrclass, 1);
+        a[where++] = Utils.getByte(minttl, 4);
+        a[where++] = Utils.getByte(minttl, 3);
+        a[where++] = Utils.getByte(minttl, 2);
+        a[where++] = Utils.getByte(minttl, 1);
+        a[where++] = Utils.getByte(rdatalen, 2);
+        a[where++] = Utils.getByte(rdatalen, 1);
+        System.arraycopy(rdata, 0, a, where, rdata.length);
+
+        return a;
+    } */
 }

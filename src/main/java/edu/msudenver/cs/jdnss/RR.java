@@ -730,14 +730,16 @@ class OPTRR {
     private int payloadSize;
     private int rcodeAndFlags;
     private int rdLength;
-    private byte rcode;
+    private byte extendedrcode = 0; // extended RCODE of 0 indicates use of a regular RCODE
     private byte version;
     private int flags;
     private int optionCode;
+    @Getter private int optionLength;
     @Getter private byte[] clientCookie;
     @Getter private byte[] serverCookie;
 
     OPTRR(byte[] bytes) {
+        logger.traceEntry();
         Assertion.aver(bytes[0] == 0);
 
         int location = 1;
@@ -746,7 +748,11 @@ class OPTRR {
         Assertion.aver(type == 41);
 
         payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
-        rcode = bytes[location++];
+        logger.trace(payloadSize);
+
+        extendedrcode = bytes[location++];
+        logger.trace(extendedrcode);
+
         version = bytes[location++];
         Assertion.aver(version == 0);
 
@@ -755,99 +761,42 @@ class OPTRR {
         // logger.error(flags);
         DNSSEC = flags >> 15 == 1; // DNSSEC OK bit as defined by [RFC3225].
         // logger.error(DNSSEC);
+        logger.trace(DNSSEC);
 
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
+        logger.trace(rdLength);
 
-        optionCode = Utils.addThem(bytes[location++], bytes[location++]);
-        Assertion.aver(optionCode == 10);
+        if (rdLength >= 5 ) { //data length needs to be minimum of 5 bytes
 
-        /*
-        At a server where DNS Cookies are not implemented and enabled, the
-        presence of a COOKIE option is ignored and the server responds as if
-        no COOKIE option had been included in the request.
-        */
+            optionCode = Utils.addThem(bytes[location++], bytes[location++]);
+            Assertion.aver(optionCode == 10);
 
-
-        int optionLength = Utils.addThem(bytes[location++], bytes[location++]);
-
-
-        /*
-        If the COOKIE option is too short to contain a Client Cookie, then
-        FORMERR is generated.  If the COOKIE option is longer than that
-        required to hold a COOKIE option with just a Client Cookie (8 bytes)
-        but is shorter than the minimum COOKIE option with both a
-        Client Cookie and a Server Cookie (16 bytes), then FORMERR is
-        generated.  If the COOKIE option is longer than the maximum valid
-        COOKIE option (40 bytes), then FORMERR is generated.
-        */
-
-        if (optionLength < 8){
-            rcode = 1; //FORMERR
-        }
-        else if( optionLength > 8 && optionLength < 16){
-            rcode = 1;
-        }
-        else if( optionLength > 40){
-            rcode = 1;
-        }
-        clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
-        location += 8;
-
-        logger.error(clientCookie);
-
-        if (optionLength > 8) { // server cookie returned
-            // OPTION-LENGTH >= 16, <= 40 [rfc7873]
-            Assertion.aver(optionLength >= 16 && optionLength <= 40);
+            optionLength = Utils.addThem(bytes[location++], bytes[location++]);
 
             /*
-            (1) There is no OPT RR at all in the request, or there is an OPT RR
-            but the COOKIE option is absent from the OPT RR.
-            (2) A COOKIE option is present but is not a legal length or is
-            otherwise malformed.
-            (3) There is a COOKIE option of valid length in the request with no
-            Server Cookie.
-            (4) There is a COOKIE option of valid length in the request with a
-            Server Cookie, but that Server Cookie is invalid.
-            (5) There is a COOKIE option of valid length in the request with a
-            correct Server Cookie.
+            If the COOKIE option is too short to contain a Client Cookie, then
+            FORMERR is generated.  If the COOKIE option is longer than that
+            required to hold a COOKIE option with just a Client Cookie (8 bytes)
+            but is shorter than the minimum COOKIE option with both a
+            Client Cookie and a Server Cookie (16 bytes), then FORMERR is
+            generated.  If the COOKIE option is longer than the maximum valid
+            COOKIE option (40 bytes), then FORMERR is generated.
             */
 
-            /*
-            The Server Cookie SHOULD consist of or include a 64-bit or larger
-            pseudorandom function of the request source (client) IP address, a
-            secret quantity known only to the server, and the request
-            Client Cookie.
 
-            The Server Cookie is an integer number of bytes, with a minimum size
-            of 8 bytes for security and a maximum size of 32 bytes for convenience
-            of implementation.
-
-            Thus, clients and servers are configured with a
-            lifetime setting for their secret, and they roll over to a new secret
-            when that lifetime expires, or earlier due to deliberate jitter as
-            described below.  The default lifetime is one day, and the maximum
-            permitted is one month.
-
-            For servers with DNS Cookies enabled, the QUERY opcode behavior is
-            extended to support queries with an empty Question Section (a QDCOUNT
-            of zero (0)), provided that an OPT record is present with a COOKIE
-            option.  Such servers will send a reply that has an empty
-            Answer Section and has a COOKIE option containing the Client Cookie
-            and a valid Server Cookie.
-
-            An example of a simple method producing a 64-bit Server Cookie is the
-            FNV64 [FNV] of the request IP address, the Client Cookie, and the
-            Server Secret.
-
-               Server Cookie =
-                  FNV64( Client IP Address | Client Cookie | Server Secret )
-
-            where "|" represents concatenation.
+            clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
+            location += 8;
 
 
-            https://github.com/jakedouglas/fnv-java/tree/master/src/main/java/com/bitlove
-            */
-            serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8 );
+            if (optionLength > 8) { // server cookie returned
+                // OPTION-LENGTH >= 16, <= 40 [rfc7873]
+                Assertion.aver(optionLength == 16
+                    || optionLength == 24
+                    || optionLength == 32
+                    || optionLength == 40);
+
+                serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
+            }
         }
     }
 }

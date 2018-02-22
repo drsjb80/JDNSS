@@ -77,9 +77,9 @@ class Header
         // only grab the header from the query
         this.header = Arrays.copyOf(buffer, 12);
 
-        id =            Utils.addThem(buffer[0], buffer[1]);
-        numQuestions =  Utils.addThem(buffer[4], buffer[5]);
-        numAnswers =    Utils.addThem(buffer[6], buffer[7]);
+        id             =Utils.addThem(buffer[0], buffer[1]);
+        numQuestions   =Utils.addThem(buffer[4], buffer[5]);
+        numAnswers     =Utils.addThem(buffer[6], buffer[7]);
         numAuthorities =Utils.addThem(buffer[8], buffer[9]);
         numAdditionals =Utils.addThem(buffer[10], buffer[11]);
 

@@ -110,6 +110,9 @@ class Query {
             // for now, it has to be 1
             Assertion.aver(header.getNumAdditionals() == 1);
 
+
+            logger.trace(Arrays.copyOfRange(buffer, location, buffer.length).toString());
+
             optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
             // check for invalid cookies
@@ -119,6 +122,7 @@ class Query {
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
 
             }else{}
+
         }
     }
 

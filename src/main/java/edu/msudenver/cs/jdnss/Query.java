@@ -115,12 +115,13 @@ class Query {
 
             optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
-            // check for invalid cookies
-            if ( optrr.getOptionLength() < 8 || (optrr.getOptionLength() > 8 && optrr.getOptionLength() < 16)
-                || optrr.getOptionLength() > 40){
+            // check for invalid cookies this should be refactored
+            if(!optrr.hasCookie()){
+                header.setRcode( ErrorCodes.NOERROR.getCode() );
+            }
+            else if(optrr.hasFormErr()){
                 // need to set the RCODE in header for the response needs to be FORMERR
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
-
             }else{}
 
         }

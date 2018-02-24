@@ -10,8 +10,8 @@ import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 
 /*
 **                                        1  1  1  1  1  1
@@ -513,11 +513,11 @@ class NSEC3RR extends RR {
     private final int iterations;
     private final String salt;
     private final String nextHashedOwnerName;
-    private final ArrayList<Integer> types;
+    private final Set<RRCode> types;
 
     NSEC3RR(String domain, int ttl, int hashAlgorithm, int flags,
             int iterations, String salt, String nextHashedOwnerName,
-            ArrayList<Integer> types) {
+            Set<RRCode> types) {
         super(domain, RRCode.NSEC3, ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
@@ -541,8 +541,6 @@ class NSEC3RR extends RR {
                 Utils.getByte(this.nextHashedOwnerName.length(), 1));
         a = Utils.combine(a,
                 Utils.convertString(nextHashedOwnerName));
-        for (Integer i : types) {
-        }
 
         return a;
     }

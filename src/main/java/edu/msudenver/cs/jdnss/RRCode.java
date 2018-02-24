@@ -37,6 +37,7 @@ enum RRCode {
     INADDR,
     STAR,
     BASE64,
+    HEX,
     DATE;
 
     private int code;

@@ -1,17 +1,12 @@
 package edu.msudenver.cs.jdnss;
 
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * This class is used by UDP and for extended for MC queries.
@@ -91,8 +86,15 @@ class UDP extends Thread
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.jargs.once)
-            {   
+            if (JDNSS.jargs.once) {
+                while (!f.isDone()) {
+                    try {
+                        sleep(100);
+
+                    } catch (InterruptedException IE) {
+                    }
+                }
+                /*
                 try 
                 {   
                     f.get();
@@ -101,6 +103,7 @@ class UDP extends Thread
                 {   
                     logger.catching(ie);
                 }
+                */
 
                 System.exit(0);
             }

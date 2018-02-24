@@ -95,14 +95,14 @@ public class QueryTest
         Queries[] queries = query.getQueries();
         Assert.assertEquals(1, queries.length);
         Assert.assertTrue(queries[0].getName().equals("www.test.com"));
-        Assert.assertEquals(RRCodes.A.getCode(), queries[0].getType());
+        Assert.assertEquals(RRCode.A, queries[0].getType());
         Assert.assertEquals(1, queries[0].getQclass());
 
         Queries[] bindQueries = digQuery.getQueries();
         Assert.assertEquals(1, bindQueries.length);
         Assert.assertEquals(1, digQuery.getHeader().getNumAdditionals());
         Assert.assertTrue(bindQueries[0].getName().equals("www.test.com"));
-        Assert.assertEquals(RRCodes.A.getCode(), bindQueries[0].getType());
+        Assert.assertEquals(RRCode.A, bindQueries[0].getType());
         Assert.assertEquals(1, bindQueries[0].getQclass());
         // Assert.assertEquals(Utils.OPT, bindQueries[1].getType());
         // Assert.assertEquals(1, bindQueries[1].getQclass());

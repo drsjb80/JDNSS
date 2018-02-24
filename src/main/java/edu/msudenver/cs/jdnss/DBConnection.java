@@ -105,7 +105,7 @@ class DBConnection {
         return null;    // have to have this or javac complains
     }
 
-    public Vector<RR> get(final RRCodes type, final String name, final int domainId) {
+    public Vector<RR> get(final RRCode type, final String name, final int domainId) {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(domainId));

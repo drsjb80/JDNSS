@@ -45,10 +45,10 @@ public class BindZoneTest
 
         String expectedwww = "[ADDR: address = 1.2.3.4, name = www, type = A, TTL = 0, " +
                 "ADDR: address = 4.3.1.1, name = www, type = A, TTL = 0]";
-        // FIXME Assert.assertEquals (z.get (RRCodes.A, "www").toString(), expectedwww);
+        // FIXME Assert.assertEquals (z.get (RRCode.A, "www").toString(), expectedwww);
 
         // exception.expect (AssertionError.class);
-        // Assert.assertNull (z.get (RRCodes.A, "WWW"));
+        // Assert.assertNull (z.get (RRCode.A, "WWW"));
     }
 
 }

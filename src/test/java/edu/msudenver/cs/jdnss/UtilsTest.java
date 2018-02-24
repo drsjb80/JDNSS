@@ -20,25 +20,6 @@ public class UtilsTest
     public final ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void mapStringToType()
-    {
-        Assert.assertEquals(Utils.mapStringToType("a"), RRCodes.A.getCode());
-        Assert.assertEquals(Utils.mapStringToType("A"), RRCodes.A.getCode());
-
-        exception.expect (IllegalArgumentException.class);
-        Utils.mapStringToType ("foo");
-    }
-
-    @Test
-    public void mapTypeToString()
-    {
-        // FIXME Assert.assertEquals (Utils.mapTypeToString (RRCodes.A), ("A"));
-
-        exception.expect (AssertionError.class);
-        Utils.mapTypeToString (-1);
-    }
-
-    @Test
     public void count()
     {
         Assert.assertEquals (Utils.count ("foo", "bar"), 0);

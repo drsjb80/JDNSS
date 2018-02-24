@@ -1,6 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
-enum RRCodes {
+enum RRCode {
     A(1),
     NS(2),
     CNAME(5),
@@ -18,7 +18,7 @@ enum RRCodes {
     NSEC(47),
     DNSKEY(48),
     NSEC3(50),
-    NSEC3PARAM(51), // from here down, these aren't RRCodes but are needed for parsing
+    NSEC3PARAM(51), // from here down, these aren't RRCode but are needed for parsing
     INCLUDE,
     ORIGIN,
     TTL,
@@ -41,15 +41,25 @@ enum RRCodes {
 
     private int code;
 
+    RRCode() {
+    }
+
+    RRCode(int code) {
+        this.code = code;
+    }
+
     int getCode() {
         Assertion.aver(code != 0);
         return code;
     }
 
-    RRCodes() {
-    }
+    static RRCode findCode(final int number) {
+        for (RRCode rrCode : values()) {
+            if (number == rrCode.getCode()) {
+                return rrCode;
+            }
+        }
 
-    RRCodes(int code) {
-        this.code = code;
+        throw new IllegalArgumentException(number + " not an RRCode");
     }
 }

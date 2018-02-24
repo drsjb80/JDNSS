@@ -349,42 +349,17 @@ class Parser {
     }
 
     private void doSOA() {
-        String server = "";
-
         origin = currentName;
 
-        switch (getNextToken()) {
-            case DN:
-                server = StringValue;
-                break;
-            default:
-                logger.info("Unknown token at line " + st.lineno());
-                break;
-        }
-
-        Assertion.aver(getNextToken() == RRCode.DN,
-                "Expecting contact at line " + st.lineno());
-        String contact = StringValue;
-
-        Assertion.aver(getNextToken() == RRCode.LPAREN,
-                "Expecting left paren at line " + st.lineno());
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting serial number at line " + st.lineno());
-        int serial = intValue;
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting refresh at line " + st.lineno());
-        int refresh = intValue;
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting retry at line " + st.lineno());
-        int retry = intValue;
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting expire at line " + st.lineno());
-        int expire = intValue;
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting minimum at line " + st.lineno());
-        int minimum = intValue;
-        Assertion.aver(getNextToken() == RRCode.RPAREN,
-                "Expecting rightparen at line " + st.lineno());
+        final String server = getDomain();
+        final String contact = getDomain();
+        getLeftParen();
+        final int serial = getIntValue();
+        final int refresh = getIntValue();
+        final int retry = getIntValue();
+        final int expire = getIntValue();
+        final int minimum = getIntValue();
+        getRightParen();
 
         SOAMinimumTTL = minimum;
         SOATTL = currentTTL;
@@ -584,6 +559,7 @@ class Parser {
         logger.traceExit();
     }
 
+
     private void doRRSIG() {
         logger.traceEntry();
 
@@ -591,9 +567,10 @@ class Parser {
         Assertion.aver(isARR(typeCovered),
                 typeCovered + " not covered with RRSIG on line " + st.lineno());
 
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting number at line " + st.lineno());
-        int algorithm = intValue;
+        //Assertion.aver(getNextToken() == RRCode.INT,
+        //        "Expecting number at line " + st.lineno());
+        // getIntValue();
+        int algorithm = getIntValue();
 
         Assertion.aver(getNextToken() == RRCode.INT,
                 "Expecting number at line " + st.lineno());
@@ -935,5 +912,29 @@ class Parser {
             logger.catching(IAE);
             logger.fatal("Skipping: " + zone.getName());
         }
+    }
+
+    private int getIntValue() {
+        Assertion.aver(getNextToken() == RRCode.INT,
+                "Expecting number at line " + st.lineno());
+        return intValue;
+    }
+
+    private void getLeftParen() {
+        Assertion.aver(getNextToken() == RRCode.LPAREN,
+                "Expecting left paren at line " + st.lineno());
+
+    }
+
+    private void getRightParen() {
+        Assertion.aver(getNextToken() == RRCode.RPAREN,
+                "Expecting left paren at line " + st.lineno());
+
+    }
+
+    private String getDomain() {
+        Assertion.aver(getNextToken() == RRCode.DN,
+                "Expecting domain at line " + st.lineno());
+        return StringValue;
     }
 }

@@ -53,24 +53,24 @@ public abstract class RR {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (!(o instanceof RR)) {
             return false;
         }
 
         RR rr = (RR) o;
-        return rr.name.equals(this.name) &&
-                rr.rrclass == rrclass &&
-                rr.type == type &&
-                rr.ttl == ttl &&
-                rr.length == length &&
-                rr.byteSize == byteSize;
+        return rr.name.equals(this.name)
+                && rr.rrclass == rrclass
+                && rr.type == type
+                && rr.ttl == ttl
+                && rr.length == length
+                && rr.byteSize == byteSize;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() + type.hashCode() + rrclass + ttl + length +
-                byteSize;
+        return name.hashCode() + type.hashCode() + rrclass + ttl + length
+                + byteSize;
     }
 
     // to enhance polymorphism and decrease casting for derived classes
@@ -88,17 +88,13 @@ public abstract class RR {
      * converts all the internal data to a byte array
      * @return the resource record to put in the response
      */
-    public byte[] getBytes(String question, int TTLminimum) {
-        int minttl = ttl == 0 ? TTLminimum : ttl;
-
-        byte name[] = Utils.convertString(question);
-
-        byte rdata[] = getBytes();
-        int rdatalen = rdata.length;
-
-        int count = name.length + 2 + 2 + 4 + 2 + rdatalen;
-
-        byte a[] = new byte[count];
+    public byte[] getBytes(final String question, final int TTLminimum) {
+        final int minttl = ttl == 0 ? TTLminimum : ttl;
+        final byte name[] = Utils.convertString(question);
+        final byte rdata[] = getBytes();
+        final int rdatalen = rdata.length;
+        final int count = name.length + 2 + 2 + 4 + 2 + rdatalen;
+        final byte a[] = new byte[count];
         System.arraycopy(name, 0, a, 0, name.length);
 
         int where = name.length;
@@ -121,7 +117,8 @@ public abstract class RR {
     protected abstract byte[] getBytes();
 
     public String toString() {
-        return ("name = " + name + ", type = " + type.toString() + ", TTL = " + ttl);
+        return ("name = " + name + ", type = "
+                + type.toString() + ", TTL = " + ttl);
     }
 }
 
@@ -149,8 +146,9 @@ class SOARR extends RR {
     private final int expire;
     private final int minimum;
 
-    SOARR(String domain, String server, String contact, int serial,
-          int refresh, int retry, int expire, int minimum, int ttl) {
+    SOARR(final String domain, final String server, final String contact,
+          final int serial, final int refresh, final int retry, final int expire,
+          final int minimum, int ttl) {
         super(domain, RRCode.SOA, ttl);
 
         this.domain = domain;
@@ -164,7 +162,7 @@ class SOARR extends RR {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof SOARR)) {
                 return false;
@@ -210,17 +208,16 @@ class SOARR extends RR {
 
     @Override
     public String toString() {
-        String s = "SOA:  ";
-        s += "domain = " + domain;
-        s += ", server = " + server;
-        s += ", contact = " + contact;
-        s += ", serial = " + serial;
-        s += ", refresh = " + refresh;
-        s += ", retry = " + retry;
-        s += ", expire = " + expire;
-        s += ", minimum = " + minimum;
-        s += ", " + super.toString();
-        return s;
+        return "SOA:  "
+                + "domain = " + domain
+                + ", server = " + server
+                + ", contact = " + contact
+                + ", serial = " + serial
+                + ", refresh = " + refresh
+                + ", retry = " + retry
+                + ", expire = " + expire
+                + ", minimum = " + minimum
+                + ", " + super.toString();
     }
 
     @Override
@@ -240,7 +237,7 @@ class HINFORR extends RR {
     private final String CPU;
     private final String OS;
 
-    HINFORR(String name, int ttl, String CPU, String OS) {
+    HINFORR(final String name, final int ttl, final String CPU, final String OS) {
         super(name, RRCode.HINFO, ttl);
         this.CPU = CPU;
         this.OS = OS;
@@ -278,17 +275,18 @@ class HINFORR extends RR {
 }
 
 class MXRR extends RR {
+    @Getter
     private final String host;
     private final int preference;
 
-    MXRR(String name, int ttl, String host, int preference) {
+    MXRR(final String name, final int ttl, final String host, final int preference) {
         super(name, RRCode.MX, ttl);
         this.host = host;
         this.preference = preference;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof MXRR)) {
                 return false;
@@ -304,10 +302,6 @@ class MXRR extends RR {
     @Override
     public int hashCode() {
         return super.hashCode() + host.hashCode() + preference;
-    }
-
-    public String getHost() {
-        return host;
     }
 
     @Override
@@ -327,6 +321,7 @@ class MXRR extends RR {
 }
 
 abstract class STRINGRR extends RR {
+    @Getter
     String string;
 
     STRINGRR(final String name, final RRCode type, int ttl) {
@@ -334,7 +329,7 @@ abstract class STRINGRR extends RR {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof STRINGRR)) {
                 return false;
@@ -352,13 +347,10 @@ abstract class STRINGRR extends RR {
         return super.hashCode() + string.hashCode();
     }
 
-    public String getString() {
-        return string;
-    }
-
     @Override
     public String toString() {
-        return "STRING: string = " + string + ", " + super.toString();
+        return "STRING: string = " + string + ", "
+                + super.toString();
     }
 
     @Override
@@ -368,7 +360,7 @@ abstract class STRINGRR extends RR {
 }
 
 class TXTRR extends STRINGRR {
-    TXTRR(String name, int ttl, String text) {
+    TXTRR(final String name, final int ttl, final String text) {
         super(name, RRCode.TXT, ttl);
         this.string = text;
     }
@@ -380,35 +372,35 @@ class TXTRR extends STRINGRR {
 }
 
 class NSRR extends STRINGRR {
-    NSRR(String domain, int ttl, String nameserver) {
+    NSRR(final String domain, final int ttl, final String nameserver) {
         super(domain, RRCode.NS, ttl);
         this.string = nameserver;
     }
 }
 
 class CNAMERR extends STRINGRR {
-    CNAMERR(String alias, int ttl, String canonical) {
+    CNAMERR(final String alias, final int ttl, final String canonical) {
         super(alias, RRCode.CNAME, ttl);
         this.string = canonical;
     }
 }
 
 class PTRRR extends STRINGRR {
-    PTRRR(String address, int ttl, String host) {
+    PTRRR(final String address, final int ttl, final String host) {
         super(address, RRCode.PTR, ttl);
         this.string = host;
     }
 }
 
 abstract class ADDRRR extends RR {
-    String address;
+    protected String address;
 
     ADDRRR(final String name, final RRCode type, final int ttl) {
         super(name, type, ttl);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof ADDRRR)) {
                 return false;
@@ -462,8 +454,8 @@ class DNSKEYRR extends RR {
     private final int algorithm;
     private final String publicKey;
 
-    DNSKEYRR(String domain, int ttl, int flags, int protocol, int algorithm,
-             String publicKey) {
+    DNSKEYRR(final String domain, final int ttl, final int flags,
+             final int protocol, final int algorithm, final String publicKey) {
         super(domain, RRCode.DNSKEY, ttl);
 
         this.flags = flags;
@@ -479,11 +471,12 @@ class DNSKEYRR extends RR {
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, publicKey.getBytes(StandardCharsets.US_ASCII));
+        Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof DNSKEYRR)) {
                 return false;
@@ -515,9 +508,9 @@ class NSEC3RR extends RR {
     private final String nextHashedOwnerName;
     private final Set<RRCode> types;
 
-    NSEC3RR(String domain, int ttl, int hashAlgorithm, int flags,
-            int iterations, String salt, String nextHashedOwnerName,
-            Set<RRCode> types) {
+    NSEC3RR(final String domain, final int ttl, final int hashAlgorithm,
+            final int flags, final int iterations, final String salt,
+            final String nextHashedOwnerName, final Set<RRCode> types) {
         super(domain, RRCode.NSEC3, ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
@@ -542,18 +535,19 @@ class NSEC3RR extends RR {
         a = Utils.combine(a,
                 Utils.convertString(nextHashedOwnerName));
 
+        Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }
 
     @Override
     public boolean equals(Object o) {
-        Assertion.fail();
+        Assertion.aver(false, "This needs to be checked and fixed.");
         return false;
     }
 
     @Override
     public int hashCode() {
-        Assertion.fail();
+        Assertion.aver(false, "This needs to be checked and fixed.");
         return 42;
     }
 }
@@ -564,8 +558,8 @@ class NSEC3PARAMRR extends RR {
     private final int iterations;
     private final String salt;
 
-    NSEC3PARAMRR(String domain, int ttl, int hashAlgorithm, int flags,
-                 int iterations, String salt) {
+    NSEC3PARAMRR(final String domain, final int ttl, final int hashAlgorithm,
+                 final int flags, final int iterations, final String salt) {
         super(domain, RRCode.NSEC3PARAM, ttl);
         this.hashAlgorithm = hashAlgorithm;
         this.flags = flags;
@@ -575,19 +569,19 @@ class NSEC3PARAMRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        Assertion.fail();
+        Assertion.fail("This needs to be checked and fixed.");
         return null;
     }
 
     @Override
     public boolean equals(Object o) {
-        Assertion.fail();
+        Assertion.fail("This needs to be checked and fixed.");
         return false;
     }
 
     @Override
     public int hashCode() {
-        Assertion.fail();
+        Assertion.fail("This needs to be checked and fixed.");
         return 42;
     }
 }
@@ -604,9 +598,10 @@ class DNSRRSIGRR extends RR {
     private final String signersName;
     private final String signature;
 
-    DNSRRSIGRR(String domain, int ttl, RRCode typeCovered, int algorithm,
-               int labels, int originalttl, int expiration, int inception,
-               String signersName, String signature) {
+    DNSRRSIGRR(final String domain, final int ttl, final RRCode typeCovered,
+               final int algorithm, final int labels, final int originalttl,
+               final int expiration, final int inception, final int keyTag,
+               final String signersName, final String signature) {
         super(domain, RRCode.RRSIG, ttl);
 
         this.typeCovered = typeCovered;
@@ -615,6 +610,7 @@ class DNSRRSIGRR extends RR {
         this.originalttl = originalttl;
         this.expiration = expiration;
         this.inception = inception;
+        this.keyTag = keyTag;
         this.signersName = signersName;
         this.signature = signature;
     }
@@ -632,12 +628,13 @@ class DNSRRSIGRR extends RR {
         //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
         a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes());
+        Assertion.fail("This needs to be checked and fixed.");
 
         return a;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof DNSRRSIGRR)) {
                 return false;
@@ -661,22 +658,22 @@ class DNSRRSIGRR extends RR {
 
     @Override
     public int hashCode() {
-        return super.hashCode() + typeCovered.hashCode() + algorithm + labels +
-                originalttl + expiration + inception + keyTag +
-                signersName.hashCode() + signature.hashCode();
+        return super.hashCode() + typeCovered.hashCode() + algorithm + labels
+                + originalttl + expiration + inception + keyTag
+                + signersName.hashCode() + signature.hashCode();
     }
 
     @Override
     public String toString() {
-        return " typeCovered = " + typeCovered +
-                ", algorithm = " + algorithm +
-                ", labels = " + labels +
-                ", originalttl = " + originalttl +
-                ", expiration = " + expiration +
-                ", inception = " + inception +
-                ", signersName = " + signersName +
-                ", signature = " + signature +
-                super.toString();
+        return " typeCovered = " + typeCovered
+                + ", algorithm = " + algorithm
+                + ", labels = " + labels
+                + ", originalttl = " + originalttl
+                + ", expiration = " + expiration
+                + ", inception = " + inception
+                + ", signersName = " + signersName
+                + ", signature = " + signature
+                + super.toString();
     }
 }
 
@@ -684,7 +681,7 @@ class DNSNSECRR extends RR {
     private final String nextDomainName;
     private final Set<RRCode> resourceRecords;
 
-    DNSNSECRR(String domain, int ttl, String nextDomainName,
+    DNSNSECRR(final String domain, final int ttl, final String nextDomainName,
               final Set<RRCode> resourceRecords) {
         super(domain, RRCode.NSEC, ttl);
 
@@ -694,13 +691,12 @@ class DNSNSECRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte a[] = Utils.convertString(nextDomainName);
-        // FIXME: a = Utils.combine(a, typeBitMaps);
-        return a;
+        Assertion.fail("This needs to be checked and fixed.");
+        return null;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (super.equals(o)) {
             if (!(o instanceof DNSNSECRR)) {
                 return false;
@@ -716,8 +712,8 @@ class DNSNSECRR extends RR {
 
     @Override
     public int hashCode() {
-        return super.hashCode() + nextDomainName.hashCode() +
-                resourceRecords.hashCode();
+        return super.hashCode() + nextDomainName.hashCode()
+                + resourceRecords.hashCode();
     }
 }
 
@@ -750,12 +746,8 @@ class OPTRR {
         Assertion.aver(version == 0);
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
-        // logger.error(flags);
         DNSSEC = flags >> 15 == 1;
-        // logger.error(DNSSEC);
-
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
-
         optionCode = Utils.addThem(bytes[location++], bytes[location++]);
         Assertion.aver(optionCode == 10);
 

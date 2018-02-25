@@ -512,7 +512,7 @@ class Parser {
         }
 
         final int inception = getDate();
-        final int keyTag = getInt("key tag");  // FIXME: this should go somewhere
+        final int keyTag = getInt("key tag");
         final String signersName = getDomain();
 
         String signature = "";
@@ -527,7 +527,7 @@ class Parser {
 
         final DNSRRSIGRR d = new DNSRRSIGRR(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,
-                signersName, signature);
+                keyTag, signersName, signature);
         zone.add(currentName, d);
         logger.traceExit();
     }

@@ -682,20 +682,20 @@ class DNSRRSIGRR extends RR {
 
 class DNSNSECRR extends RR {
     private final String nextDomainName;
-    private final byte[] typeBitMaps;
+    private final Set<RRCode> resourceRecords;
 
     DNSNSECRR(String domain, int ttl, String nextDomainName,
-              byte[] typeBitMaps) {
+              final Set<RRCode> resourceRecords) {
         super(domain, RRCode.NSEC, ttl);
 
         this.nextDomainName = nextDomainName;
-        this.typeBitMaps = typeBitMaps;
+        this.resourceRecords = resourceRecords;
     }
 
     @Override
     protected byte[] getBytes() {
         byte a[] = Utils.convertString(nextDomainName);
-        a = Utils.combine(a, typeBitMaps);
+        // FIXME: a = Utils.combine(a, typeBitMaps);
         return a;
     }
 
@@ -706,9 +706,9 @@ class DNSNSECRR extends RR {
                 return false;
             }
 
-            DNSNSECRR dnsnsecrr = (DNSNSECRR) o;
-            return dnsnsecrr.nextDomainName.equals(nextDomainName) &&
-                    Arrays.equals(dnsnsecrr.typeBitMaps, typeBitMaps);
+            DNSNSECRR other = (DNSNSECRR) o;
+            return other.nextDomainName.equals(nextDomainName) &&
+                    other.resourceRecords.equals(resourceRecords);
         }
 
         return false;
@@ -717,7 +717,7 @@ class DNSNSECRR extends RR {
     @Override
     public int hashCode() {
         return super.hashCode() + nextDomainName.hashCode() +
-                Arrays.hashCode(typeBitMaps);
+                resourceRecords.hashCode();
     }
 }
 

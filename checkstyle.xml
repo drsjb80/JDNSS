@@ -95,9 +95,7 @@
             <property name="scope" value="package"/>
         </module>
         <module name="JavaNCSS"/>
-        <module name="LeftCurly">
-            <property name="option" value="nl"/>
-        </module>
+        <module name="LeftCurly"/>
         <module name="LineLength"/>
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
@@ -149,9 +147,7 @@
         <module name="RegexpSinglelineJava"/>
         <module name="RequireThis"/>
         <module name="ReturnCount"/>
-        <module name="RightCurly">
-            <property name="option" value="alone"/>
-        </module>
+        <module name="RightCurly"/>
         <module name="SeparatorWrap"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>

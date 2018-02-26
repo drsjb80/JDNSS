@@ -1,16 +1,12 @@
 package edu.msudenver.cs.jdnss;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
+
+import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 class DBConnection {
     private Connection conn;
@@ -109,13 +105,13 @@ class DBConnection {
         return null;    // have to have this or javac complains
     }
 
-    public Vector<RR> get(final int type, final String name, final int domainId) {
+    public Vector<RR> get(final RRCode type, final String name, final int domainId) {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(domainId));
 
         try {
-            String stype = Utils.mapTypeToString(type);
+            String stype = type.name();
             logger.trace(stype);
             Vector<RR> ret = new Vector<RR>();
             ResultSet rs = stmt.executeQuery(
@@ -130,7 +126,7 @@ class DBConnection {
                 int dbprio = rs.getInt("prio");
 
                 switch (type) {
-                    case Utils.SOA: {
+                    case SOA: {
                         String s[] = dbcontent.split("\\s+");
                         ret.add(new SOARR(dbname, s[0], s[1],
                                 Integer.parseInt(s[2]), Integer.parseInt(s[3]),
@@ -138,35 +134,35 @@ class DBConnection {
                                 Integer.parseInt(s[6]), dbttl));
                         break;
                     }
-                    case Utils.NS: {
+                    case NS: {
                         ret.add(new NSRR(dbname, dbttl, dbcontent));
                         break;
                     }
-                    case Utils.A: {
+                    case A: {
                         ret.add(new ARR(dbname, dbttl, dbcontent));
                         break;
                     }
-                    case Utils.AAAA: {
+                    case AAAA: {
                         ret.add(new AAAARR(dbname, dbttl, dbcontent));
                         break;
                     }
-                    case Utils.MX: {
+                    case MX: {
                         ret.add(new MXRR(dbname, dbttl, dbcontent, dbprio));
                         break;
                     }
-                    case Utils.TXT: {
+                    case TXT: {
                         ret.add(new TXTRR(dbname, dbttl, dbcontent));
                         break;
                     }
-                    case Utils.CNAME: {
+                    case CNAME: {
                         ret.add(new CNAMERR(dbname, dbttl, dbcontent));
                         break;
                     }
-                    case Utils.PTR: {
+                    case PTR: {
                         ret.add(new PTRRR(dbname, dbttl, dbcontent));
                         break;
                     }
-                    case Utils.HINFO: {
+                    case HINFO: {
                         final String s[] = dbcontent.split("\\s+");
                         ret.add(new HINFORR(dbname, dbttl, s[0], s[1]));
                         break;

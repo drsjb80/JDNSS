@@ -29,11 +29,12 @@ class DBZone implements Zone
 
     public String getName() { return zoneName; }
 
-    public Vector<RR> get(final int type, final String name)
+    public Vector<RR> get(final RRCode type, final String name)
     {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
 
-        return dbConnection.get(type, name, domainId);
+        // FIXME return dbConnection.get(type, name, domainId);
+        return null;
     }
 }

@@ -4,10 +4,12 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: BindZone.java,v 1.1 2011/03/03 22:35:14 drb80 Exp $
  */
 
-import java.util.*;
-
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Vector;
 
 class BindZone implements Zone {
     @Getter private String name;
@@ -18,7 +20,7 @@ class BindZone implements Zone {
     ** in the single table...
     */
 
-    private final Map<Integer, Map<String, Vector<RR>>> tableOfTables = new Hashtable<>();
+    private final Map<RRCode, Map<String, Vector<RR>>> tableOfTables = new Hashtable<>();
 
     private final Logger logger = JDNSS.logger;
 
@@ -26,33 +28,33 @@ class BindZone implements Zone {
         this.name = name;
 
         Map<String, Vector<RR>> hA = new Hashtable<>();
-        tableOfTables.put(Utils.A, hA);
+        tableOfTables.put(RRCode.A, hA);
         Map<String, Vector<RR>> hAAAA = new Hashtable<>();
-        tableOfTables.put(Utils.AAAA, hAAAA);
+        tableOfTables.put(RRCode.AAAA, hAAAA);
         Map<String, Vector<RR>> hNS = new Hashtable<>();
-        tableOfTables.put(Utils.NS, hNS);
+        tableOfTables.put(RRCode.NS, hNS);
         Map<String, Vector<RR>> hMX = new Hashtable<>();
-        tableOfTables.put(Utils.MX, hMX);
+        tableOfTables.put(RRCode.MX, hMX);
         Map<String, Vector<RR>> hCNAME = new Hashtable<>();
-        tableOfTables.put(Utils.CNAME, hCNAME);
+        tableOfTables.put(RRCode.CNAME, hCNAME);
         Map<String, Vector<RR>> hPTR = new Hashtable<>();
-        tableOfTables.put(Utils.PTR, hPTR);
+        tableOfTables.put(RRCode.PTR, hPTR);
         Map<String, Vector<RR>> hTXT = new Hashtable<>();
-        tableOfTables.put(Utils.TXT, hTXT);
+        tableOfTables.put(RRCode.TXT, hTXT);
         Map<String, Vector<RR>> hHINFO = new Hashtable<>();
-        tableOfTables.put(Utils.HINFO, hHINFO);
+        tableOfTables.put(RRCode.HINFO, hHINFO);
         Map<String, Vector<RR>> hSOA = new Hashtable<>();
-        tableOfTables.put(Utils.SOA, hSOA);
+        tableOfTables.put(RRCode.SOA, hSOA);
         Map<String, Vector<RR>> hDNSKEY = new Hashtable<>();
-        tableOfTables.put(Utils.DNSKEY, hDNSKEY);
+        tableOfTables.put(RRCode.DNSKEY, hDNSKEY);
         Map<String, Vector<RR>> hDNSRRSIG = new Hashtable<>();
-        tableOfTables.put(Utils.RRSIG, hDNSRRSIG);
+        tableOfTables.put(RRCode.RRSIG, hDNSRRSIG);
         Map<String, Vector<RR>> hNSEC = new Hashtable<>();
-        tableOfTables.put(Utils.NSEC, hNSEC);
+        tableOfTables.put(RRCode.NSEC, hNSEC);
         Map<String, Vector<RR>> hNSEC3 = new Hashtable<>();
-        tableOfTables.put(Utils.NSEC3, hNSEC3);
+        tableOfTables.put(RRCode.NSEC3, hNSEC3);
         Map<String, Vector<RR>> hNSEC3PARAM = new Hashtable<>();
-        tableOfTables.put(Utils.NSEC3PARAM, hNSEC3PARAM);
+        tableOfTables.put(RRCode.NSEC3PARAM, hNSEC3PARAM);
     }
 
     /**
@@ -79,8 +81,8 @@ class BindZone implements Zone {
     public String toString() {
         String s = "---- Zone " + name + " -----" + '\n';
 
-        for (int i : tableOfTables.keySet()) {
-            s += Utils.mapTypeToString(i) + ": " + dumphash(tableOfTables.get(i)) + "\n";
+        for (RRCode i : tableOfTables.keySet()) {
+            s += i.toString() + ": " + dumphash(tableOfTables.get(i)) + "\n";
         }
 
         s += "--------";
@@ -88,8 +90,7 @@ class BindZone implements Zone {
         return s;
     }
 
-    private Map<String, Vector<RR>> getTable(final int type) {
-        logger.traceEntry(Utils.mapTypeToString(type));
+    private Map<String, Vector<RR>> getTable(final RRCode type) {
 
         final Map<String, Vector<RR>> ret = tableOfTables.get(type);
 
@@ -139,10 +140,7 @@ class BindZone implements Zone {
      * @param name the name
      * @return a Vector with the appropriate addresses for the given name
      */
-    public Vector<RR> get(final int type, final String name) {
-        logger.traceEntry(Utils.mapTypeToString(type));
-        logger.traceEntry(name);
-
+    public Vector<RR> get(final RRCode type, final String name) {
         final Map<String, Vector<RR>> h = getTable(type);
         Assertion.aver(h != null);
         logger.trace(h);

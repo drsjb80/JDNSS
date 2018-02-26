@@ -5,8 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 
-// When an OPT RR is included within any DNS message, it MUST be the
-// only OPT RR in that message.
 class OPTRR {
     @Getter
     private boolean DNSSEC = false;
@@ -50,23 +48,13 @@ class OPTRR {
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
         logger.trace(rdLength);
 
-        if (rdLength >= 5 ) { //data length needs to be minimum of 5 bytes
+        if (rdLength >= 5) { //data length needs to be minimum of 5 bytes
 
             optionCode = Utils.addThem(bytes[location++], bytes[location++]);
             Assertion.aver(optionCode == 10);
 
             optionLength = Utils.addThem(bytes[location++], bytes[location++]);
-
-            /*
-            If the COOKIE option is too short to contain a Client Cookie, then
-            FORMERR is generated.  If the COOKIE option is longer than that
-            required to hold a COOKIE option with just a Client Cookie (8 bytes)
-            but is shorter than the minimum COOKIE option with both a
-            Client Cookie and a Server Cookie (16 bytes), then FORMERR is
-            generated.  If the COOKIE option is longer than the maximum valid
-            COOKIE option (40 bytes), then FORMERR is generated.
-            */
-
+            logger.trace(optionLength);
 
             clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
             location += 8;
@@ -88,6 +76,15 @@ class OPTRR {
         return this.getRdLength() > 0;
     }
 
+     /*
+            If the COOKIE option is too short to contain a Client Cookie, then
+            FORMERR is generated.  If the COOKIE option is longer than that
+            required to hold a COOKIE option with just a Client Cookie (8 bytes)
+            but is shorter than the minimum COOKIE option with both a
+            Client Cookie and a Server Cookie (16 bytes), then FORMERR is
+            generated.  If the COOKIE option is longer than the maximum valid
+            COOKIE option (40 bytes), then FORMERR is generated.
+            */
     protected boolean hasFormErr(){
         return this.getOptionLength() < 8
             || (this.getOptionLength() > 8 && this.getOptionLength() < 16)

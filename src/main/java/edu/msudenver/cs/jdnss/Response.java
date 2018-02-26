@@ -35,6 +35,7 @@ class Response {
 
     // put the possible additionals in, but don't add to response until we know there is room for them.
     private void createAdditionals(Vector<RR> v, String host) {
+        logger.traceEntry();
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
 
@@ -55,22 +56,22 @@ class Response {
         Vector<RR> v;
 
         try {
-            v = zone.get(Utils.A, host);
+            v = zone.get(RRCode.A, host);
             createAdditionals(v, host);
 
             if (DNSSEC) {
-                addRRSignature(Utils.A, name, additional, ResponseSection.ADDITIONAL);
+                addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE1) {
             // try the AAAA
         }
 
         try {
-            v = zone.get(Utils.AAAA, host);
+            v = zone.get(RRCode.AAAA, host);
             createAdditionals(v, host);
 
             if (DNSSEC) {
-                addRRSignature(Utils.AAAA, name, additional, ResponseSection.ADDITIONAL);
+                addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE2) {
             // maybe we found an A
@@ -79,7 +80,7 @@ class Response {
 
     // put the possible authorities in, but don't add to response until we know there is room for them.
     private void createAuthorities(String name) {
-        Vector<RR> v = zone.get(Utils.NS, zone.getName());
+        Vector<RR> v = zone.get(RRCode.NS, zone.getName());
         logger.trace(v);
 
         for (RR nsrr : v) {
@@ -90,18 +91,18 @@ class Response {
         }
 
         if (DNSSEC) {
-            addRRSignature(Utils.NS, name, authority, ResponseSection.AUTHORITY);
+            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
         }
     }
 
-    private void createResponses(Vector<RR> v, String name, int which) {
+    private void createResponses(Vector<RR> v, String name, final RRCode which) {
         Assertion.aver(zone != null, "zone == null");
         Assertion.aver(v != null, "v == null");
         Assertion.aver(name != null, "name == null");
 
         logger.traceEntry(new ObjectMessage(v));
         logger.traceEntry(name);
-        logger.traceEntry(Integer.toString(which));
+        logger.traceEntry(which.toString());
 
         boolean firsttime = true;
 
@@ -122,29 +123,29 @@ class Response {
                 addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
             }
 
-            if (firsttime && which != Utils.NS) {
+            if (firsttime && which != RRCode.NS) {
                 createAuthorities(name);
             }
 
             firsttime = false;
 
-            if (which == Utils.MX || which == Utils.NS) {
+            if (which == RRCode.MX || which == RRCode.NS) {
                 createAorAAAA(rr.getHost(), name);
             }
         }
         logger.traceExit();
     }
 
-    public void addDNSKeys(String host) {
-        Vector v = zone.get(Utils.DNSKEY, host);
+    public void addDNSKeys(final String host) {
+        Vector v = zone.get(RRCode.DNSKEY, host);
         createAdditionals(v, host);
 
-        addRRSignature(Utils.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
+        addRRSignature(RRCode.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
     }
 
 
-    private void addRRSignature(int type, String name, byte[] destination, ResponseSection section) {
-        Vector<RR> rrsigv = zone.get(Utils.RRSIG, zone.getName());
+    private void addRRSignature(final RRCode type, final String name, byte[] destination, ResponseSection section) {
+        Vector<RR> rrsigv = zone.get(RRCode.RRSIG, zone.getName());
 
         for (RR foo : rrsigv) {
             DNSRRSIGRR rrsig = (DNSRRSIGRR) foo;
@@ -173,8 +174,8 @@ class Response {
         }
     }
 
-    private void addNSECRecords(String name) {
-        Vector<RR> nsecv = zone.get(Utils.NSEC, zone.getName());
+    private void addNSECRecords(final String name) {
+        Vector<RR> nsecv = zone.get(RRCode.NSEC, zone.getName());
 
         DNSNSECRR nsec = (DNSNSECRR) nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
@@ -193,6 +194,8 @@ class Response {
 
     // DRY with above?
     private void addAdditionals() {
+        logger.traceEntry();
+        logger.trace(numAdditionals);
         if (numAdditionals > 0) {
             if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);
@@ -219,29 +222,30 @@ class Response {
     no AAAA RR(but may have other types of RRs), and thus improve the response
     time to further queries for an AAAA RR of the name.
     */
-    private void dealWithOther(int type, String name) {
-        int other = type == Utils.A ? Utils.AAAA : Utils.A;
+    private void dealWithOther(final RRCode type, final String name) {
+        RRCode other = type == RRCode.A ? RRCode.AAAA : RRCode.A;
 
         try {
             zone.get(other, name);
         } catch (AssertionError AE) {
-            logger.debug(Utils.mapTypeToString(type) + " lookup of " +
+            logger.debug(type.toString() + " lookup of " +
                     name + " failed");
 
             header.setRcode(ErrorCodes.NAMEERROR.getCode());
             throw (AE);
         }
 
-        logger.debug(Utils.mapTypeToString(type) +
+        logger.debug(type.toString() +
                 " lookup of " + name + " failed but " +
-                Utils.mapTypeToString(other) + " record found");
+                other.toString() + " record found");
 
         header.setRcode(ErrorCodes.NOERROR.getCode());
     }
 
     // Just keeping it DRY.
-    private void errLookupFailed(int type, String name, int rcode) {
-        logger.debug("'" + Utils.mapTypeToString(type) + "' lookup of " + name + " failed");
+    private void errLookupFailed(final RRCode type, final String name, final int rcode) {
+        logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
+        // FIXME
         header.setRcode(rcode);
     }
 
@@ -260,7 +264,7 @@ class Response {
     private void setMinimum() {
         Vector<RR> w;
         try {
-            w = zone.get(Utils.SOA, zone.getName());
+            w = zone.get(RRCode.SOA, zone.getName());
             SOA = (SOARR) w.elementAt(0);
             minimum = SOA.getMinimum();
         } catch (AssertionError AE) {
@@ -270,24 +274,24 @@ class Response {
         }
     }
 
-    private void nameNotFound(int type, String name) {
+    private void nameNotFound(final RRCode type, final String name) {
         logger.debug(name + " not A or AAAA, giving up");
         errLookupFailed(type, name, ErrorCodes.NOERROR.getCode());
         addSOA(SOA);
 
         if (DNSSEC) {
             addNSECRecords(name);
-            addRRSignature(Utils.NSEC, name, authority, ResponseSection.AUTHORITY);
+            addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
         }
 
         addAuthorities();
     }
 
-    private StringAndVector lookForCNAME(int type, String name) {
+    private StringAndVector lookForCNAME(final RRCode type, final String name) {
         logger.debug("Looking for a CNAME for " + name);
 
         try {
-            Vector<RR> u = zone.get(Utils.CNAME, name);
+            Vector<RR> u = zone.get(RRCode.CNAME, name);
 
             // grab the first one as they all should work. maybe we should
             // round-robin?
@@ -297,7 +301,7 @@ class Response {
             Vector<RR> v = zone.get(type, s);
 
             // yes, so first put in the CNAME
-            createResponses(u, name, Utils.CNAME);
+            createResponses(u, name, RRCode.CNAME);
 
             // then continue the lookup on the original type
             // with the new name
@@ -315,7 +319,7 @@ class Response {
                 if (DNSSEC)
                 {
                     addNSECRecords(name);
-                    addRRSignature(Utils.NSEC, name, authority, Utils.AUTHORITY);
+                    addRRSignature(RRCode.NSEC, name, authority, Utils.AUTHORITY);
                 }
             }
             addSOA(SOA);
@@ -328,7 +332,7 @@ class Response {
         return null;
     }
 
-    private StringAndVector findRR(int type, String name) {
+    private StringAndVector findRR(final RRCode type, String name) {
         Vector v;
         try {
             v = zone.get(type, name);
@@ -336,14 +340,14 @@ class Response {
             // is this where this belongs?
             if (DNSSEC) {
                 addNSECRecords(name);
-                addRRSignature(Utils.NSEC, name, authority, ResponseSection.AUTHORITY);
+                addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
             }
 
             return new StringAndVector(name, v);
         } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
 
-            if (type != Utils.AAAA && type != Utils.A) {
+            if (type != RRCode.AAAA && type != RRCode.A) {
                 nameNotFound(type, name);
                 throw (AE);
             } else {
@@ -364,10 +368,10 @@ class Response {
 
         for (Queries q : query.getQueries()) {
             String name = q.getName();
-            int type = q.getType();
+            final RRCode type = q.getType();
 
             logger.trace(name);
-            logger.trace(Utils.mapTypeToString(type));
+            logger.trace(type.toString());
 
             try {
                 setZone(name);

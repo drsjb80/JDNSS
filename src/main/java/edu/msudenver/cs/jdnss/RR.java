@@ -117,8 +117,7 @@ public abstract class RR {
     protected abstract byte[] getBytes();
 
     public String toString() {
-        return ("name = " + name + ", type = "
-                + type.toString() + ", TTL = " + ttl");
+        return "name = " + name + ", type = " + type.toString() + ", TTL = " + ttl;
     }
 }
 
@@ -264,8 +263,7 @@ class HINFORR extends RR {
 
     @Override
     public String toString() {
-        return ("HINFO: CPU = " + CPU + ", OS = " + OS + ", " + "
-                super.toString());
+        return "HINFO: CPU = " + CPU + ", OS = " + OS + ", " + super.toString();
     }
 
     @Override
@@ -306,8 +304,7 @@ class MXRR extends RR {
 
     @Override
     public String toString() {
-        return ("MX: host = " + host + ", preference = " + preference +
-                ", " + super.toString());
+        return "MX: host = " + host + ", preference = " + preference + ", " + super.toString();
     }
 
     @Override
@@ -349,8 +346,7 @@ abstract class STRINGRR extends RR {
 
     @Override
     public String toString() {
-        return "STRING: string = " + string + ", "
-                + super.toString();
+        return "STRING: string = " + string + ", " + super.toString();
     }
 
     @Override
@@ -569,19 +565,22 @@ class NSEC3PARAMRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        Assertion.fail("This needs to be checked and fixed.");
+        String fix = "This needs to be checked and fixed.";
+        Assertion.fail(fix);
         return null;
     }
 
     @Override
     public boolean equals(Object o) {
-        Assertion.fail("This needs to be checked and fixed.");
+        String fix = "This needs to be checked and fixed.";
+        Assertion.fail(fix); 
         return false;
     }
 
     @Override
     public int hashCode() {
-        Assertion.fail("This needs to be checked and fixed.");
+        String fix = "This needs to be checked and fixed.";
+        Assertion.fail(fix); 
         return 42;
     }
 }
@@ -628,7 +627,9 @@ class DNSRRSIGRR extends RR {
         //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
         a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes());
-        Assertion.fail("This needs to be checked and fixed.");
+        
+        String fix = "This needs to be checked and fixed.";
+        Assertion.fail(fix); 
 
         return a;
     }
@@ -691,7 +692,8 @@ class DNSNSECRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        Assertion.fail("This needs to be checked and fixed.");
+        String fix = "This needs to be checked and fixed.";
+        Assertion.fail(fix); 
         return null;
     }
 
@@ -716,3 +718,4 @@ class DNSNSECRR extends RR {
                 + resourceRecords.hashCode();
     }
 }
+

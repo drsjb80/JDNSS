@@ -105,14 +105,14 @@ class Query {
         no COOKIE option had been included in the request.
         */
 
+
         for (int i = 0; i < header.getNumAdditionals(); i++) {
+
             logger.traceEntry();
-            // for now, it has to be 1
+            // When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message.
             Assertion.aver(header.getNumAdditionals() == 1);
 
-
             logger.trace(Arrays.copyOfRange(buffer, location, buffer.length).toString());
-
             optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
             // check for invalid cookies this should be refactored

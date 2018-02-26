@@ -35,6 +35,7 @@ class Response {
 
     // put the possible additionals in, but don't add to response until we know there is room for them.
     private void createAdditionals(Vector<RR> v, String host) {
+        logger.traceEntry();
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
 
@@ -193,6 +194,8 @@ class Response {
 
     // DRY with above?
     private void addAdditionals() {
+        logger.traceEntry();
+        logger.trace(numAdditionals);
         if (numAdditionals > 0) {
             if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);

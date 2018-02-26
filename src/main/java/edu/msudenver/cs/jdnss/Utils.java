@@ -21,86 +21,10 @@ class Utils {
     private static final Logger logger = JDNSS.logger;
 
     /**
-     * The request/respose numbers. I looked at making this an enum, but the actual
-     * numbers are needed everywhere and one can't switch on a getCode() method call.
-     */
-    public static final int A = 1;
-    public static final int NS = 2;
-    public static final int CNAME = 5;
-    public static final int SOA = 6;
-    public static final int PTR = 12;
-    public static final int HINFO = 13;
-    public static final int MX = 15;
-    public static final int TXT = 16;
-    public static final int AAAA = 28;
-    public static final int A6 = 38;
-    public static final int DNAME = 39;
-    public static final int OPT = 41;
-    public static final int DS = 43;
-    public static final int RRSIG = 46;
-    public static final int NSEC = 47;
-    public static final int DNSKEY = 48;
-    public static final int NSEC3 = 50;
-    public static final int NSEC3PARAM = 51;
-    public static final int INCLUDE = 256;
-    public static final int ORIGIN = 257;
-    public static final int TTL = 258;
-
-    private static final Map<String, Integer> StringToType = new HashMap<>();
-    private static final Map<Integer, String> TypeToString = new HashMap<>();
-
-    static {
-        StringToType.put("A", A);
-        StringToType.put("NS", NS);
-        StringToType.put("CNAME", CNAME);
-        StringToType.put("SOA", SOA);
-        StringToType.put("PTR", PTR);
-        StringToType.put("HINFO", HINFO);
-        StringToType.put("MX", MX);
-        StringToType.put("TXT", TXT);
-        StringToType.put("AAAA", AAAA);
-        StringToType.put("A6", A6);
-        StringToType.put("DNAME", DNAME);
-        StringToType.put("OPT", OPT);
-        StringToType.put("DS", DS);
-        StringToType.put("RRSIG", RRSIG);
-        StringToType.put("NSEC", NSEC);
-        StringToType.put("NSEC3", NSEC3);
-        StringToType.put("NSEC3PARAM", NSEC3PARAM);
-        StringToType.put("DNSKEY", DNSKEY);
-        StringToType.put("INCLUDE", INCLUDE);
-        StringToType.put("ORIGIN", ORIGIN);
-        StringToType.put("TTL", TTL);
-
-        // swap the keys and values
-        for (Map.Entry<String, Integer> entry : StringToType.entrySet()) {
-            TypeToString.put(entry.getValue(), entry.getKey());
-        }
-    }
-
-    public static int mapStringToType(String s) throws IllegalArgumentException {
-        Assertion.aver(s != null);
-        Assertion.aver(! s.equals(""));
-
-        if (! StringToType.containsKey(s.toUpperCase()))
-            throw new IllegalArgumentException(s + " not in map");
-
-        return StringToType.get(s.toUpperCase());
-    }
-
-    public static String mapTypeToString(int i) {
-        String ret = TypeToString.get(i);
-
-        Assertion.aver(ret != null, "Couldn't find type: " + i);
-
-        return ret;
-    }
-
-    /**
-     * Ignoring case, find the String in the Enumeration that
+     * Ignoring case, find the String in the Set that
      * matches the end of s, and is the longest that does so.
      */
-    public static String findLongest(Set<String> e, String s) {
+    public static String findLongest(final Set<String> e, final String s) {
         Assertion.aver(e != null);
         Assertion.aver(s != null);
         Assertion.aver(!s.equals(""));

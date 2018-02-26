@@ -74,7 +74,8 @@ class RRs {
             int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 
-            questions[i] = new QRR((String) StringAndNumber.elementAt(0), qtype);
+            questions[i] = new QRR((String) StringAndNumber.elementAt(0),
+                    RRCode.findCode(qtype));
         }
     }
 

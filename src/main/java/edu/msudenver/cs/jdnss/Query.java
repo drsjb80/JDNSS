@@ -28,6 +28,7 @@ class Query {
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
     @Getter private OPTRR optrr;
+    @Getter private byte[] rawQueries;
 
     private int maximumPayload = 512;
 
@@ -90,7 +91,7 @@ class Query {
             */
         }
 
-
+        this.rawQueries = Arrays.copyOfRange(buffer, 12, location);
 
 
         /* For servers with DNS Cookies enabled, the QUERY opcode behavior is
@@ -127,6 +128,7 @@ class Query {
 
     public byte[] buildResponseQueries() {
         logger.traceEntry();
+
         byte[] questions = new byte[0];
         for(Queries q: this.getQueries()) {
             //byte[] name = q.getName().getBytes();

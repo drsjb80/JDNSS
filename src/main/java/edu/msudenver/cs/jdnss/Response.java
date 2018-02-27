@@ -29,7 +29,7 @@ class Response {
     public Response(Query query) {
         this.query = query;
         this.header = query.getHeader();
-        this.numAdditionals = query.getHeader().getNumAdditionals();
+        //this.numAdditionals = query.getHeader().getNumAdditionals();
         // pass these in
         // this.responses = query.getBuffer();
         // logger.debug(this.responses);
@@ -406,7 +406,9 @@ class Response {
         logger.trace(header.getNumAdditionals());
 
 
-        byte abc[] = Utils.combine(header.getHeader(), query.buildResponseQueries());
+        byte abc[] = new byte[0];
+        abc = Utils.combine(abc, header.getHeader());
+        abc = Utils.combine(abc, query.getRawQueries());
         abc = Utils.combine(abc, responses);
         abc = Utils.combine(abc, query.getOptrr().getBytes());
 

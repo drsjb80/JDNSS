@@ -405,10 +405,12 @@ class Response {
         logger.trace(header.getNumAnswers());
         logger.trace(header.getNumAdditionals());
 
-        byte abc[] = Utils.combine(header.getHeader(), query.getRawQueries());
+
+        byte abc[] = Utils.combine(header.getHeader(), query.buildResponseQueries());
         abc = Utils.combine(abc, responses);
         abc = Utils.combine(abc, query.getOptrr().getBytes());
-
+        
         return abc;
+
     }
 }

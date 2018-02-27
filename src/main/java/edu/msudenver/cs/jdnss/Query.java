@@ -27,7 +27,6 @@ class Query {
     @Getter private Header header;
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
-    @Getter private byte[] rawQueries;
     @Getter private OPTRR optrr;
 
     private int maximumPayload = 512;
@@ -38,7 +37,6 @@ class Query {
     public Query(byte buffer[]) {
         this.buffer = buffer;
         this.header = new Header(buffer);
-        this.rawQueries = Arrays.copyOfRange(buffer, 12, buffer.length);
     }
 
     /**
@@ -124,6 +122,17 @@ class Query {
             }else{}
 
         }
+    }
+
+    public byte[] buildResponseQueries() {
+        byte[] queries = null;
+        for(Queries q: getQueries()) {
+            byte[] name = q.getName().getBytes();
+            byte[] type = Utils.getBytes(q.getType().getCode());
+            byte[] qclass = Utils.getBytes(q.getQclass());
+            Utils.combine(Utils.combine(queries, name), Utils.combine(type, qclass));
+        }
+        return queries;
     }
 
     public String toString() {

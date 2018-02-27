@@ -93,7 +93,7 @@ class OPTRR {
     }
 
     protected byte[] getBytes(){
-        byte a[] = new byte[0];
+        byte a[] = {(byte) 0x00};
         a = Utils.combine(a, Utils.getTwoBytes(this.type, 2));
         a = Utils.combine(a, Utils.getTwoBytes(this.payloadSize, 2));
         a = Utils.combine(a, extendedrcode);

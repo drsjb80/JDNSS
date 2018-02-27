@@ -91,6 +91,8 @@ class Query {
         }
 
 
+
+
         /* For servers with DNS Cookies enabled, the QUERY opcode behavior is
         extended to support queries with an empty Question Section (a QDCOUNT
             of zero (0)), provided that an OPT record is present with a COOKIE
@@ -124,14 +126,18 @@ class Query {
     }
 
     public byte[] buildResponseQueries() {
-        byte[] queries = null;
-        for(Queries q: getQueries()) {
-            byte[] name = q.getName().getBytes();
-            byte[] type = Utils.getBytes(q.getType().getCode());
-            byte[] qclass = Utils.getBytes(q.getQclass());
-            Utils.combine(Utils.combine(queries, name), Utils.combine(type, qclass));
+        logger.traceEntry();
+        byte[] questions = new byte[0];
+        for(Queries q: this.getQueries()) {
+            //byte[] name = q.getName().getBytes();
+            questions = Utils.combine(questions, q.getName().getBytes());
+            //byte[] type = Utils.getBytes(q.getType().getCode());
+            questions = Utils.combine(questions, Utils.getTwoBytes(q.getType().getCode(), 2));
+            //byte[] qclass = Utils.getBytes(q.getQclass());
+            questions = Utils.combine(questions, Utils.getTwoBytes(q.getQclass(), 2));
+            //Utils.combine(Utils.combine(questions, name), Utils.combine(type, qclass));
         }
-        return queries;
+        return questions;
     }
 
     public String toString() {

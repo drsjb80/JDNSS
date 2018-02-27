@@ -401,6 +401,6 @@ class Response {
         addAdditionals();
         header.build();
 
-        return Utils.combine(Utils.combine(header.getHeader(), query.getRawQueries()), responses);
+        return Utils.combine(Utils.combine(header.getHeader(), query.buildResponseQueries()), responses);
     }
 }

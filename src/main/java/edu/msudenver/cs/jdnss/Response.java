@@ -409,7 +409,7 @@ class Response {
         byte abc[] = Utils.combine(header.getHeader(), query.buildResponseQueries());
         abc = Utils.combine(abc, responses);
         abc = Utils.combine(abc, query.getOptrr().getBytes());
-        
+
         return abc;
 
     }

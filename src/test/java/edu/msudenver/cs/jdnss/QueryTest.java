@@ -109,11 +109,6 @@ public class QueryTest
     }
 
     @Test
-    public void getRawQueries() throws Exception {
-        Assert.assertTrue(Arrays.equals(rawQuery, query.getRawQueries()));
-    }
-
-    @Test
     public void getZone() throws Exception {
     }
 }

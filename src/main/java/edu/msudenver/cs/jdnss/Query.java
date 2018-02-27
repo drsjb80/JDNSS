@@ -89,7 +89,6 @@ class Query {
             ** questions requesting multicast responses ("QM" questions).
             */
         }
-        this.rawQueries = Arrays.copyOfRange(buffer, 12, location);
 
 
         /* For servers with DNS Cookies enabled, the QUERY opcode behavior is

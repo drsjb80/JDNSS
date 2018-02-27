@@ -10,7 +10,7 @@ class OPTRR {
     private boolean DNSSEC = false;
     final static Logger logger = JDNSS.logger;
     private int payloadSize;
-    private int rcodeAndFlags;
+    private int type;
     @Getter private int rdLength;
     private byte extendedrcode = 0; // extended RCODE of 0 indicates use of a regular RCODE
     private byte version;
@@ -19,6 +19,7 @@ class OPTRR {
     @Getter private int optionLength;
     @Getter private byte[] clientCookie;
     @Getter private byte[] serverCookie;
+    @Getter private byte[] rawOPT;
 
     OPTRR(byte[] bytes) {
         logger.traceEntry();
@@ -26,7 +27,7 @@ class OPTRR {
 
         int location = 1;
 
-        int type = Utils.addThem(bytes[location++], bytes[location++]);
+        type = Utils.addThem(bytes[location++], bytes[location++]);
         Assertion.aver(type == 41);
 
         payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
@@ -89,5 +90,22 @@ class OPTRR {
         return this.getOptionLength() < 8
             || (this.getOptionLength() > 8 && this.getOptionLength() < 16)
             || this.getOptionLength() > 40;
+    }
+
+    protected byte[] getBytes(){
+        byte a[] = new byte[0];
+        a = Utils.combine(a, Utils.getTwoBytes(this.type, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(this.payloadSize, 2));
+        a = Utils.combine(a, extendedrcode);
+        a = Utils.combine(a, version);
+        a = Utils.combine(a, Utils.getTwoBytes(this.flags, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(this.rdLength, 2));
+        if(rdLength >=5){
+            a = Utils.combine(a, Utils.getTwoBytes(this.optionCode, 2));
+            a = Utils.combine(a, Utils.getTwoBytes(this.optionLength, 2));
+            a = Utils.combine(a, clientCookie);
+            //TODO include server cookie
+        } else{ }
+        return a;
     }
 }

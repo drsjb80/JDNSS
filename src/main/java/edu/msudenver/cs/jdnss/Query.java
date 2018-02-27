@@ -91,6 +91,7 @@ class Query {
             ** questions requesting multicast responses ("QM" questions).
             */
         }
+        this.rawQueries = Arrays.copyOfRange(buffer, 12, location);
 
 
         /* For servers with DNS Cookies enabled, the QUERY opcode behavior is
@@ -111,7 +112,7 @@ class Query {
             // When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message.
             Assertion.aver(header.getNumAdditionals() == 1);
 
-            optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
+            this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
             //TODO check for invalid cookie
             if(!optrr.hasCookie()){

@@ -39,8 +39,7 @@ import java.util.Set;
 public abstract class RR {
     final static Logger logger = JDNSS.logger;
     @Getter private String name;
-    @Getter
-    private RRCode type;
+    @Getter private RRCode type;
     @Getter private int rrclass = 1;
     @Getter private int ttl;
     @Getter private int length;

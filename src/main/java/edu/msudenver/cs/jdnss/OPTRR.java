@@ -59,6 +59,7 @@ class OPTRR {
             clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
             location += 8;
 
+            //TODO generate server cookie here if one does not yet exsist
 
             if (optionLength > 8) { // server cookie returned
                 // OPTION-LENGTH >= 16, <= 40 [rfc7873]
@@ -66,7 +67,7 @@ class OPTRR {
                     || optionLength == 24
                     || optionLength == 32
                     || optionLength == 40);
-
+            //TODO check server cookie here
                 serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
             }
         }
@@ -75,8 +76,7 @@ class OPTRR {
     protected boolean hasCookie(){
         return this.getRdLength() > 0;
     }
-
-     /*
+            /*
             If the COOKIE option is too short to contain a Client Cookie, then
             FORMERR is generated.  If the COOKIE option is longer than that
             required to hold a COOKIE option with just a Client Cookie (8 bytes)

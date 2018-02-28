@@ -39,8 +39,7 @@ import java.util.Set;
 public abstract class RR {
     final static Logger logger = JDNSS.logger;
     @Getter private String name;
-    @Getter
-    private RRCode type;
+    @Getter private RRCode type;
     @Getter private int rrclass = 1;
     @Getter private int ttl;
     @Getter private int length;
@@ -565,22 +564,19 @@ class NSEC3PARAMRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        String fix = "This needs to be checked and fixed.";
-        Assertion.fail(fix);
+        Assertion.fail("This needs to be checked and fixed.");
         return null;
     }
 
     @Override
     public boolean equals(Object o) {
-        String fix = "This needs to be checked and fixed.";
-        Assertion.fail(fix); 
+        Assertion.fail("This needs to be checked and fixed.");
         return false;
     }
 
     @Override
     public int hashCode() {
-        String fix = "This needs to be checked and fixed.";
-        Assertion.fail(fix); 
+        Assertion.fail("This needs to be checked and fixed.");
         return 42;
     }
 }
@@ -627,9 +623,8 @@ class DNSRRSIGRR extends RR {
         //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
         a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes());
-        
-        String fix = "This needs to be checked and fixed.";
-        Assertion.fail(fix); 
+
+        Assertion.fail("This needs to be checked and fixed.");
 
         return a;
     }
@@ -692,8 +687,7 @@ class DNSNSECRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        String fix = "This needs to be checked and fixed.";
-        Assertion.fail(fix); 
+        Assertion.fail("This needs to be checked and fixed.");
         return null;
     }
 

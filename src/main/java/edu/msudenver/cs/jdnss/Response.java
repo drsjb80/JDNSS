@@ -28,7 +28,9 @@ class Response {
 
     public Response(Query query) {
         this.query = query;
-        this.header = query.getHeader(); // pass these in
+        this.header = query.getHeader();
+        //this.numAdditionals = query.getHeader().getNumAdditionals();
+        // pass these in
         // this.responses = query.getBuffer();
         // logger.debug(this.responses);
     }
@@ -400,7 +402,18 @@ class Response {
         addAuthorities();
         addAdditionals();
         header.build();
+        logger.trace(header.getNumAnswers());
+        logger.trace(header.getNumAdditionals());
 
-        return Utils.combine(Utils.combine(header.getHeader(), query.getRawQueries()), responses);
+        byte abc[] = new byte[0];
+        abc = Utils.combine(abc, header.getHeader());
+        abc = Utils.combine(abc, query.buildResponseQueries());
+        abc = Utils.combine(abc, responses);
+
+        if(query.getOptrr()!= null)
+            abc = Utils.combine(abc, query.getOptrr().getBytes());
+
+        return abc;
+
     }
 }

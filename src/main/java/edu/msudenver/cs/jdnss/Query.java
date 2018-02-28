@@ -27,7 +27,6 @@ class Query {
     @Getter private Header header;
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
-    @Getter private byte[] rawQueries;
     @Getter private OPTRR optrr;
 
     private int maximumPayload = 512;
@@ -38,7 +37,6 @@ class Query {
     public Query(byte buffer[]) {
         this.buffer = buffer;
         this.header = new Header(buffer);
-        this.rawQueries = Arrays.copyOfRange(buffer, 12, buffer.length);
     }
 
     /**
@@ -105,18 +103,15 @@ class Query {
         presence of a COOKIE option is ignored and the server responds as if
         no COOKIE option had been included in the request.
         */
-
-
         for (int i = 0; i < header.getNumAdditionals(); i++) {
-
             logger.traceEntry();
+
             // When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message.
             Assertion.aver(header.getNumAdditionals() == 1);
 
-            logger.trace(Arrays.copyOfRange(buffer, location, buffer.length).toString());
-            optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
+            this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
-            // check for invalid cookies this should be refactored
+            //TODO check for invalid cookie
             if(!optrr.hasCookie()){
                 header.setRcode( ErrorCodes.NOERROR.getCode() );
             }
@@ -126,6 +121,16 @@ class Query {
             }else{}
 
         }
+    }
+
+    public byte[] buildResponseQueries() {
+        byte[] questions = new byte[0];
+        for(Queries query: this.getQueries()) {
+            questions = Utils.convertString(query.getName());
+            questions = Utils.combine(questions, Utils.getTwoBytes(query.getType().getCode(), 2));
+            questions = Utils.combine(questions, Utils.getTwoBytes(query.getQclass(), 2));
+        }
+        return questions;
     }
 
     public String toString() {

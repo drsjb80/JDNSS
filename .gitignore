@@ -7,3 +7,6 @@ dependency-reduced-pom.xml
 jdnss.iml
 *.DS_Store
 .gitignore
+
+# Other
+output.txt

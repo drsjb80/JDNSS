@@ -96,14 +96,14 @@ class OPTRR {
         byte a[] = {(byte) 0x00};
         a = Utils.combine(a, Utils.getTwoBytes(this.type, 2));
         a = Utils.combine(a, Utils.getTwoBytes(this.payloadSize, 2));
-        a = Utils.combine(a, extendedrcode);
-        a = Utils.combine(a, version);
+        a = Utils.combine(a, this.extendedrcode);
+        a = Utils.combine(a, this.version);
         a = Utils.combine(a, Utils.getTwoBytes(this.flags, 2));
         a = Utils.combine(a, Utils.getTwoBytes(this.rdLength, 2));
         if(rdLength >=5){
             a = Utils.combine(a, Utils.getTwoBytes(this.optionCode, 2));
             a = Utils.combine(a, Utils.getTwoBytes(this.optionLength, 2));
-            a = Utils.combine(a, clientCookie);
+            a = Utils.combine(a, this.clientCookie);
             //TODO include server cookie
         } else{ }
         return a;

@@ -410,7 +410,9 @@ class Response {
         abc = Utils.combine(abc, header.getHeader());
         abc = Utils.combine(abc, query.getRawQueries());
         abc = Utils.combine(abc, responses);
-        abc = Utils.combine(abc, query.getOptrr().getBytes());
+
+        if(query.getOptrr()!= null)
+            abc = Utils.combine(abc, query.getOptrr().getBytes());
 
         return abc;
 

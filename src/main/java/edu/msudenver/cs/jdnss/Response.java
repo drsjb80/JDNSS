@@ -405,10 +405,9 @@ class Response {
         logger.trace(header.getNumAnswers());
         logger.trace(header.getNumAdditionals());
 
-
         byte abc[] = new byte[0];
         abc = Utils.combine(abc, header.getHeader());
-        abc = Utils.combine(abc, query.getRawQueries());
+        abc = Utils.combine(abc, query.buildResponseQueries());
         abc = Utils.combine(abc, responses);
         abc = Utils.combine(abc, query.getOptrr().getBytes());
 

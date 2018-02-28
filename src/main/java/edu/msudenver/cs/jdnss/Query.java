@@ -126,7 +126,7 @@ class Query {
     public byte[] buildResponseQueries() {
         byte[] questions = new byte[0];
         for(Queries query: this.getQueries()) {
-            questions = Utils.convertString(query.getName());
+            questions = Utils.combine(questions, Utils.convertString(query.getName()));
             questions = Utils.combine(questions, Utils.getTwoBytes(query.getType().getCode(), 2));
             questions = Utils.combine(questions, Utils.getTwoBytes(query.getQclass(), 2));
         }

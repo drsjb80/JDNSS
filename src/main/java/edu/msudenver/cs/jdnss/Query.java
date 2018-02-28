@@ -28,7 +28,6 @@ class Query {
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
     @Getter private OPTRR optrr;
-    @Getter private byte[] rawQueries;
 
     private int maximumPayload = 512;
 
@@ -91,8 +90,6 @@ class Query {
             */
         }
 
-        this.rawQueries = Arrays.copyOfRange(buffer, 12, location);
-
 
         /* For servers with DNS Cookies enabled, the QUERY opcode behavior is
         extended to support queries with an empty Question Section (a QDCOUNT
@@ -127,17 +124,11 @@ class Query {
     }
 
     public byte[] buildResponseQueries() {
-        logger.traceEntry();
-
         byte[] questions = new byte[0];
-        for(Queries q: this.getQueries()) {
-            //byte[] name = q.getName().getBytes();
-            questions = Utils.combine(questions, q.getName().getBytes());
-            //byte[] type = Utils.getBytes(q.getType().getCode());
-            questions = Utils.combine(questions, Utils.getTwoBytes(q.getType().getCode(), 2));
-            //byte[] qclass = Utils.getBytes(q.getQclass());
-            questions = Utils.combine(questions, Utils.getTwoBytes(q.getQclass(), 2));
-            //Utils.combine(Utils.combine(questions, name), Utils.combine(type, qclass));
+        for(Queries query: this.getQueries()) {
+            questions = Utils.convertString(query.getName());
+            questions = Utils.combine(questions, Utils.getTwoBytes(query.getType().getCode(), 2));
+            questions = Utils.combine(questions, Utils.getTwoBytes(query.getQclass(), 2));
         }
         return questions;
     }

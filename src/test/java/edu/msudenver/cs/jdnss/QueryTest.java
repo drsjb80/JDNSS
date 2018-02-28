@@ -21,11 +21,6 @@ public class QueryTest
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
             };
-    byte[] rawQuery = {(byte) 0x03, (byte) 0x77, (byte) 0x77, (byte) 0x77,
-            (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73,
-            (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f,
-            (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
-            (byte) 0x00, (byte) 0x01};
     byte[] digBuffer = {(byte) 0x6b, (byte) 0xcd, (byte) 0x01, (byte) 0x20,
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,
@@ -106,6 +101,20 @@ public class QueryTest
         Assert.assertEquals(1, bindQueries[0].getQclass());
         // Assert.assertEquals(Utils.OPT, bindQueries[1].getType());
         // Assert.assertEquals(1, bindQueries[1].getQclass());
+    }
+
+    @Test
+    public void testBuildResponseQueries() {
+        byte[] questions = query.buildResponseQueries();
+        Assert.assertNotNull(questions);
+        Assert.assertTrue(questions.length > 0);
+        Assert.assertTrue(questions.length > 13);
+        Assert.assertEquals(0x03, questions[0]);
+        Assert.assertEquals(0x77, questions[1]);
+        Assert.assertEquals(0x65, questions[6]);
+        Assert.assertEquals(0x6f, questions[11]);
+        Assert.assertEquals(0x00, questions[13]);
+        Assert.assertEquals(0x01, questions[17]);
     }
 
     @Test

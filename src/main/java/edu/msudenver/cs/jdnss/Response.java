@@ -131,8 +131,12 @@ class Response {
 
             firsttime = false;
 
-            if (which == RRCode.MX || which == RRCode.NS) {
+            if (which == RRCode.MX) {
                 createAorAAAA(rr.getHost(), name);
+            }
+
+            if (which == RRCode.NS) {
+                createAorAAAA(rr.getString(), name);
             }
         }
         logger.traceExit();

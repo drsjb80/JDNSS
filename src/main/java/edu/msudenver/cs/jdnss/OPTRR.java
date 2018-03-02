@@ -60,17 +60,27 @@ class OPTRR {
             clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
             location += 8;
 
-            //TODO generate server cookie here if one does not yet exsist
+            //TODO check that server cookie does not already exist
+            ServerCookie sc = new ServerCookie(clientCookie);
+            serverCookie = sc.getRawServerCookie();
+            optionLength += serverCookie.length;
+            logger.trace(serverCookie.length);
+            logger.trace(optionLength);
 
+            rdLength += serverCookie.length;
+            logger.trace(rdLength);
+
+            //TODO verify that server cookie returned is valid
+            /*
             if (optionLength > 8) { // server cookie returned
                 // OPTION-LENGTH >= 16, <= 40 [rfc7873]
                 Assertion.aver(optionLength == 16
                     || optionLength == 24
                     || optionLength == 32
                     || optionLength == 40);
-            //TODO check server cookie here
                 serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
             }
+            */
         }
     }
 
@@ -104,7 +114,7 @@ class OPTRR {
             a = Utils.combine(a, Utils.getTwoBytes(this.optionCode, 2));
             a = Utils.combine(a, Utils.getTwoBytes(this.optionLength, 2));
             a = Utils.combine(a, this.clientCookie);
-            //TODO include server cookie
+            a = Utils.combine(a, this.serverCookie);
         } else{ }
         return a;
     }

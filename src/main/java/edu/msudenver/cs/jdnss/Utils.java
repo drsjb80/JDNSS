@@ -91,6 +91,20 @@ class Utils {
     }
 
     /**
+     * Get one byte from a long
+     *
+     * @param from  the integer to retrive from
+     * @param which which byte(1 = lowest, 4 = highest)
+     * @return the requested byte
+     */
+    public static byte getByte(long from, int which) {
+        Assertion.aver(which >= 1 && which <= 8);
+
+        int shift = (which - 1) * 8;
+        return (byte) ((from >>> shift) & 0xff);
+    }
+
+    /**
      * Get two bytes from an integer
      *
      * @param from  the integer to retrieve from
@@ -118,6 +132,25 @@ class Utils {
         ret[1] = getByte(from, 3);
         ret[2] = getByte(from, 2);
         ret[3] = getByte(from, 1);
+        return ret;
+    }
+
+    /**
+     * Get all eight bytes from a long
+     *
+     * @param from the integer to retrive from
+     * @return the requested byte array
+     */
+    public static byte[] getBytes(long from) {
+        byte ret[] = new byte[8];
+        ret[0] = getByte(from, 8);
+        ret[1] = getByte(from, 7);
+        ret[2] = getByte(from, 6);
+        ret[3] = getByte(from, 5);
+        ret[4] = getByte(from, 4);
+        ret[5] = getByte(from, 3);
+        ret[6] = getByte(from, 2);
+        ret[7] = getByte(from, 1);
         return ret;
     }
 

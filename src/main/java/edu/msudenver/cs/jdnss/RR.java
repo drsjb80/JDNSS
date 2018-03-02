@@ -371,6 +371,11 @@ class NSRR extends STRINGRR {
         super(domain, RRCode.NS, ttl);
         this.string = nameserver;
     }
+
+    @Override
+    public String getString() {
+        return string;
+    }
 }
 
 class CNAMERR extends STRINGRR {

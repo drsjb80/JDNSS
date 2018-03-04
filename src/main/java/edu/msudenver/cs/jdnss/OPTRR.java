@@ -2,6 +2,7 @@ package edu.msudenver.cs.jdnss;
 
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.Arrays;
 
@@ -19,8 +20,10 @@ class OPTRR {
     @Getter private int optionLength;
     @Getter private byte[] clientCookie;
     @Getter private byte[] serverCookie;
-    @Getter private byte[] rawOPT;
 
+    /*
+        constructs a new OPTRR from a query
+     */
     OPTRR(byte[] bytes) {
         logger.traceEntry();
         Assertion.aver(bytes[0] == 0);
@@ -41,9 +44,7 @@ class OPTRR {
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
 
-        // logger.error(flags);
         DNSSEC = flags >> 15 == 1; // DNSSEC OK bit as defined by [RFC3225].
-        // logger.error(DNSSEC);
         logger.trace(DNSSEC);
 
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
@@ -60,33 +61,22 @@ class OPTRR {
             clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
             location += 8;
 
-            //TODO check that server cookie does not already exist
-            ServerCookie sc = new ServerCookie(clientCookie);
-            serverCookie = sc.getRawServerCookie();
-            optionLength += serverCookie.length;
-            logger.trace(serverCookie.length);
-            logger.trace(optionLength);
-
-            rdLength += serverCookie.length;
-            logger.trace(rdLength);
-
-            //TODO verify that server cookie returned is valid
-            /*
-            if (optionLength > 8) { // server cookie returned
+           if (optionLength > 8) { // server cookie returned
                 // OPTION-LENGTH >= 16, <= 40 [rfc7873]
                 Assertion.aver(optionLength == 16
                     || optionLength == 24
                     || optionLength == 32
                     || optionLength == 40);
+                //TODO verify that server cookie returned is valid
                 serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
             }
-            */
         }
     }
 
     protected boolean hasCookie(){
         return this.getRdLength() > 0;
     }
+
             /*
             If the COOKIE option is too short to contain a Client Cookie, then
             FORMERR is generated.  If the COOKIE option is longer than that
@@ -117,5 +107,18 @@ class OPTRR {
             a = Utils.combine(a, this.serverCookie);
         } else{ }
         return a;
+    }
+
+    /*
+     Modifies an OPTRR by creating a new server cookie
+     from a valid client cookie
+     adds this serverCookie to this OPTRR
+     */
+    protected void addServerCookie(){
+        //TODO check that server cookie does not already exist
+        ServerCookie sc = new ServerCookie(clientCookie);
+        this.serverCookie = sc.getBytes();
+        this.optionLength += serverCookie.length;
+        this.rdLength += serverCookie.length;
     }
 }

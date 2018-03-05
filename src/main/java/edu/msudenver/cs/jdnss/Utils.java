@@ -94,7 +94,7 @@ class Utils {
      * Get one byte from a long
      *
      * @param from  the integer to retrive from
-     * @param which which byte(1 = lowest, 4 = highest)
+     * @param which which byte(1 = lowest, 8 = highest)
      * @return the requested byte
      */
     public static byte getByte(long from, int which) {

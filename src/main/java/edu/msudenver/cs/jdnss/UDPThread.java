@@ -54,7 +54,7 @@ public class UDPThread implements Runnable
         logger.traceEntry();
 
         Query query = new Query (packet);
-        query.parseQueries();
+        query.parseQueries(address.toString());
 
         Response r = new Response(query);
         byte b[] = r.makeResponses(true);

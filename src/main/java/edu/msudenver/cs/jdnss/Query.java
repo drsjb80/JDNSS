@@ -120,7 +120,6 @@ class Query {
             }
             else if(optrr.hasCookie()){
                 //TODO check for invalid cookie
-                //TODO ipaddres & serversercret
                 optrr.addServerCookie(clientIPaddress);
 
             }

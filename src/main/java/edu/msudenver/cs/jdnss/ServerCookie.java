@@ -26,7 +26,7 @@ public class ServerCookie {
   protected boolean isValid(byte[] clientCookie, String clientIP){
     FNV1a64 fnv = new FNV1a64();
     fnv.init(new String(clientCookie) + clientIP + serverSecret);
-    hash = fnv.getHash();
+    return this.hash == fnv.getHash();
   }
 
   protected byte[] getBytes(){

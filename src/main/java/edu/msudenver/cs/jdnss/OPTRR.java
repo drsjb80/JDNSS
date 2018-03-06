@@ -77,15 +77,15 @@ class OPTRR {
         return this.getRdLength() > 0;
     }
 
-            /*
-            If the COOKIE option is too short to contain a Client Cookie, then
-            FORMERR is generated.  If the COOKIE option is longer than that
-            required to hold a COOKIE option with just a Client Cookie (8 bytes)
-            but is shorter than the minimum COOKIE option with both a
-            Client Cookie and a Server Cookie (16 bytes), then FORMERR is
-            generated.  If the COOKIE option is longer than the maximum valid
-            COOKIE option (40 bytes), then FORMERR is generated.
-            */
+    /*
+      If the COOKIE option is too short to contain a Client Cookie, then
+      FORMERR is generated.  If the COOKIE option is longer than that
+      required to hold a COOKIE option with just a Client Cookie (8 bytes)
+      but is shorter than the minimum COOKIE option with both a
+      Client Cookie and a Server Cookie (16 bytes), then FORMERR is
+      generated.  If the COOKIE option is longer than the maximum valid
+      COOKIE option (40 bytes), then FORMERR is generated.
+    */
     protected boolean hasFormErr(){
         return this.getOptionLength() < 8
             || (this.getOptionLength() > 8 && this.getOptionLength() < 16)

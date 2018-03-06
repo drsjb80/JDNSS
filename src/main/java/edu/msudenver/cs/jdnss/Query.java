@@ -112,14 +112,22 @@ class Query {
 
             //process and transform? optrr for a resonse
             if(!optrr.hasCookie()){
+                //TODO look at me closer
                 header.setRcode( ErrorCodes.NOERROR.getCode() );
             }
             else if(optrr.hasFormErr()){
                 // need to set the RCODE in header for the response needs to be FORMERR
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
-            }else if(optrr.hasCookie()){
+            }
+            else if(optrr.hasCookie()){
                 //TODO check for invalid cookie
                 optrr.addServerCookie();
+            }
+            else if(optrr.hasCookie() && !optrr.getServerCookie.isValid(String clientIP)){
+
+            }
+            else if(valid everything){
+
             }
 
         }

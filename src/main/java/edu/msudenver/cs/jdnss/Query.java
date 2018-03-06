@@ -42,7 +42,7 @@ class Query {
     /**
      * Evaluates and saves all questions
      */
-    public void parseQueries() {
+    public void parseQueries(String clientIPaddress) {
         logger.traceEntry();
 
         /*
@@ -120,7 +120,8 @@ class Query {
             }
             else if(optrr.hasCookie()){
                 //TODO check for invalid cookie
-                optrr.addServerCookie();
+                //TODO ipaddres & serversercret
+                optrr.addServerCookie(clientIPaddress);
 
             }
             /*

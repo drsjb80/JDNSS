@@ -56,7 +56,7 @@ class TCPThread implements Runnable {
         }
 
         Query q = new Query(query);
-        q.parseQueries();
+        q.parseQueries(socket.getInetAddress().toString());
 
         Response r = new Response(q);
         byte b[] = r.makeResponses(false);

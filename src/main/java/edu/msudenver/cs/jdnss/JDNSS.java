@@ -9,6 +9,7 @@ import edu.msudenver.cs.jclo.JCLO;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
@@ -139,6 +140,31 @@ public class JDNSS {
             }
         }
     }
+    // Server Secret default location: "/etc/jnamed.conf"
+    private static void setServerCookie (){
+        // Set the correct Server Secret Location
+        if (jargs.ServerSecretLocation == null) {
+            logger.trace("ServerSecret is null so Default " +
+                    "locattion set: /etc/jnamed.conf");
+            jargs.ServerSecretLocation = "/etc/jnamed.conf";
+        }
+        // Set a custom Server Secret
+        if (jargs.ServerSecret != null) {
+            try {
+                File file = new File(jargs.ServerSecretLocation);
+                FileWriter fw = new FileWriter(file);
+                fw.write("cookie-secret \"" + jargs.ServerSecret + "\"");
+                fw.flush();
+                fw.close();
+            }
+            catch (IOException e){
+                logger.error("IO error trying to write to " +
+                        jargs.ServerSecretLocation+ ": " + e);
+                System.exit(1);
+            }
+
+        }
+    }
 
     /**
      * The main driver for the server; creates threads for TCP and UDP.
@@ -154,6 +180,7 @@ public class JDNSS {
 
         setLogLevel();
         doargs();
+        setServerCookie();
 
         if (bindZones.size() == 0 && DBConnection == null) {
             logger.fatal("No zone files, traceExit.");

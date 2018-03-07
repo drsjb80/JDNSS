@@ -22,7 +22,6 @@ public class ServerCookie {
   }
 
   //check incoming server cookie to see if it is valid
-  //FIXME this is bad
   protected boolean isValid(byte[] clientCookie, String clientIP){
     FNV1a64 fnv = new FNV1a64();
     fnv.init(new String(clientCookie) + clientIP + serverSecret);

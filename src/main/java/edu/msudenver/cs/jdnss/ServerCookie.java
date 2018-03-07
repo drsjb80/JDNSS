@@ -62,7 +62,7 @@ public class ServerCookie {
 
             // Here we will need to decide what to do if no server secret is found
             if (m.find()) {
-                return m.group(0);
+                return m.group(1);
             }
             else {
                logger.warn("Couldnt find Server Secret");

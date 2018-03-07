@@ -1,6 +1,15 @@
 package edu.msudenver.cs.jdnss;
 
+
 import lombok.Getter;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ServerCookie {
 
@@ -31,8 +40,45 @@ public class ServerCookie {
     return this.hash == fnv.getHash();
   }
 
+  /*
+  *
+  * What happens if server secret is not there?
+  *
+   */
   private String getServerSecret(){
+      String filename = "/etc/named.conf";
+      String line = null;
 
+      try {
+          File file = new File(filename);
+
+          FileInputStream fis = new FileInputStream(file);
+          byte[] data = new byte[(int) file.length()];
+          fis.read(data);
+          fis.close();
+
+          String confFile = new String(data, "UTF-8");
+          Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
+
+          Matcher m = p.matcher(confFile);
+
+          // Here we will need to decide what to do if no server secret is found
+          if (m.find()) {
+              return m.group(0);
+          }
+          else {
+              System.out.println("Couldnt find Server Secret");
+          }
+
+
+      }
+      catch (FileNotFoundException e) {
+          System.out.println("Something wrong with Server Secret: " + e);
+      }
+      catch (IOException e){
+          System.out.println("Something wrong with Server Secret: " + e);
+
+      }
   }
   protected byte[] getBytes(){
     return Utils.getBytes(this.hash);

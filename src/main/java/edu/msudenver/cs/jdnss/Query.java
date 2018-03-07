@@ -120,8 +120,10 @@ class Query {
             }
             else if(optrr.hasCookie()){
                 //TODO check for invalid cookie
-                optrr.addServerCookie(clientIPaddress);
-
+                ServerCookie sCookie = optrr.createServerCookie(clientIPaddress);
+                if(optrr.getServerCookie() == sCookie.getBytes()) {
+                    header.setRcode(ErrorCodes.BADCOOKIE.getCode());
+                }
             }
             /*
             else if(optrr.hasCookie() && !optrr.getServerCookie.isValid(String clientIP)){

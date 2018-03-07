@@ -8,7 +8,8 @@ enum ErrorCodes {
     SERVFAIL(2),
     NAMEERROR(3),
     NOTIMPL(4),
-    REFUSED(5);
+    REFUSED(5),
+    BADCOOKIE(23);
 
     @Getter
     int code;

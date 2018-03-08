@@ -118,10 +118,8 @@ class Query {
                 // need to set the RCODE in header for the response needs to be FORMERR
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
             }
-            else if(optrr.hasCookie()){
-                if(optrr.createServerCookie(clientIPaddress)) {
-                    header.setRcode(ErrorCodes.YXRRSET.getCode());
-                }
+            else {
+                optrr.createServerCookie(clientIPaddress, header);
             }
         }
     }

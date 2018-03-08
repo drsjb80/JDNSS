@@ -9,7 +9,7 @@ enum ErrorCodes {
     NAMEERROR(3),
     NOTIMPL(4),
     REFUSED(5),
-    BADCOOKIE(23);
+    XRRSET(7);
 
     @Getter
     int code;

@@ -119,20 +119,10 @@ class Query {
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
             }
             else if(optrr.hasCookie()){
-                //TODO check for invalid cookie
-                //TODO ipaddres & serversercret
-                optrr.addServerCookie(clientIPaddress);
-
+                if(optrr.createServerCookie(clientIPaddress)) {
+                    header.setRcode(ErrorCodes.XRRSET.getCode());
+                }
             }
-            /*
-            else if(optrr.hasCookie() && !optrr.getServerCookie.isValid(String clientIP)){
-
-            }
-            else if(valid everything){
-
-            }
-            */
-
         }
     }
 

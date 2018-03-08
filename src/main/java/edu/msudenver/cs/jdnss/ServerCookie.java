@@ -13,23 +13,16 @@ import java.util.regex.Pattern;
 
 public class ServerCookie {
 
-      final static Logger logger = JDNSS.logger;
-      private String serverSecret;
-      private long hash;
 
-    //contruct a new Server Cookie from a valid incoming client cookie.
-    ServerCookie(byte[] clientCookie) {
-        serverSecret = getServerSecret();
-        FNV1a64 fnv = new FNV1a64();
-        fnv.init(new String(clientCookie));
-        hash = fnv.getHash();
-    }
+      final static Logger logger = JDNSS.logger;
+      private String serverSecret = getServerSecret();
+      private long hash;
 
     //I think this is how it should really look?
     ServerCookie(byte[] clientCookie, String clientIP){
-        serverSecret = getServerSecret();
         FNV1a64 fnv = new FNV1a64();
         fnv.init(new String(clientCookie) + clientIP + serverSecret);
+        logger.trace(serverSecret);
         hash = fnv.getHash();
         logger.trace(hash);
     }
@@ -69,7 +62,7 @@ public class ServerCookie {
 
             // Here we will need to decide what to do if no server secret is found
             if (m.find()) {
-                return m.group(0);
+                return m.group(1);
             }
             else {
                logger.warn("Couldnt find Server Secret");
@@ -88,8 +81,10 @@ public class ServerCookie {
 
         }
     }
+
     protected byte[] getBytes(){
       return Utils.getBytes(this.hash);
     }
+
 
 }

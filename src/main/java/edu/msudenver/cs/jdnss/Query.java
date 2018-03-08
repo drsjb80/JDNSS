@@ -120,7 +120,7 @@ class Query {
             }
             else if(optrr.hasCookie()){
                 if(optrr.createServerCookie(clientIPaddress)) {
-                    header.setRcode(ErrorCodes.XRRSET.getCode());
+                    header.setRcode(ErrorCodes.YXRRSET.getCode());
                 }
             }
         }

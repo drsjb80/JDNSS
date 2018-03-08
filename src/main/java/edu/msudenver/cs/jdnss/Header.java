@@ -39,7 +39,7 @@ class Header
                 || rcode == ErrorCodes.NAMEERROR.getCode()
                 || rcode == ErrorCodes.NOTIMPL.getCode()
                 || rcode == ErrorCodes.REFUSED.getCode()
-                || rcode == ErrorCodes.XRRSET.getCode());
+                || rcode == ErrorCodes.YXRRSET.getCode());
         Assertion.aver(numAnswers >= 0 && numAnswers <= 255);
         Assertion.aver(numAuthorities >= 0 && numAuthorities <= 255);
         Assertion.aver(numAdditionals >= 0 && numAdditionals <= 255);

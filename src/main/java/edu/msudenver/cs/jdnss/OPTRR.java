@@ -67,7 +67,6 @@ class OPTRR {
                     || optionLength == 24
                     || optionLength == 32
                     || optionLength == 40);
-                //TODO verify that server cookie returned is valid
                 serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
             }
         }
@@ -116,7 +115,6 @@ class OPTRR {
      adds this serverCookie to this OPTRR
      */
     protected boolean createServerCookie(String clientIPaddress){
-        //TODO check that server cookie does not already exist
         ServerCookie sCookie = new ServerCookie(clientCookie, clientIPaddress);
 
         boolean badCookie = false;
@@ -127,8 +125,8 @@ class OPTRR {
         }
 
         this.serverCookie = sCookie.getBytes();
-        this.optionLength += serverCookie.length;
-        this.rdLength += serverCookie.length;
+        this.optionLength = (serverCookie.length + clientCookie.length);
+        this.rdLength = (optionLength + 4);
         return badCookie;
     }
 }

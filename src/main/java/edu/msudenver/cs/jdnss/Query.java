@@ -119,7 +119,6 @@ class Query {
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
             }
             else if(optrr.hasCookie()){
-                //TODO check for invalid cookie
                 if(optrr.createServerCookie(clientIPaddress)) {
                     header.setRcode(ErrorCodes.XRRSET.getCode());
                 }

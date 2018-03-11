@@ -9,7 +9,7 @@ enum ErrorCodes {
     NAMEERROR(3),
     NOTIMPL(4),
     REFUSED(5),
-    XRRSET(7);
+    YXRRSET(7);
 
     @Getter
     int code;

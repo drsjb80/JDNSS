@@ -111,17 +111,12 @@ class Query {
             this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
             //process and transform? optrr for a resonse
-            if(!optrr.hasCookie()){
+            // need to set the RCODE in header for the response needs to be FORMERR
+            if(!optrr.hasCookie() || optrr.hasFormErr()){
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
             }
-            else if(optrr.hasFormErr()){
-                // need to set the RCODE in header for the response needs to be FORMERR
-                header.setRcode( ErrorCodes.FORMERROR.getCode() );
-            }
-            else if(optrr.hasCookie()){
-                if(optrr.createServerCookie(clientIPaddress)) {
-                    header.setRcode(ErrorCodes.XRRSET.getCode());
-                }
+            else {
+                optrr.createServerCookie(clientIPaddress, header);
             }
         }
     }

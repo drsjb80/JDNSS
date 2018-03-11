@@ -3,7 +3,9 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 enum ResponseSection {
     ANSWER, ADDITIONAL, AUTHORITY
@@ -293,7 +295,7 @@ class Response {
         addAuthorities();
     }
 
-    private StringAndVector lookForCNAME(final RRCode type, final String name) {
+    private Map<String, Vector> lookForCNAME(final RRCode type, final String name) {
         logger.debug("Looking for a CNAME for " + name);
 
         try {
@@ -311,7 +313,10 @@ class Response {
 
             // then continue the lookup on the original type
             // with the new name
-            return new StringAndVector(s, v);
+            Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
+            stringAndVector.put(s, v);
+            return stringAndVector;
+
         } catch (AssertionError AE) {
             logger.debug("Didn't find a CNAME for " + name);
 
@@ -332,13 +337,12 @@ class Response {
             addAuthorities();
             */
         }
-
         // should have already returned something good or throw an
         // exception from dealWithOther.
         return null;
     }
 
-    private StringAndVector findRR(final RRCode type, String name) {
+    private Map<String, Vector> findRR(final RRCode type, String name) {
         Vector v;
         try {
             v = zone.get(type, name);
@@ -349,7 +353,9 @@ class Response {
                 addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
             }
 
-            return new StringAndVector(name, v);
+            Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
+            stringAndVector.put(name, v);
+            return stringAndVector;
         } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
 
@@ -391,9 +397,10 @@ class Response {
 
             Vector v;
             try {
-                StringAndVector snv = findRR(type, name);
-                name = snv.getString();
-                v = snv.getVector();
+                Map<String, Vector> stringAndVector = findRR(type, name);
+                Assertion.aver(stringAndVector.size() == 1);
+                name = ((String) stringAndVector.keySet().toArray()[0]);
+                v = stringAndVector.get(name);
             } catch (AssertionError AE2) {
                 return query.getBuffer();
             }

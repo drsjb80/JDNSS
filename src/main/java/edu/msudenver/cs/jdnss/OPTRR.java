@@ -114,19 +114,17 @@ class OPTRR {
      from a valid client cookie
      adds this serverCookie to this OPTRR
      */
-    protected boolean createServerCookie(String clientIPaddress){
+    protected void createServerCookie(String clientIPaddress, Header header) {
         ServerCookie sCookie = new ServerCookie(clientCookie, clientIPaddress);
 
-        boolean badCookie = false;
-        if(!Arrays.equals(sCookie.getBytes(), serverCookie)
+        if (!Arrays.equals(sCookie.getBytes(), serverCookie)
                 && serverCookie != null) {
             this.extendedrcode = ((byte) 0x01);
-            badCookie = true;
+            header.setRcode(ErrorCodes.YXRRSET.getCode());
         }
 
         this.serverCookie = sCookie.getBytes();
         this.optionLength = (serverCookie.length + clientCookie.length);
         this.rdLength = (optionLength + 4);
-        return badCookie;
     }
 }

@@ -2,6 +2,7 @@ package edu.msudenver.cs.jdnss;
 
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.Arrays;
 
@@ -19,8 +20,10 @@ class OPTRR {
     @Getter private int optionLength;
     @Getter private byte[] clientCookie;
     @Getter private byte[] serverCookie;
-    @Getter private byte[] rawOPT;
 
+    /*
+        constructs a new OPTRR from a query
+     */
     OPTRR(byte[] bytes) {
         logger.traceEntry();
         Assertion.aver(bytes[0] == 0);
@@ -41,9 +44,7 @@ class OPTRR {
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
 
-        // logger.error(flags);
         DNSSEC = flags >> 15 == 1; // DNSSEC OK bit as defined by [RFC3225].
-        // logger.error(DNSSEC);
         logger.trace(DNSSEC);
 
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
@@ -60,15 +61,12 @@ class OPTRR {
             clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
             location += 8;
 
-            //TODO generate server cookie here if one does not yet exsist
-
-            if (optionLength > 8) { // server cookie returned
+           if (optionLength > 8) { // server cookie returned
                 // OPTION-LENGTH >= 16, <= 40 [rfc7873]
                 Assertion.aver(optionLength == 16
                     || optionLength == 24
                     || optionLength == 32
                     || optionLength == 40);
-            //TODO check server cookie here
                 serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
             }
         }
@@ -77,15 +75,16 @@ class OPTRR {
     protected boolean hasCookie(){
         return this.getRdLength() > 0;
     }
-            /*
-            If the COOKIE option is too short to contain a Client Cookie, then
-            FORMERR is generated.  If the COOKIE option is longer than that
-            required to hold a COOKIE option with just a Client Cookie (8 bytes)
-            but is shorter than the minimum COOKIE option with both a
-            Client Cookie and a Server Cookie (16 bytes), then FORMERR is
-            generated.  If the COOKIE option is longer than the maximum valid
-            COOKIE option (40 bytes), then FORMERR is generated.
-            */
+
+    /*
+      If the COOKIE option is too short to contain a Client Cookie, then
+      FORMERR is generated.  If the COOKIE option is longer than that
+      required to hold a COOKIE option with just a Client Cookie (8 bytes)
+      but is shorter than the minimum COOKIE option with both a
+      Client Cookie and a Server Cookie (16 bytes), then FORMERR is
+      generated.  If the COOKIE option is longer than the maximum valid
+      COOKIE option (40 bytes), then FORMERR is generated.
+    */
     protected boolean hasFormErr(){
         return this.getOptionLength() < 8
             || (this.getOptionLength() > 8 && this.getOptionLength() < 16)
@@ -104,8 +103,28 @@ class OPTRR {
             a = Utils.combine(a, Utils.getTwoBytes(this.optionCode, 2));
             a = Utils.combine(a, Utils.getTwoBytes(this.optionLength, 2));
             a = Utils.combine(a, this.clientCookie);
-            //TODO include server cookie
+            a = Utils.combine(a, this.serverCookie);
         } else{ }
         return a;
+    }
+
+
+    /*
+     Modifies an OPTRR by creating a new server cookie
+     from a valid client cookie
+     adds this serverCookie to this OPTRR
+     */
+    protected void createServerCookie(String clientIPaddress, Header header) {
+        ServerCookie sCookie = new ServerCookie(clientCookie, clientIPaddress);
+
+        if (!Arrays.equals(sCookie.getBytes(), serverCookie)
+                && serverCookie != null) {
+            this.extendedrcode = ((byte) 0x01);
+            header.setRcode(ErrorCodes.YXRRSET.getCode());
+        }
+
+        this.serverCookie = sCookie.getBytes();
+        this.optionLength = (serverCookie.length + clientCookie.length);
+        this.rdLength = (optionLength + 4);
     }
 }

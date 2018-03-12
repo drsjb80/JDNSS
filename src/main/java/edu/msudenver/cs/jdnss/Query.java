@@ -42,7 +42,7 @@ class Query {
     /**
      * Evaluates and saves all questions
      */
-    public void parseQueries() {
+    public void parseQueries(String clientIPaddress) {
         logger.traceEntry();
 
         /*
@@ -90,7 +90,6 @@ class Query {
             */
         }
 
-
         /* For servers with DNS Cookies enabled, the QUERY opcode behavior is
         extended to support queries with an empty Question Section (a QDCOUNT
             of zero (0)), provided that an OPT record is present with a COOKIE
@@ -103,23 +102,22 @@ class Query {
         presence of a COOKIE option is ignored and the server responds as if
         no COOKIE option had been included in the request.
         */
+
         for (int i = 0; i < header.getNumAdditionals(); i++) {
             logger.traceEntry();
 
             // When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message.
             Assertion.aver(header.getNumAdditionals() == 1);
-
             this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
-            //TODO check for invalid cookie
-            if(!optrr.hasCookie()){
-                header.setRcode( ErrorCodes.NOERROR.getCode() );
-            }
-            else if(optrr.hasFormErr()){
-                // need to set the RCODE in header for the response needs to be FORMERR
+            //process and transform? optrr for a resonse
+            // need to set the RCODE in header for the response needs to be FORMERR
+            if(!optrr.hasCookie() || optrr.hasFormErr()){
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
-            }else{}
-
+            }
+            else {
+                optrr.createServerCookie(clientIPaddress, header);
+            }
         }
     }
 

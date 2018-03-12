@@ -56,9 +56,9 @@ public class QueryTest
 
     @Before
     public void setUp() throws Exception {
-        query.parseQueries();
-        digQuery.parseQueries();
-        digQueryDNSSEC.parseQueries();
+        query.parseQueries("");
+        digQuery.parseQueries("");
+        digQueryDNSSEC.parseQueries("");
     }
 
     @After

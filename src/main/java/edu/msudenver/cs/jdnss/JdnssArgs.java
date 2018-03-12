@@ -24,5 +24,8 @@ class jdnssArgs
     String DBUser;
     String DBPass;
 
+    String ServerSecretLocation;
+    String ServerSecret;
+
     String additional[];
 }

@@ -38,6 +38,7 @@ public class ServerCookie {
     /*
     *
     * What happens if server secret is not there?
+    * Currently Secret is defaulted to "123456789"
     *
     */
     private String getServerSecret(){
@@ -72,11 +73,11 @@ public class ServerCookie {
 
         }
         catch (FileNotFoundException e) {
-            System.out.println("Something wrong with Server Secret: " + e);
+            logger.warn("Something wrong with Server Secret: " + e);
             return "123456789";
         }
         catch (IOException e){
-            System.out.println("Something wrong with Server Secret: " + e);
+            logger.warn("Something wrong with Server Secret: " + e);
             return "123456789";
 
         }

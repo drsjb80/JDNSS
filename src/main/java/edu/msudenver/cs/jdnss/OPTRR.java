@@ -86,11 +86,9 @@ class OPTRR {
       COOKIE option (40 bytes), then FORMERR is generated.
     */
     protected boolean hasFormErr(){
-        return (this.getOptionLength() < 8
+        return this.getOptionLength() < 8
             || (this.getOptionLength() > 8 && this.getOptionLength() < 16)
-            || this.getOptionLength() > 40)
-            &&
-            this.getOptionLength() % 8 == 0;
+            || this.getOptionLength() > 40;
     }
 
     protected byte[] getBytes(){

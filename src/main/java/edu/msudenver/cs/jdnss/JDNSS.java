@@ -17,10 +17,6 @@ import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Map;
 
-import lombok.Getter;
-
-import static edu.msudenver.cs.jdnss.JDNSSLogLevels.*;
-
 public class JDNSS {
     // a few AOP singletons
     static final jdnssArgs jargs = new jdnssArgs();
@@ -143,26 +139,22 @@ public class JDNSS {
     // Server Secret default location: "/etc/jnamed.conf"
     private static void setServerCookie (){
         // Set the correct Server Secret Location
-        if (jargs.ServerSecretLocation == null) {
-            logger.trace("ServerSecret is null so Default " +
-                    "locattion set: /etc/jnamed.conf");
-            jargs.ServerSecretLocation = "/etc/jnamed.conf";
+        if (jargs.serverSecretLocation == null) {
+            logger.warn("serverSecretLocation is null so Default " +
+                    "location set: /etc/jnamed.conf");
+            jargs.serverSecretLocation = "/etc/jnamed.conf";
         }
-        // Set a custom Server Secret
-        if (jargs.ServerSecret != null) {
-            try {
-                File file = new File(jargs.ServerSecretLocation);
-                FileWriter fw = new FileWriter(file);
-                fw.write("cookie-secret \"" + jargs.ServerSecret + "\"");
-                fw.flush();
-                fw.close();
-            }
-            catch (IOException e){
-                logger.error("IO error trying to write to " +
-                        jargs.ServerSecretLocation+ ": " + e);
-                System.exit(1);
-            }
-
+        try {
+            File file = new File(jargs.serverSecretLocation);
+            FileWriter fw = new FileWriter(file);
+            fw.write("cookie-secret \"" + jargs.serverSecret + "\"");
+            fw.flush();
+            fw.close();
+        }
+        catch (IOException e){
+            logger.error("IO error trying to write to " +
+                jargs.serverSecretLocation + ": " + e);
+            System.exit(1);
         }
     }
 

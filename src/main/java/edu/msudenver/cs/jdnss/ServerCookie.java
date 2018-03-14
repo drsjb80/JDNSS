@@ -1,7 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
 
-import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -41,14 +40,14 @@ public class ServerCookie {
     *
     */
     private String getServerSecret(){
-        String filename = JDNSS.jargs.ServerSecretLocation;
+        String filename = JDNSS.jargs.serverSecretLocation;
 
         if (filename == null) {
             filename = "/etc/jnamed.conf";
         }
 
         try {
-            // Reads Server Secret from jargs.ServerSecretLocation
+            // Reads Server Secret from jargs.serverSecretLocation
             File file = new File(filename);
             FileInputStream fis = new FileInputStream(file);
             byte[] data = new byte[(int) file.length()];
@@ -56,7 +55,7 @@ public class ServerCookie {
             String confFile = new String(data, "UTF-8");
             fis.close();
 
-            // Find ServerSecret with Regex
+            // Find serverSecret with Regex
             Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
             Matcher m = p.matcher(confFile);
 

@@ -115,6 +115,9 @@ public class JDNSS {
         if (jargs.serverSecret == null){
             jargs.serverSecret = readServerSecret();
         }
+        else if (jargs.serverSecret != null){
+            setServerSecret();
+        }
 
         String additional[] = jargs.additional;
 
@@ -213,7 +216,6 @@ public class JDNSS {
 
         setLogLevel();
         doargs();
-        setServerSecret();
 
         if (bindZones.size() == 0 && DBConnection == null) {
             logger.fatal("No zone files, traceExit.");

@@ -155,8 +155,19 @@ public class JDNSS {
     private static void setServerSecret(){
         try {
             File file = new File(jargs.serverSecretLocation);
+
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            String confFile = new String(data, "UTF-8");
+            fis.close();
+
+            Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
+            Matcher m = p.matcher(confFile);
+            confFile = m.replaceFirst("cookie-secret \"" + jargs.serverSecret + "\"");
+
             FileWriter fw = new FileWriter(file);
-            fw.write("cookie-secret \"" + jargs.serverSecret + "\"");
+            fw.write(confFile);
             fw.flush();
             fw.close();
         }
@@ -188,12 +199,6 @@ public class JDNSS {
                 logger.warn("Couldnt find Server Secret");
                 return "123456789"; //FIXME needs to be removed
             }
-
-
-        }
-        catch (FileNotFoundException e) {
-            logger.warn("Couldnt find Server Secret" + e);
-            return "123456789"; //FIXME needs to be removed
         }
         catch (IOException e){
             logger.warn("Couldnt find Server Secret" + e);

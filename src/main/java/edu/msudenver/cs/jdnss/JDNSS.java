@@ -1,11 +1,11 @@
 package edu.msudenver.cs.jdnss;
 
+import edu.msudenver.cs.jclo.JCLO;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.message.ObjectMessage;
-import edu.msudenver.cs.jclo.JCLO;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,8 +16,10 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Map;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class JDNSS {
     // a few AOP singletons
@@ -63,9 +65,9 @@ public class JDNSS {
 
     private static void start() {
         try {
-            if (jargs.UDP) new UDP().start();
-            if (jargs.TCP) new TCP().start();
-            if (jargs.MC) new MC().start();
+            if (jargs.isUDP()) new UDP().start();
+            if (jargs.isTCP()) new TCP().start();
+            if (jargs.isMC()) new MC().start();
         } catch (SocketException | UnknownHostException se) {
             logger.catching(se);
         } catch (IOException ie) {
@@ -76,7 +78,7 @@ public class JDNSS {
     private static void setLogLevel() {
         Level level = Level.OFF;
 
-        switch (jargs.logLevel) {
+        switch (jargs.getLogLevel()) {
             case OFF: level = Level.OFF; break;
             case FATAL: level = Level.FATAL; break;
             case ERROR: level = Level.ERROR; break;
@@ -94,16 +96,16 @@ public class JDNSS {
         logger.traceEntry();
         logger.trace(jargs.toString());
 
-        if (jargs.version) {
+        if (jargs.isVersion()) {
             System.out.println(new Version().getVersion());
             System.exit(0);
         }
 
         logger.info("Starting JDNSS version " + new Version().getVersion());
 
-        if (jargs.DBClass != null && jargs.DBURL != null) {
-            DBConnection = new DBConnection(jargs.DBClass, jargs.DBURL,
-                    jargs.DBUser, jargs.DBPass);
+        if (jargs.getDBClass() != null && jargs.getDBURL() != null) {
+            DBConnection = new DBConnection(jargs.getDBClass(), jargs.getDBURL(),
+                    jargs.getDBUser(), jargs.getDBPass());
         }
 
         if (jargs.serverSecretLocation == null) {
@@ -119,8 +121,7 @@ public class JDNSS {
             setServerSecret();
         }
 
-        String additional[] = jargs.additional;
-
+        String additional[] = jargs.getAdditional();
         if (additional == null) {
             return;
         }
@@ -214,7 +215,7 @@ public class JDNSS {
         JCLO jclo = new JCLO(jargs);
         jclo.parse(args);
 
-        if (jargs.help) {
+        if (jargs.isHelp()) {
             System.out.println(jclo.usage());
             System.exit(0);
         }

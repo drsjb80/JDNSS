@@ -43,9 +43,9 @@ class jdnssArgs {
     private String DBPass;
 
     @Getter
-    private String serverSecretLocation;
+    protected String serverSecretLocation;
     @Getter
-    private String serverSecret;
+    protected String serverSecret;
 
     @Getter
     private String additional[];

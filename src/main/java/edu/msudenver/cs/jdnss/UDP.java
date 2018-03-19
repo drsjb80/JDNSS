@@ -23,8 +23,8 @@ class UDP extends Thread
         try
         {
             jdnssArgs JdnssArgs = JDNSS.jargs;
-            String ipaddress = JdnssArgs.IPaddress;
-            int port = JdnssArgs.port;
+            String ipaddress = JdnssArgs.getIPaddress();
+            int port = JdnssArgs.getPort();
             if (ipaddress != null)
             {
                 dsocket = new DatagramSocket(port,
@@ -62,7 +62,7 @@ class UDP extends Thread
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        int threadPoolSize = JDNSS.jargs.threads;
+        int threadPoolSize = JDNSS.jargs.getThreads();
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true)
@@ -86,7 +86,7 @@ class UDP extends Thread
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.jargs.once) {
+            if (JDNSS.jargs.isOnce()) {
                 while (!f.isDone()) {
                     try {
                         sleep(100);

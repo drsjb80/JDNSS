@@ -3,15 +3,13 @@ package edu.msudenver.cs.jdnss;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 
 class MC extends UDP
 {
-    public MC() throws SocketException, UnknownHostException, IOException
+    public MC() throws IOException
     {
-        final int port = JDNSS.jargs.MCport;
-        final String address = JDNSS.jargs.MCaddress;
+        final int port = JDNSS.jargs.getMCport();
+        final String address = JDNSS.jargs.getMCaddress();
 
         MulticastSocket msocket = new MulticastSocket(port);
 

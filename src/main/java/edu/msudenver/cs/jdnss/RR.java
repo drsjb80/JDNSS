@@ -6,7 +6,9 @@ package edu.msudenver.cs.jdnss;
  * @see <a href="http://www.faqs.org/rfcs/rfc1035.html"> faqs.org </a>
  */
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
@@ -36,40 +38,19 @@ import java.util.Set;
 **        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 
+@ToString
+@EqualsAndHashCode
 public abstract class RR {
     final static Logger logger = JDNSS.logger;
     @Getter private String name;
     @Getter private RRCode type;
     @Getter private int rrclass = 1;
     @Getter private int ttl;
-    @Getter private int length;
-    @Getter private int byteSize;
 
     RR(final String name, final RRCode type, final int ttl) {
         this.name = name;
         this.type = type;
         this.ttl = ttl;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (!(o instanceof RR)) {
-            return false;
-        }
-
-        RR rr = (RR) o;
-        return rr.name.equals(this.name)
-                && rr.rrclass == rrclass
-                && rr.type == type
-                && rr.ttl == ttl
-                && rr.length == length
-                && rr.byteSize == byteSize;
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode() + type.hashCode() + rrclass + ttl + length
-                + byteSize;
     }
 
     // to enhance polymorphism and decrease casting for derived classes
@@ -134,6 +115,8 @@ class QRR extends RR {
     }
 }
 
+@ToString
+@EqualsAndHashCode
 class SOARR extends RR {
     private final String domain;
     private final String server;
@@ -159,30 +142,6 @@ class SOARR extends RR {
         this.minimum = minimum;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof SOARR)) {
-                return false;
-            }
-
-            SOARR soarr = (SOARR) o;
-            return (soarr.domain.equals(domain) &&
-                    soarr.server.equals(server) &&
-                    soarr.contact.equals(contact) && soarr.serial == serial &&
-                    soarr.refresh == refresh && soarr.retry == retry &&
-                    soarr.expire == expire && soarr.minimum == minimum);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + domain.hashCode() + server.hashCode() +
-                contact.hashCode() + serial + refresh + retry + expire + minimum;
-    }
-
     /*
     ** 1035:
     ** "... SOA records are always distributed with a zero
@@ -205,20 +164,6 @@ class SOARR extends RR {
     }
 
     @Override
-    public String toString() {
-        return "SOA:  "
-                + "domain = " + domain
-                + ", server = " + server
-                + ", contact = " + contact
-                + ", serial = " + serial
-                + ", refresh = " + refresh
-                + ", retry = " + retry
-                + ", expire = " + expire
-                + ", minimum = " + minimum
-                + ", " + super.toString();
-    }
-
-    @Override
     protected byte[] getBytes() {
         byte a[] = Utils.convertString(server);
         a = Utils.combine(a, Utils.convertString(contact));
@@ -231,6 +176,8 @@ class SOARR extends RR {
     }
 }
 
+@ToString
+@EqualsAndHashCode
 class HINFORR extends RR {
     private final String CPU;
     private final String OS;
@@ -242,68 +189,23 @@ class HINFORR extends RR {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof HINFORR)) {
-                return false;
-            }
-
-            HINFORR hinforr = (HINFORR) o;
-            return hinforr.CPU.equals(CPU) && hinforr.OS.equals(OS);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + CPU.hashCode() + OS.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "HINFO: CPU = " + CPU + ", OS = " + OS + ", " + super.toString();
-    }
-
-    @Override
     protected byte[] getBytes() {
         return Utils.combine(Utils.toCS(CPU), Utils.toCS(OS));
     }
 }
 
+@ToString
+@EqualsAndHashCode
 class MXRR extends RR {
     @Getter
     private final String host;
+    @Getter
     private final int preference;
 
     MXRR(final String name, final int ttl, final String host, final int preference) {
         super(name, RRCode.MX, ttl);
         this.host = host;
         this.preference = preference;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof MXRR)) {
-                return false;
-            }
-
-            MXRR mxrr = (MXRR) o;
-            return mxrr.host.equals(host) && mxrr.preference == preference;
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + host.hashCode() + preference;
-    }
-
-    @Override
-    public String toString() {
-        return "MX: host = " + host + ", preference = " + preference + ", " + super.toString();
     }
 
     @Override
@@ -316,36 +218,14 @@ class MXRR extends RR {
     }
 }
 
+@ToString
+@EqualsAndHashCode
 abstract class STRINGRR extends RR {
     @Getter
     String string;
 
     STRINGRR(final String name, final RRCode type, int ttl) {
         super(name, type, ttl);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof STRINGRR)) {
-                return false;
-            }
-
-            STRINGRR stringrr = (STRINGRR) o;
-            return stringrr.string.equals(string);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + string.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "STRING: string = " + string + ", " + super.toString();
     }
 
     @Override
@@ -392,35 +272,13 @@ class PTRRR extends STRINGRR {
     }
 }
 
+@ToString
+@EqualsAndHashCode
 abstract class ADDRRR extends RR {
     protected String address;
 
     ADDRRR(final String name, final RRCode type, final int ttl) {
         super(name, type, ttl);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof ADDRRR)) {
-                return false;
-            }
-
-            ADDRRR addrrr = (ADDRRR) o;
-            return addrrr.address.equals(address);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + address.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "ADDR: address = " + address + ", " + super.toString();
     }
 }
 
@@ -448,6 +306,8 @@ class AAAARR extends ADDRRR {
     }
 }
 
+@ToString
+@EqualsAndHashCode
 class DNSKEYRR extends RR {
     private final int flags;
     private final int protocol;
@@ -474,32 +334,11 @@ class DNSKEYRR extends RR {
         Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof DNSKEYRR)) {
-                return false;
-            }
-
-            DNSKEYRR dnskeyrr = (DNSKEYRR) o;
-            return dnskeyrr.flags == flags &&
-                    dnskeyrr.protocol == protocol &&
-                    dnskeyrr.algorithm == algorithm &&
-                    dnskeyrr.publicKey.equals(publicKey);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + flags + protocol + algorithm +
-                publicKey.hashCode();
-    }
 }
 
 // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
+@ToString
+@EqualsAndHashCode
 class NSEC3RR extends RR {
     private final int hashAlgorithm;
     private final int flags;
@@ -538,20 +377,10 @@ class NSEC3RR extends RR {
         Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        Assertion.aver(false, "This needs to be checked and fixed.");
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        Assertion.aver(false, "This needs to be checked and fixed.");
-        return 42;
-    }
 }
 
+@ToString
+@EqualsAndHashCode
 class NSEC3PARAMRR extends RR {
     private final int hashAlgorithm;
     private final int flags;
@@ -572,20 +401,10 @@ class NSEC3PARAMRR extends RR {
         Assertion.fail("This needs to be checked and fixed.");
         return null;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        Assertion.fail("This needs to be checked and fixed.");
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        Assertion.fail("This needs to be checked and fixed.");
-        return 42;
-    }
 }
 
+@ToString
+@EqualsAndHashCode
 class DNSRRSIGRR extends RR {
     @Getter
     private final RRCode typeCovered;
@@ -633,51 +452,10 @@ class DNSRRSIGRR extends RR {
 
         return a;
     }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof DNSRRSIGRR)) {
-                return false;
-            }
-
-            DNSRRSIGRR dnsrrsigrr = (DNSRRSIGRR) o;
-
-            return dnsrrsigrr.typeCovered == typeCovered &&
-                    dnsrrsigrr.algorithm == algorithm &&
-                    dnsrrsigrr.labels == labels &&
-                    dnsrrsigrr.originalttl == originalttl &&
-                    dnsrrsigrr.expiration == expiration &&
-                    dnsrrsigrr.inception == inception &&
-                    dnsrrsigrr.keyTag == keyTag &&
-                    dnsrrsigrr.signersName.equals(signersName) &&
-                    dnsrrsigrr.signature.equals(signature);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + typeCovered.hashCode() + algorithm + labels
-                + originalttl + expiration + inception + keyTag
-                + signersName.hashCode() + signature.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return " typeCovered = " + typeCovered
-                + ", algorithm = " + algorithm
-                + ", labels = " + labels
-                + ", originalttl = " + originalttl
-                + ", expiration = " + expiration
-                + ", inception = " + inception
-                + ", signersName = " + signersName
-                + ", signature = " + signature
-                + super.toString();
-    }
 }
 
+@ToString
+@EqualsAndHashCode
 class DNSNSECRR extends RR {
     private final String nextDomainName;
     private final Set<RRCode> resourceRecords;
@@ -694,27 +472,6 @@ class DNSNSECRR extends RR {
     protected byte[] getBytes() {
         Assertion.fail("This needs to be checked and fixed.");
         return null;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (super.equals(o)) {
-            if (!(o instanceof DNSNSECRR)) {
-                return false;
-            }
-
-            DNSNSECRR other = (DNSNSECRR) o;
-            return other.nextDomainName.equals(nextDomainName) &&
-                    other.resourceRecords.equals(resourceRecords);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + nextDomainName.hashCode()
-                + resourceRecords.hashCode();
     }
 }
 

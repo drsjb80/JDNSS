@@ -1,11 +1,11 @@
 package edu.msudenver.cs.jdnss;
 
+import edu.msudenver.cs.jclo.JCLO;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.message.ObjectMessage;
-import edu.msudenver.cs.jclo.JCLO;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,9 +17,9 @@ import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Map;
 
-import lombok.Getter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static edu.msudenver.cs.jdnss.JDNSSLogLevels.*;
 
 public class JDNSS {
     // a few AOP singletons
@@ -65,9 +65,9 @@ public class JDNSS {
 
     private static void start() {
         try {
-            if (jargs.UDP) new UDP().start();
-            if (jargs.TCP) new TCP().start();
-            if (jargs.MC) new MC().start();
+            if (jargs.isUDP()) new UDP().start();
+            if (jargs.isTCP()) new TCP().start();
+            if (jargs.isMC()) new MC().start();
         } catch (SocketException | UnknownHostException se) {
             logger.catching(se);
         } catch (IOException ie) {
@@ -78,7 +78,7 @@ public class JDNSS {
     private static void setLogLevel() {
         Level level = Level.OFF;
 
-        switch (jargs.logLevel) {
+        switch (jargs.getLogLevel()) {
             case OFF: level = Level.OFF; break;
             case FATAL: level = Level.FATAL; break;
             case ERROR: level = Level.ERROR; break;
@@ -96,20 +96,32 @@ public class JDNSS {
         logger.traceEntry();
         logger.trace(jargs.toString());
 
-        if (jargs.version) {
+        if (jargs.isVersion()) {
             System.out.println(new Version().getVersion());
             System.exit(0);
         }
 
         logger.info("Starting JDNSS version " + new Version().getVersion());
 
-        if (jargs.DBClass != null && jargs.DBURL != null) {
-            DBConnection = new DBConnection(jargs.DBClass, jargs.DBURL,
-                    jargs.DBUser, jargs.DBPass);
+        if (jargs.getDBClass() != null && jargs.getDBURL() != null) {
+            DBConnection = new DBConnection(jargs.getDBClass(), jargs.getDBURL(),
+                    jargs.getDBUser(), jargs.getDBPass());
         }
 
-        String additional[] = jargs.additional;
+        if (jargs.serverSecretLocation == null) {
+            logger.warn("serverSecretLocation not specified " +
+                "location set: /etc/jnamed.conf");
+            jargs.serverSecretLocation = "/etc/jnamed.conf";
+        }
 
+        if (jargs.serverSecret == null){
+            jargs.serverSecret = readServerSecret();
+        }
+        else if (jargs.serverSecret != null){
+            setServerSecret();
+        }
+
+        String additional[] = jargs.getAdditional();
         if (additional == null) {
             return;
         }
@@ -140,28 +152,58 @@ public class JDNSS {
             }
         }
     }
-    // Server Secret default location: "/etc/jnamed.conf"
-    private static void setServerCookie (){
-        // Set the correct Server Secret Location
-        if (jargs.ServerSecretLocation == null) {
-            logger.trace("ServerSecret is null so Default " +
-                    "locattion set: /etc/jnamed.conf");
-            jargs.ServerSecretLocation = "/etc/jnamed.conf";
+
+    private static void setServerSecret(){
+        try {
+            File file = new File(jargs.serverSecretLocation);
+
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            String confFile = new String(data, "UTF-8");
+            fis.close();
+
+            Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
+            Matcher m = p.matcher(confFile);
+            confFile = m.replaceFirst("cookie-secret \"" + jargs.serverSecret + "\"");
+
+            FileWriter fw = new FileWriter(file);
+            fw.write(confFile);
+            fw.flush();
+            fw.close();
         }
-        // Set a custom Server Secret
-        if (jargs.ServerSecret != null) {
-            try {
-                File file = new File(jargs.ServerSecretLocation);
-                FileWriter fw = new FileWriter(file);
-                fw.write("cookie-secret \"" + jargs.ServerSecret + "\"");
-                fw.flush();
-                fw.close();
+        catch (IOException e){
+            logger.error("IO error trying to write to " +
+                jargs.serverSecretLocation + ": " + e);
+            System.exit(1);
+        }
+    }
+
+    private static String readServerSecret(){
+        try {
+            File file = new File(JDNSS.jargs.serverSecretLocation);
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            String confFile = new String(data, "UTF-8");
+            fis.close();
+
+            // Find serverSecret with Regex
+            Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
+            Matcher m = p.matcher(confFile);
+
+            // Here we will need to decide what to do if no server secret is found
+            if (m.find()) {
+                return m.group(1);
             }
-            catch (IOException e){
-                logger.error("IO error trying to write to " +
-                        jargs.ServerSecretLocation+ ": " + e);
-                System.exit(1);
+            else {
+                logger.warn("Couldnt find Server Secret");
+                return "123456789"; //FIXME needs to be removed
             }
+        }
+        catch (IOException e){
+            logger.warn("Couldnt find Server Secret" + e);
+            return "123456789"; //FIXME needs to be removed
 
         }
     }
@@ -173,14 +215,13 @@ public class JDNSS {
         JCLO jclo = new JCLO(jargs);
         jclo.parse(args);
 
-        if (jargs.help) {
+        if (jargs.isHelp()) {
             System.out.println(jclo.usage());
             System.exit(0);
         }
 
         setLogLevel();
         doargs();
-        setServerCookie();
 
         if (bindZones.size() == 0 && DBConnection == null) {
             logger.fatal("No zone files, traceExit.");

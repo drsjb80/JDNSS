@@ -8,6 +8,6 @@ public class VersionTest
     @Test
     public void version()
     {
-        Assert.assertEquals (new Version().getVersion(), "2.0");
+        Assert.assertEquals (new Version().getVersion(), "2.1");
     }
 }

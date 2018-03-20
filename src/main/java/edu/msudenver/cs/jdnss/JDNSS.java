@@ -17,6 +17,7 @@ import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Map;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,17 +109,16 @@ public class JDNSS {
                     jargs.getDBUser(), jargs.getDBPass());
         }
 
-        if (jargs.serverSecretLocation == null) {
-            logger.warn("serverSecretLocation not specified " +
-                "location set: /etc/jnamed.conf");
-            jargs.serverSecretLocation = "/etc/jnamed.conf";
-        }
 
-        if (jargs.serverSecret == null){
-            jargs.serverSecret = readServerSecret();
+        if (jargs.getServerSecret() == null){
+            jargs.setServerSecret(String.valueOf( ThreadLocalRandom.current().nextLong() ));
         }
-        else if (jargs.serverSecret != null){
-            setServerSecret();
+        else if (jargs.getServerSecret() != null) {
+            if (jargs.getServerSecret().length() < 8) {
+                logger.warn("Secret too short, generating random secret instead.");
+                jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
+
+            }
         }
 
         String additional[] = jargs.getAdditional();
@@ -150,61 +150,6 @@ public class JDNSS {
             } catch (FileNotFoundException e) {
                 logger.warn("Couldn't open file " + anAdditional + '\n' + e);
             }
-        }
-    }
-
-    private static void setServerSecret(){
-        try {
-            File file = new File(jargs.serverSecretLocation);
-
-            FileInputStream fis = new FileInputStream(file);
-            byte[] data = new byte[(int) file.length()];
-            fis.read(data);
-            String confFile = new String(data, "UTF-8");
-            fis.close();
-
-            Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
-            Matcher m = p.matcher(confFile);
-            confFile = m.replaceFirst("cookie-secret \"" + jargs.serverSecret + "\"");
-
-            FileWriter fw = new FileWriter(file);
-            fw.write(confFile);
-            fw.flush();
-            fw.close();
-        }
-        catch (IOException e){
-            logger.error("IO error trying to write to " +
-                jargs.serverSecretLocation + ": " + e);
-            System.exit(1);
-        }
-    }
-
-    private static String readServerSecret(){
-        try {
-            File file = new File(JDNSS.jargs.serverSecretLocation);
-            FileInputStream fis = new FileInputStream(file);
-            byte[] data = new byte[(int) file.length()];
-            fis.read(data);
-            String confFile = new String(data, "UTF-8");
-            fis.close();
-
-            // Find serverSecret with Regex
-            Pattern p = Pattern.compile("cookie-secret\\s+\"(.*)\"");
-            Matcher m = p.matcher(confFile);
-
-            // Here we will need to decide what to do if no server secret is found
-            if (m.find()) {
-                return m.group(1);
-            }
-            else {
-                logger.warn("Couldnt find Server Secret");
-                return "123456789"; //FIXME needs to be removed
-            }
-        }
-        catch (IOException e){
-            logger.warn("Couldnt find Server Secret" + e);
-            return "123456789"; //FIXME needs to be removed
-
         }
     }
 

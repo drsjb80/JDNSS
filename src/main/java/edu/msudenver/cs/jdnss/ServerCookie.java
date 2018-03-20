@@ -14,7 +14,7 @@ public class ServerCookie {
 
 
       final static Logger logger = JDNSS.logger;
-      private String serverSecret = JDNSS.jargs.serverSecret;
+      private String serverSecret = JDNSS.jargs.getServerSecret();
       private long hash;
 
     ServerCookie(byte[] clientCookie, String clientIP){

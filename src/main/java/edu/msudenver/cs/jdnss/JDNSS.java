@@ -110,7 +110,7 @@ public class JDNSS {
             jargs.setServerSecret(String.valueOf( ThreadLocalRandom.current().nextLong() ));
         }
         else if (jargs.getServerSecret() != null) {
-            if (jargs.getServerSecret().length() < 8) {
+            if (jargs.getServerSecret().length() < 16) {
                 logger.warn("Secret too short, generating random secret instead.");
                 jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
 

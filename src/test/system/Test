@@ -37,7 +37,7 @@ do
 	    DIGARGS="+dnssec $DIGARGS";;
     esac
 
-    JAR='../../../target/jdnss-2.0.jar'
+    JAR='../../../target/jdnss-2.1.jar'
     JDNSS="java $DEBUG -jar $JAR --once=true"
 
     $JDNSS --port=$PORT zone_files/$file &

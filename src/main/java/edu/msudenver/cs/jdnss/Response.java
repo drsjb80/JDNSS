@@ -284,14 +284,13 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.debug(name + " not A or AAAA, giving up");
-        errLookupFailed(type, name, ErrorCodes.NOERROR.getCode());
-        addSOA(SOA);
+        errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
 
         if (DNSSEC) {
             addNSECRecords(name);
             addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
         }
-
+        addSOA(SOA);
         addAuthorities();
     }
 
@@ -401,20 +400,20 @@ class Response {
                 Assertion.aver(stringAndVector.size() == 1);
                 name = ((String) stringAndVector.keySet().toArray()[0]);
                 v = stringAndVector.get(name);
+                createResponses(v, name, type);
             } catch (AssertionError AE2) {
-                return query.getBuffer();
+                logger.catching(AE2);
+                //return query.getBuffer();
             }
 
             // addDNSKeys(name);
 
-            createResponses(v, name, type);
+
         }
 
         addAuthorities();
         addAdditionals();
         header.build();
-        logger.trace(header.getNumAnswers());
-        logger.trace(header.getNumAdditionals());
 
         byte abc[] = new byte[0];
         abc = Utils.combine(abc, header.getHeader());

@@ -202,6 +202,7 @@ class Response {
     }
 
     private void addAuthorities() {
+	    
         if (numAuthorities > 0) {
             if (!UDP || responses.length + authority.length < maximumPayload) {
                 responses = Utils.combine(responses, authority);
@@ -320,7 +321,9 @@ class Response {
             Vector<RR> v = zone.get(type, s);
 
             // yes, so first put in the CNAME
-            createResponses(u, name, RRCode.CNAME);
+            // createResponses(u, name, RRCode.CNAME);
+            responses = Utils.combine(responses, u.get(0).getBytes(name, minimum));
+	    header.setNumAnswers(header.getNumAnswers() + 1); 
 
             // then continue the lookup on the original type
             // with the new name

@@ -63,20 +63,20 @@ class Response {
             v = zone.get(RRCode.A, host);
             createAdditionals(v, host);
 
-            if (DNSSEC) {
-                addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
-            }
-        } catch (AssertionError AE1) {
-            // try the AAAA
-        }
+//            if (DNSSEC) {
+//                addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
+//            }
+        } catch (AssertionError AE) {
+	
+	}
 
         try {
             v = zone.get(RRCode.AAAA, host);
             createAdditionals(v, host);
 
-            if (DNSSEC) {
-                addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
-            }
+//            if (DNSSEC) {
+//                addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
+//            }
         } catch (AssertionError AE2) {
             // maybe we found an A
         }
@@ -94,9 +94,9 @@ class Response {
             createAorAAAA(nsrr.getString(), name);
         }
 
-        if (DNSSEC) {
-            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
-        }
+//        if (DNSSEC) {
+//            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
+//        }
     }
 
     private void createResponses(Vector<RR> v, String name, final RRCode which) {
@@ -123,9 +123,9 @@ class Response {
             header.setNumAnswers(header.getNumAnswers() + 1);
 
             //Add RRSIG Records Corresponding to Type
-            if (DNSSEC) {
-                addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
-            }
+//            if (DNSSEC) {
+//                addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
+//            }
 
             if (firsttime && which != RRCode.NS) {
                 createAuthorities(name);
@@ -158,39 +158,39 @@ class Response {
         Vector v = zone.get(RRCode.DNSKEY, host);
         createAdditionals(v, host);
 
-        addRRSignature(RRCode.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
+//        addRRSignature(RRCode.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
     }
 
 
-    private void addRRSignature(final RRCode type, final String name, byte[] destination, ResponseSection section) {
-        Vector<RR> rrsigv = zone.get(RRCode.RRSIG, zone.getName());
+//    private void addRRSignature(final RRCode type, final String name, byte[] destination, ResponseSection section) {
+//        Vector<RR> rrsigv = zone.get(RRCode.RRSIG, zone.getName());
 
-        for (RR foo : rrsigv) {
-            DNSRRSIGRR rrsig = (DNSRRSIGRR) foo;
+//        for (RR foo : rrsigv) {
+//            DNSRRSIGRR rrsig = (DNSRRSIGRR) foo;
             // DNSRRSIGRR rrsig = rrsigv.elementAt(i);
-            if (rrsig.getTypeCovered() == type) {
-                byte add[] = rrsig.getBytes(name, minimum);
-                switch (section) {
-                    case ANSWER:
-                        if (UDP && (responses.length + add.length > maximumPayload)) {
-                            header.setTC(true);
-                            return;
-                        }
-                        responses = Utils.combine(destination, add);
-                        header.setNumAnswers(header.getNumAnswers() + 1);
-                        break;
-                    case ADDITIONAL:
-                        additional = Utils.combine(destination, add);
-                        header.setNumAdditionals(header.getNumAdditionals() + 1);
-                        break;
-                    case AUTHORITY:
-                        authority = Utils.combine(destination, add);
-                        header.setNumAuthorities(header.getNumAuthorities() + 1);
-                        break;
-                }
-            }
-        }
-    }
+//            if (rrsig.getTypeCovered() == type) {
+//                byte add[] = rrsig.getBytes(name, minimum);
+//                switch (section) {
+//                    case ANSWER:
+//                        if (UDP && (responses.length + add.length > maximumPayload)) {
+//                            header.setTC(true);
+//                            return;
+//                        }
+//                        responses = Utils.combine(destination, add);
+//                        header.setNumAnswers(header.getNumAnswers() + 1);
+//                        break;
+//                    case ADDITIONAL:
+//                        additional = Utils.combine(destination, add);
+//                        header.setNumAdditionals(header.getNumAdditionals() + 1);
+//                        break;
+//                    case AUTHORITY:
+//                        authority = Utils.combine(destination, add);
+//                        header.setNumAuthorities(header.getNumAuthorities() + 1);
+//                        break;
+//                }
+//            }
+//        }
+//    }
 
     private void addNSECRecords(final String name) {
         Vector<RR> nsecv = zone.get(RRCode.NSEC, zone.getName());
@@ -298,10 +298,10 @@ class Response {
         logger.debug(name + " not A or AAAA, giving up");
         errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
 
-        if (DNSSEC) {
-            addNSECRecords(name);
-            addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-        }
+ //       if (DNSSEC) {
+ //           addNSECRecords(name);
+ //           addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
+ //       }
         //addSOA(SOA);
         //addAuthorities();
     }
@@ -359,10 +359,10 @@ class Response {
             v = zone.get(type, name);
 
             // is this where this belongs?
-            if (DNSSEC) {
-                addNSECRecords(name);
-                addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-            }
+//            if (DNSSEC) {
+//                addNSECRecords(name);
+//                addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
+//            }
 
             Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
             stringAndVector.put(name, v);
@@ -403,7 +403,17 @@ class Response {
                 logger.trace(minimum);
             } catch (AssertionError AE) {
                 logger.catching(AE);
-                return query.getBuffer();
+                header.build();
+	        	
+                byte abc[] = new byte[0];
+                abc = Utils.combine(abc, header.getHeader());
+                abc = Utils.combine(abc, query.buildResponseQueries());
+                abc = Utils.combine(abc, responses);
+
+                if(query.getOptrr()!= null)
+                    abc = Utils.combine(abc, query.getOptrr().getBytes());
+
+                return abc;
             }
 
             Vector v;

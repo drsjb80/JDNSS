@@ -144,6 +144,16 @@ class Response {
         logger.traceExit();
     }
 
+    private void respondOnlyWithSoa() {
+
+        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+        responses = Utils.combine(responses, authority);
+        header.setNumAuthorities(1);
+        numAuthorities++;
+
+        logger.traceExit();
+    }
+
     public void addDNSKeys(final String host) {
         Vector v = zone.get(RRCode.DNSKEY, host);
         createAdditionals(v, host);
@@ -290,8 +300,8 @@ class Response {
             addNSECRecords(name);
             addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
         }
-        addSOA(SOA);
-        addAuthorities();
+        //addSOA(SOA);
+        //addAuthorities();
     }
 
     private Map<String, Vector> lookForCNAME(final RRCode type, final String name) {
@@ -403,6 +413,18 @@ class Response {
                 createResponses(v, name, type);
             } catch (AssertionError AE2) {
                 logger.catching(AE2);
+                logger.trace("unable to respond, name not found.");
+                respondOnlyWithSoa();
+                header.build();
+                byte abc[] = new byte[0];
+                abc = Utils.combine(abc, header.getHeader());
+                abc = Utils.combine(abc, query.buildResponseQueries());
+                abc = Utils.combine(abc, responses);
+
+                if(query.getOptrr()!= null)
+                    abc = Utils.combine(abc, query.getOptrr().getBytes());
+
+                return abc;
                 //return query.getBuffer();
             }
 

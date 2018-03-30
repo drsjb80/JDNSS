@@ -425,7 +425,6 @@ class Response {
                     abc = Utils.combine(abc, query.getOptrr().getBytes());
 
                 return abc;
-                //return query.getBuffer();
             }
 
             // addDNSKeys(name);
@@ -433,8 +432,12 @@ class Response {
 
         }
 
+
+
         addAuthorities();
         addAdditionals();
+        if(query.getOptrr()!= null)
+            header.setNumAdditionals(header.getNumAdditionals() + 1);
         header.build();
 
         byte abc[] = new byte[0];

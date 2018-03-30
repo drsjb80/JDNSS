@@ -256,8 +256,10 @@ class Response {
         logger.debug(type.toString() +
                 " lookup of " + name + " failed but " +
                 other.toString() + " record found");
+        //FIXME need to do something with the record that was found...
 
         header.setRcode(ErrorCodes.NOERROR.getCode());
+        throw(new AssertionError("lookup other failed"));
     }
 
     // Just keeping it DRY.

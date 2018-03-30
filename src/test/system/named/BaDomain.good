@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 3c254a5ca228f2a4c7b5e1b958e6f960072d663945313c03 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;one.MXAAA.com.			IN	A
 

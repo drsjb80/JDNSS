@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 3aeb9a0d26a78a4e58d0e2a158e6f98df5aa3656d6fb608f (good)
+; COOKIE: 3aeb9a0d26a78a4e58d0e2a158e6f9a124c0d66f53b17 (good)
 ;; QUESTION SECTION:
 ;MXA.com.			IN	MX
 

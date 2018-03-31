@@ -145,7 +145,7 @@ class Response {
     }
 
     private void respondOnlyWithSoa() {
-
+        logger.traceEntry();
         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
         responses = Utils.combine(responses, authority);
         header.setNumAuthorities(1);
@@ -403,7 +403,16 @@ class Response {
                 logger.trace(minimum);
             } catch (AssertionError AE) {
                 logger.catching(AE);
-                return query.getBuffer();
+                logger.trace("invalid zone, refusing!.");
+                header.build();
+                byte abc[] = new byte[0];
+                abc = Utils.combine(abc, header.getHeader());
+                abc = Utils.combine(abc, query.buildResponseQueries());
+
+                if(query.getOptrr()!= null)
+                    abc = Utils.combine(abc, query.getOptrr().getBytes());
+
+                return abc;
             }
 
             Vector v;

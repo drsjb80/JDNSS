@@ -27,6 +27,7 @@ class Response {
     private SOARR SOA;
     private boolean UDP = false;
     private final Query query;
+    boolean refuseFlag = false;
 
     public Response(Query query) {
         this.query = query;
@@ -37,11 +38,13 @@ class Response {
         header.setRA(false);
 
         for (Queries q : query.getQueries()) {
+            Vector<RR> v;
             String name = q.getName();
             final RRCode type = q.getType();
 
             logger.trace(name);
             logger.trace(type.toString());
+
 
             try {
                 setZone(name);
@@ -51,79 +54,74 @@ class Response {
             } catch (AssertionError AE) {
                 logger.catching(AE);
                 logger.trace("invalid zone, refusing!.");
-                header.build();
+                refuseFlag = true;
             }
+            finally {
 
-            Vector<RR> v;
-            try {
-                Map<String, Vector> stringAndVector = findRR(type, name);
-                Assertion.aver(stringAndVector.size() == 1);
-                name = ((String) stringAndVector.keySet().toArray()[0]);
-                v = stringAndVector.get(name);
-                Assertion.aver(zone != null, "zone == null");
-                Assertion.aver(v != null, "v == null");
-                Assertion.aver(name != null, "name == null");
+                logger.trace(refuseFlag);
+                if (refuseFlag == false) {
+                    logger.trace("hit");
+                    try {
+                        Map<String, Vector> stringAndVector = findRR(type, name);
+                        Assertion.aver(stringAndVector.size() == 1);
+                        name = ((String) stringAndVector.keySet().toArray()[0]);
+                        v = stringAndVector.get(name);
+                        Assertion.aver(zone != null, "zone == null");
+                        Assertion.aver(v != null, "v == null");
+                        Assertion.aver(name != null, "name == null");
+                        logger.traceEntry(new ObjectMessage(v));
+                        logger.traceEntry(name);
+                        logger.traceEntry(type.toString());
 
-                logger.traceEntry(new ObjectMessage(v));
-                logger.traceEntry(name);
-                logger.traceEntry(type.toString());
+                        boolean firsttime = true;
 
-                boolean firsttime = true;
+                        for (RR rr : v) {
+                            byte add[] = rr.getBytes(name, minimum);
 
-                for (RR rr : v) {
-                    byte add[] = rr.getBytes(name, minimum);
+                            // will we be too big and need to switch to TCP?
+                            if (UDP && responses != null && (responses.length + add.length > maximumPayload)) {
+                                header.setTC(true);
+                                //FIXME
+                                //return;
+                                break;
+                            }
 
-                    // will we be too big and need to switch to TCP?
-                    if (UDP && responses != null && (responses.length + add.length > maximumPayload)) {
-                        header.setTC(true);
-                        //FIXME
-                        //return;
-                        break;
+                            responses = Utils.combine(responses, add);
+                            header.setNumAnswers(header.getNumAnswers() + 1);
+
+                            //Add RRSIG Records Corresponding to Type
+                            //if (DNSSEC) {
+                            //addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
+                            //            }
+
+                            if (firsttime && type != RRCode.NS) {
+                                createAuthorities(name);
+                            }
+
+                            firsttime = false;
+
+                            if (type == RRCode.MX) {
+                                createAorAAAA(rr.getHost(), name);
+                            }
+
+                            if (type == RRCode.NS) {
+                                createAorAAAA(rr.getString(), name);
+                            }
+                        }
+                        logger.traceExit();
+                    } catch (AssertionError AE2) {
+                        logger.catching(AE2);
+                        logger.trace("unable to respond, name not found.");
+                        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+                        numAuthorities = 1;
                     }
-
-                    responses = Utils.combine(responses, add);
-                    header.setNumAnswers(header.getNumAnswers() + 1);
-
-                    //Add RRSIG Records Corresponding to Type
-                    //if (DNSSEC) {
-                    //addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
-                    //            }
-
-                    if (firsttime && type != RRCode.NS) {
-                        createAuthorities(name);
-                    }
-
-                    firsttime = false;
-
-                    if (type == RRCode.MX) {
-                        createAorAAAA(rr.getHost(), name);
-                    }
-
-                    if (type == RRCode.NS) {
-                        createAorAAAA(rr.getString(), name);
-                    }
+                    addAuthorities();
+                    addAdditionals();
                 }
-                logger.traceExit();
-            } catch (AssertionError AE2) {
-                logger.catching(AE2);
-                logger.trace("unable to respond, name not found.");
-                authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
-                header.setNumAuthorities(1);
-                numAuthorities++;
-
-                header.build();
             }
-
-            // addDNSKeys(name);
-
         }
-        addAuthorities();
-        addAdditionals();
-
-
-        if(query.getOptrr()!= null)
+        if (query.getOptrr() != null && header.getNumAdditionals() > 1)
             header.setNumAdditionals(header.getNumAdditionals() + 1);
-            
 
         header.build();
     }

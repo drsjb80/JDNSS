@@ -6,7 +6,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 422918cd84a4696bc6f96ee558e6f9dff2e1202986aa79e0 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.TCP.com.			IN	A
 

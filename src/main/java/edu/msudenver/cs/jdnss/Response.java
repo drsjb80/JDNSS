@@ -27,14 +27,103 @@ class Response {
     private SOARR SOA;
     private boolean UDP = false;
     private final Query query;
+    boolean refuseFlag = false;
 
     public Response(Query query) {
         this.query = query;
         this.header = query.getHeader();
-        //this.numAdditionals = query.getHeader().getNumAdditionals();
-        // pass these in
-        // this.responses = query.getBuffer();
-        // logger.debug(this.responses);
+
+        header.setQR(true);
+        header.setAA(true);
+        header.setRA(false);
+
+        for (Queries q : query.getQueries()) {
+            Vector<RR> v;
+            String name = q.getName();
+            final RRCode type = q.getType();
+
+            logger.trace(name);
+            logger.trace(type.toString());
+
+
+            try {
+                setZone(name);
+                logger.trace(zone);
+                setMinimum();
+                logger.trace(minimum);
+            } catch (AssertionError AE) {
+                logger.catching(AE);
+                logger.trace("invalid zone, refusing!.");
+                refuseFlag = true;
+            }
+            finally {
+
+                logger.trace(refuseFlag);
+                if (refuseFlag == false) {
+                    logger.trace("hit");
+                    try {
+                        Map<String, Vector> stringAndVector = findRR(type, name);
+                        Assertion.aver(stringAndVector.size() == 1);
+                        name = ((String) stringAndVector.keySet().toArray()[0]);
+                        v = stringAndVector.get(name);
+                        Assertion.aver(zone != null, "zone == null");
+                        Assertion.aver(v != null, "v == null");
+                        Assertion.aver(name != null, "name == null");
+                        logger.traceEntry(new ObjectMessage(v));
+                        logger.traceEntry(name);
+                        logger.traceEntry(type.toString());
+
+                        boolean firsttime = true;
+
+                        for (RR rr : v) {
+                            byte add[] = rr.getBytes(name, minimum);
+
+                            // will we be too big and need to switch to TCP?
+                            if (UDP && responses != null && (responses.length + add.length > maximumPayload)) {
+                                header.setTC(true);
+                                //FIXME
+                                //return;
+                                break;
+                            }
+
+                            responses = Utils.combine(responses, add);
+                            header.setNumAnswers(header.getNumAnswers() + 1);
+
+                            //Add RRSIG Records Corresponding to Type
+                            //if (DNSSEC) {
+                            //addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
+                            //            }
+
+                            if (firsttime && type != RRCode.NS) {
+                                createAuthorities(name);
+                            }
+
+                            firsttime = false;
+
+                            if (type == RRCode.MX) {
+                                createAorAAAA(rr.getHost(), name);
+                            }
+
+                            if (type == RRCode.NS) {
+                                createAorAAAA(rr.getString(), name);
+                            }
+                        }
+                        logger.traceExit();
+                    } catch (AssertionError AE2) {
+                        logger.catching(AE2);
+                        logger.trace("unable to respond, name not found.");
+                        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+                        numAuthorities = 1;
+                    }
+                    addAuthorities();
+                    addAdditionals();
+                }
+            }
+        }
+        if (query.getOptrr() != null && header.getNumAdditionals() > 1)
+            header.setNumAdditionals(header.getNumAdditionals() + 1);
+
+        header.build();
     }
 
     // put the possible additionals in, but don't add to response until we know there is room for them.
@@ -97,61 +186,6 @@ class Response {
 //        if (DNSSEC) {
 //            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
 //        }
-    }
-
-    private void createResponses(Vector<RR> v, String name, final RRCode which) {
-        Assertion.aver(zone != null, "zone == null");
-        Assertion.aver(v != null, "v == null");
-        Assertion.aver(name != null, "name == null");
-
-        logger.traceEntry(new ObjectMessage(v));
-        logger.traceEntry(name);
-        logger.traceEntry(which.toString());
-
-        boolean firsttime = true;
-
-        for (RR rr : v) {
-            byte add[] = rr.getBytes(name, minimum);
-
-            // will we be too big and need to switch to TCP?
-            if (UDP && responses != null && (responses.length + add.length > maximumPayload)) {
-                header.setTC(true);
-                return;
-            }
-
-            responses = Utils.combine(responses, add);
-            header.setNumAnswers(header.getNumAnswers() + 1);
-
-            //Add RRSIG Records Corresponding to Type
-//            if (DNSSEC) {
-//                addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
-//            }
-
-            if (firsttime && which != RRCode.NS) {
-                createAuthorities(name);
-            }
-
-            firsttime = false;
-
-            if (which == RRCode.MX) {
-                createAorAAAA(rr.getHost(), name);
-            }
-
-            if (which == RRCode.NS) {
-                createAorAAAA(rr.getString(), name);
-            }
-        }
-        logger.traceExit();
-    }
-
-    private void respondOnlyWithSoa() {
-
-        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
-        responses = Utils.combine(responses, authority);
-        header.setNumAuthorities(1);
-        numAuthorities++;
-
-        logger.traceExit();
     }
 
     public void addDNSKeys(final String host) {
@@ -249,7 +283,6 @@ class Response {
         } catch (AssertionError AE) {
             logger.debug(type.toString() + " lookup of " +
                     name + " failed");
-
             header.setRcode(ErrorCodes.NAMEERROR.getCode());
             throw (AE);
         }
@@ -297,7 +330,7 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.debug(name + " not A or AAAA, giving up");
-        errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
+        //errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
 
  //       if (DNSSEC) {
  //           addNSECRecords(name);
@@ -382,79 +415,8 @@ class Response {
         }
     }
 
-    /**
-     * create a byte array that is a Response to a Query
-     */
-    public byte[] makeResponses(boolean UDP) {
-        this.UDP = UDP;
-
-        header.setQR(true);
-        header.setAA(true);
-        header.setRA(false);
-
-        for (Queries q : query.getQueries()) {
-            String name = q.getName();
-            final RRCode type = q.getType();
-
-            logger.trace(name);
-            logger.trace(type.toString());
-
-            try {
-                setZone(name);
-                logger.trace(zone);
-                setMinimum();
-                logger.trace(minimum);
-            } catch (AssertionError AE) {
-                logger.catching(AE);
-                header.build();
-	        	
-                byte abc[] = new byte[0];
-                abc = Utils.combine(abc, header.getHeader());
-                abc = Utils.combine(abc, query.buildResponseQueries());
-                abc = Utils.combine(abc, responses);
-
-                if(query.getOptrr()!= null)
-                    abc = Utils.combine(abc, query.getOptrr().getBytes());
-
-                return abc;
-            }
-
-            Vector v;
-            try {
-                Map<String, Vector> stringAndVector = findRR(type, name);
-                Assertion.aver(stringAndVector.size() == 1);
-                name = ((String) stringAndVector.keySet().toArray()[0]);
-                v = stringAndVector.get(name);
-                createResponses(v, name, type);
-            } catch (AssertionError AE2) {
-                logger.catching(AE2);
-                logger.trace("unable to respond, name not found.");
-                respondOnlyWithSoa();
-                header.build();
-                byte abc[] = new byte[0];
-                abc = Utils.combine(abc, header.getHeader());
-                abc = Utils.combine(abc, query.buildResponseQueries());
-                abc = Utils.combine(abc, responses);
-
-                if(query.getOptrr()!= null)
-                    abc = Utils.combine(abc, query.getOptrr().getBytes());
-
-                return abc;
-            }
-
-            // addDNSKeys(name);
-
-
-        }
-
-
-
-        addAuthorities();
-        addAdditionals();
-        if(query.getOptrr()!= null)
-            header.setNumAdditionals(header.getNumAdditionals() + 1);
-        header.build();
-
+    protected byte[] getBytes(){
+        logger.traceEntry();
         byte abc[] = new byte[0];
         abc = Utils.combine(abc, header.getHeader());
         abc = Utils.combine(abc, query.buildResponseQueries());
@@ -464,6 +426,6 @@ class Response {
             abc = Utils.combine(abc, query.getOptrr().getBytes());
 
         return abc;
-
     }
+
 }

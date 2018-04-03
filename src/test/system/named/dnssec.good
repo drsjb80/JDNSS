@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags: do; udp: 4096
-; COOKIE: 78acdf2b43c34e94b095564858e6f9e5fec0f33016485d6e (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;dnssec.com.			IN	A
 
@@ -13,8 +13,8 @@
 dnssec.com.		86400	IN	A	192.168.1.2
 
 ;; AUTHORITY SECTION:
-dnssec.com.		86400	IN	NS	ns2.dnssec.com.
 dnssec.com.		86400	IN	NS	ns1.dnssec.com.
+dnssec.com.		86400	IN	NS	ns2.dnssec.com.
 
 ;; ADDITIONAL SECTION:
 ns1.dnssec.com.		86400	IN	A	192.168.0.1

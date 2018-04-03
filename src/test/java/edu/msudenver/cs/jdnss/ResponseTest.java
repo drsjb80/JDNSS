@@ -30,17 +30,18 @@ public class ResponseTest {
     public void setUp() throws Exception {
         this.query = new Query(queryNoCookie);
         this.query.parseQueries("/0:0:0:0:0:");
-        this.response = new Response(query);
+        this.response = new Response(query, true);
         String[] args = {"test.com"};
         JDNSS.main(args);
     }
 
     /*
     @Test
-    public void makeResponseTest() {
-        Assert.assertArrayEquals(expectedResponse, response.makeResponses(true));
+    public void getBytesTest() {
+        Assert.assertArrayEquals(expectedResponse, response.getBytes());
     }
     */
+
 
     @After
     public void tearDown() throws Exception {

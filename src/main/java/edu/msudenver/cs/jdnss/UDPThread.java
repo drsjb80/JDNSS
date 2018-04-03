@@ -56,7 +56,7 @@ public class UDPThread implements Runnable
         Query query = new Query (packet);
         query.parseQueries(address.toString());
 
-        Response r = new Response(query);
+        Response r = new Response(query, true);
         byte b[] = r.getBytes();
 
         DatagramPacket reply = new DatagramPacket(b, b.length, address, port);

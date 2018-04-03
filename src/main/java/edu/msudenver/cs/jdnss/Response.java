@@ -22,17 +22,17 @@ class Response {
     private Zone zone;
     private int minimum;
     private final boolean DNSSEC = false;
-    private byte[] responses;
+    private byte[] responses = new byte[0];
     private final int maximumPayload = 512;
     private SOARR SOA;
-    private boolean UDP = false;
+    private boolean UDP;
     private final Query query;
     boolean refuseFlag = false;
 
-    public Response(Query query) {
+    public Response(Query query, final boolean UDP) {
         this.query = query;
         this.header = query.getHeader();
-
+        this.UDP = UDP;
         header.setQR(true);
         header.setAA(true);
         header.setRA(false);
@@ -44,6 +44,7 @@ class Response {
 
             logger.trace(name);
             logger.trace(type.toString());
+            logger.trace(UDP);
 
 
             try {
@@ -60,7 +61,6 @@ class Response {
 
                 logger.trace(refuseFlag);
                 if (refuseFlag == false) {
-                    logger.trace("hit");
                     try {
                         Map<String, Vector> stringAndVector = findRR(type, name);
                         Assertion.aver(stringAndVector.size() == 1);
@@ -112,9 +112,11 @@ class Response {
                     } catch (AssertionError AE2) {
                         logger.catching(AE2);
                         logger.trace("unable to respond, name not found.");
+                        logger.trace(Utils.toString(SOA.getBytes(zone.getName(), minimum)));
                         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
                         numAuthorities = 1;
                     }
+                    logger.trace("hit");
                     addAuthorities();
                     addAdditionals();
                 }
@@ -236,7 +238,10 @@ class Response {
     }
 
     private void addAuthorities() {
-	    
+        logger.traceEntry();
+        logger.trace(numAuthorities);
+        logger.trace((responses.length + authority.length));
+        logger.trace(maximumPayload);
         if (numAuthorities > 0) {
             if (!UDP || responses.length + authority.length < maximumPayload) {
                 responses = Utils.combine(responses, authority);

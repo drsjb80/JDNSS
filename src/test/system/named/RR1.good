@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: ed05a14f0d0bf03be468387858e6f9cb9de1b9192d0c02ff (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.RR1.com.			IN	A
 

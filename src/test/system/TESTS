@@ -11,6 +11,8 @@ tests=(
     'CNAME2AAAA	CNAMEAAAA.com  	www.CNAMEAAAA.com	AAAA'
     'AAAAnoA	CNAMEAAAA.com  	ftp.CNAMEAAAA.com'
     'SOA	SOA.com		SOA.com		SOA'
+    'SOA.com.db	SOA.com.db	SOA.com		SOA'
+    '192.168.1.db	192.168.1.db	192.168.1.28'
     'SOA1	SOA1.com	SOA1.com	SOA'
     'SOA2	SOA2.com	SOA2.com	SOA'
     'NS		NS.com		NS.com		NS'

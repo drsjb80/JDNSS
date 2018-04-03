@@ -283,7 +283,6 @@ class Response {
         } catch (AssertionError AE) {
             logger.debug(type.toString() + " lookup of " +
                     name + " failed");
-
             header.setRcode(ErrorCodes.NAMEERROR.getCode());
             throw (AE);
         }
@@ -331,7 +330,7 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.debug(name + " not A or AAAA, giving up");
-        errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
+        //errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
 
  //       if (DNSSEC) {
  //           addNSECRecords(name);

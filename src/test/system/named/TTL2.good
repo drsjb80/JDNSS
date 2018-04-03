@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 0aa4f2e2dcff19573e16ea8858e6f9a9bfb9b4b7b74d6a55 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.TTL2.com.			IN	A
 
@@ -13,8 +13,8 @@
 www.TTL2.com.		7200	IN	A	192.168.1.1
 
 ;; AUTHORITY SECTION:
-TTL2.com.		10000	IN	NS	ns2.TTL2.com.
 TTL2.com.		10000	IN	NS	ns1.TTL2.com.
+TTL2.com.		10000	IN	NS	ns2.TTL2.com.
 
 ;; ADDITIONAL SECTION:
 ns1.TTL2.com.		10000	IN	A	192.168.0.1

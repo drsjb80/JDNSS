@@ -43,8 +43,7 @@ import java.util.Set;
 public abstract class RR {
     final static Logger logger = JDNSS.logger;
     @Getter private String name;
-    @Getter
-    private RRCode type;
+    @Getter private RRCode type;
     @Getter private int rrclass = 1;
     @Getter private int ttl;
 
@@ -98,8 +97,7 @@ public abstract class RR {
     protected abstract byte[] getBytes();
 
     public String toString() {
-        return ("name = " + name + ", type = "
-                + type.toString() + ", TTL = " + ttl);
+        return "name = " + name + ", type = " + type.toString() + ", TTL = " + ttl;
     }
 }
 
@@ -252,6 +250,11 @@ class NSRR extends STRINGRR {
     NSRR(final String domain, final int ttl, final String nameserver) {
         super(domain, RRCode.NS, ttl);
         this.string = nameserver;
+    }
+
+    @Override
+    public String getString() {
+        return string;
     }
 }
 
@@ -444,6 +447,7 @@ class DNSRRSIGRR extends RR {
         //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
         a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes());
+
         Assertion.fail("This needs to be checked and fixed.");
 
         return a;
@@ -471,99 +475,3 @@ class DNSNSECRR extends RR {
     }
 }
 
-// When an OPT RR is included within any DNS message, it MUST be the
-// only OPT RR in that message.
-@ToString
-@EqualsAndHashCode
-class OPTRR {
-    @Getter private boolean DNSSEC = false;
-    final static Logger logger = JDNSS.logger;
-    private int payloadSize;
-    private int rcodeAndFlags;
-    private int rdLength;
-    private byte rcode;
-    private byte version;
-    private int flags;
-    private int optionCode;
-    @Getter private byte[] clientCookie;
-    @Getter private byte[] serverCookie;
-
-    OPTRR(byte[] bytes) {
-        Assertion.aver(bytes[0] == 0);
-
-        int location = 1;
-
-        int type = Utils.addThem(bytes[location++], bytes[location++]);
-        Assertion.aver(type == 41);
-
-        payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
-        rcode = bytes[location++];
-        version = bytes[location++];
-        Assertion.aver(version == 0);
-
-        flags = Utils.addThem(bytes[location++], bytes[location++]);
-        DNSSEC = flags >> 15 == 1;
-        rdLength = Utils.addThem(bytes[location++], bytes[location++]);
-        optionCode = Utils.addThem(bytes[location++], bytes[location++]);
-        Assertion.aver(optionCode == 10);
-
-        /*
-        At a server where DNS Cookies are not implemented and enabled, the
-        presence of a COOKIE option is ignored and the server responds as if
-        no COOKIE option had been included in the request.
-        */
-
-        int optionLength = Utils.addThem(bytes[location++], bytes[location++]);
-        /*
-        If the COOKIE option is too short to contain a Client Cookie, then
-        FORMERR is generated.  If the COOKIE option is longer than that
-        required to hold a COOKIE option with just a Client Cookie (8 bytes)
-        but is shorter than the minimum COOKIE option with both a
-        Client Cookie and a Server Cookie (16 bytes), then FORMERR is
-        generated.  If the COOKIE option is longer than the maximum valid
-        COOKIE option (40 bytes), then FORMERR is generated.
-        */
-        clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
-        location += 8;
-
-        if (optionLength > 8) { // server cookie returned
-            Assertion.aver(optionLength == 16);
-            /*
-            The Server Cookie SHOULD consist of or include a 64-bit or larger
-            pseudorandom function of the request source (client) IP address, a
-            secret quantity known only to the server, and the request
-            Client Cookie.
-
-            The Server Cookie is an integer number of bytes, with a minimum size
-            of 8 bytes for security and a maximum size of 32 bytes for convenience
-            of implementation.
-
-            Thus, clients and servers are configured with a
-            lifetime setting for their secret, and they roll over to a new secret
-            when that lifetime expires, or earlier due to deliberate jitter as
-            described below.  The default lifetime is one day, and the maximum
-            permitted is one month.
-
-            For servers with DNS Cookies enabled, the QUERY opcode behavior is
-            extended to support queries with an empty Question Section (a QDCOUNT
-            of zero (0)), provided that an OPT record is present with a COOKIE
-            option.  Such servers will send a reply that has an empty
-            Answer Section and has a COOKIE option containing the Client Cookie
-            and a valid Server Cookie.
-
-            An example of a simple method producing a 64-bit Server Cookie is the
-            FNV64 [FNV] of the request IP address, the Client Cookie, and the
-            Server Secret.
-
-               Server Cookie =
-                  FNV64( Client IP Address | Client Cookie | Server Secret )
-
-            where "|" represents concatenation.
-
-
-            https://github.com/jakedouglas/fnv-java/tree/master/src/main/java/com/bitlove
-            */
-            serverCookie = Arrays.copyOfRange(bytes, location, location+8);
-        }
-    }
-}

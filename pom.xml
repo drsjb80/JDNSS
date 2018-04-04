@@ -7,7 +7,7 @@
   <groupId>edu.msudenver.cs.jdnss</groupId>
   <artifactId>jdnss</artifactId>
   <packaging>jar</packaging>
-  <version>2.0</version>
+  <version>2.1</version>
   <name>Java DNS Server</name>
   <url>https://github.com/drsjb80/JDNSS</url>
   <dependencies>
@@ -127,7 +127,28 @@
               </execution>
             </executions>
           </plugin>
-        </plugins>
+          <plugin>
+              <groupId>org.eluder.coveralls</groupId>
+              <artifactId>coveralls-maven-plugin</artifactId>
+              <version>4.3.0</version>
+              <configuration>
+                  <repoToken>mMde1Ri9mGjCLYHHa1426df5cx3MLQ9qa</repoToken>
+              </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.6.201602180812</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>     
+      </plugins>
         <resources>
           <resource>
             <directory>src/main/resources</directory>

@@ -16,6 +16,8 @@ import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.Map;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class JDNSS {
     // a few AOP singletons
     static final jdnssArgs jargs = new jdnssArgs();
@@ -103,8 +105,19 @@ public class JDNSS {
                     jargs.getDBUser(), jargs.getDBPass());
         }
 
-        String additional[] = jargs.getAdditional();
 
+        if (jargs.getServerSecret() == null){
+            jargs.setServerSecret(String.valueOf( ThreadLocalRandom.current().nextLong() ));
+        }
+        else if (jargs.getServerSecret() != null) {
+            if (jargs.getServerSecret().length() < 16) {
+                logger.warn("Secret too short, generating random secret instead.");
+                jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
+
+            }
+        }
+
+        String additional[] = jargs.getAdditional();
         if (additional == null) {
             return;
         }

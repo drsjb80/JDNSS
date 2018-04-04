@@ -38,7 +38,8 @@ class Header
                 || rcode == ErrorCodes.SERVFAIL.getCode()
                 || rcode == ErrorCodes.NAMEERROR.getCode()
                 || rcode == ErrorCodes.NOTIMPL.getCode()
-                || rcode == ErrorCodes.REFUSED.getCode());
+                || rcode == ErrorCodes.REFUSED.getCode()
+                || rcode == ErrorCodes.YXRRSET.getCode());
         Assertion.aver(numAnswers >= 0 && numAnswers <= 255);
         Assertion.aver(numAuthorities >= 0 && numAuthorities <= 255);
         Assertion.aver(numAdditionals >= 0 && numAdditionals <= 255);
@@ -77,9 +78,9 @@ class Header
         // only grab the header from the query
         this.header = Arrays.copyOf(buffer, 12);
 
-        id =            Utils.addThem(buffer[0], buffer[1]);
-        numQuestions =  Utils.addThem(buffer[4], buffer[5]);
-        numAnswers =    Utils.addThem(buffer[6], buffer[7]);
+        id             =Utils.addThem(buffer[0], buffer[1]);
+        numQuestions   =Utils.addThem(buffer[4], buffer[5]);
+        numAnswers     =Utils.addThem(buffer[6], buffer[7]);
         numAuthorities =Utils.addThem(buffer[8], buffer[9]);
         numAdditionals =Utils.addThem(buffer[10], buffer[11]);
 

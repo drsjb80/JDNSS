@@ -27,7 +27,6 @@ class Query {
     @Getter private Header header;
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
-    @Getter private byte[] rawQueries;
     @Getter private OPTRR optrr;
 
     private int maximumPayload = 512;
@@ -38,13 +37,12 @@ class Query {
     public Query(byte buffer[]) {
         this.buffer = buffer;
         this.header = new Header(buffer);
-        this.rawQueries = Arrays.copyOfRange(buffer, 12, buffer.length);
     }
 
     /**
      * Evaluates and saves all questions
      */
-    public void parseQueries() {
+    public void parseQueries(String clientIPaddress) {
         logger.traceEntry();
 
         /*
@@ -67,6 +65,7 @@ class Query {
 
         int location = 12;
         queries = new Queries[header.getNumQuestions()];
+        
 
         for (int i = 0; i < header.getNumQuestions(); i++) {
             Vector<Object> StringAndNumber = Utils.parseName(location, buffer);
@@ -91,12 +90,45 @@ class Query {
             */
         }
 
-        for (int i = 0; i < header.getNumAdditionals(); i++) {
-            // for now, it has to be 1
-            Assertion.aver(header.getNumAdditionals() == 1);
+        /* For servers with DNS Cookies enabled, the QUERY opcode behavior is
+        extended to support queries with an empty Question Section (a QDCOUNT
+            of zero (0)), provided that an OPT record is present with a COOKIE
+        option.  Such servers will send a reply that has an empty
+        Answer Section and has a COOKIE option containing the Client Cookie
+        and a valid Server Cookie. */
 
-            optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
+         /*
+        At a server where DNS Cookies are not implemented and enabled, the
+        presence of a COOKIE option is ignored and the server responds as if
+        no COOKIE option had been included in the request.
+        */
+
+        for (int i = 0; i < header.getNumAdditionals(); i++) {
+            logger.traceEntry();
+
+            // When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message.
+            Assertion.aver(header.getNumAdditionals() == 1);
+            this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
+
+            //process and transform? optrr for a resonse
+            // need to set the RCODE in header for the response needs to be FORMERR
+            if(!optrr.hasCookie() || optrr.hasFormErr()){
+                header.setRcode( ErrorCodes.FORMERROR.getCode() );
+            }
+            else {
+                optrr.createServerCookie(clientIPaddress, header);
+            }
         }
+    }
+
+    public byte[] buildResponseQueries() {
+        byte[] questions = new byte[0];
+        for(Queries query: this.getQueries()) {
+            questions = Utils.combine(questions, Utils.convertString(query.getName()));
+            questions = Utils.combine(questions, Utils.getTwoBytes(query.getType().getCode(), 2));
+            questions = Utils.combine(questions, Utils.getTwoBytes(query.getQclass(), 2));
+        }
+        return questions;
     }
 
     public String toString() {

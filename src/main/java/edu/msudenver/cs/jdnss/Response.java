@@ -3,7 +3,9 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 enum ResponseSection {
     ANSWER, ADDITIONAL, AUTHORITY
@@ -28,13 +30,16 @@ class Response {
 
     public Response(Query query) {
         this.query = query;
-        this.header = query.getHeader(); // pass these in
+        this.header = query.getHeader();
+        //this.numAdditionals = query.getHeader().getNumAdditionals();
+        // pass these in
         // this.responses = query.getBuffer();
         // logger.debug(this.responses);
     }
 
     // put the possible additionals in, but don't add to response until we know there is room for them.
     private void createAdditionals(Vector<RR> v, String host) {
+        logger.traceEntry();
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
 
@@ -128,8 +133,12 @@ class Response {
 
             firsttime = false;
 
-            if (which == RRCode.MX || which == RRCode.NS) {
+            if (which == RRCode.MX) {
                 createAorAAAA(rr.getHost(), name);
+            }
+
+            if (which == RRCode.NS) {
+                createAorAAAA(rr.getString(), name);
             }
         }
         logger.traceExit();
@@ -193,6 +202,8 @@ class Response {
 
     // DRY with above?
     private void addAdditionals() {
+        logger.traceEntry();
+        logger.trace(numAdditionals);
         if (numAdditionals > 0) {
             if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);
@@ -284,7 +295,7 @@ class Response {
         addAuthorities();
     }
 
-    private StringAndVector lookForCNAME(final RRCode type, final String name) {
+    private Map<String, Vector> lookForCNAME(final RRCode type, final String name) {
         logger.debug("Looking for a CNAME for " + name);
 
         try {
@@ -302,7 +313,10 @@ class Response {
 
             // then continue the lookup on the original type
             // with the new name
-            return new StringAndVector(s, v);
+            Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
+            stringAndVector.put(s, v);
+            return stringAndVector;
+
         } catch (AssertionError AE) {
             logger.debug("Didn't find a CNAME for " + name);
 
@@ -323,13 +337,12 @@ class Response {
             addAuthorities();
             */
         }
-
         // should have already returned something good or throw an
         // exception from dealWithOther.
         return null;
     }
 
-    private StringAndVector findRR(final RRCode type, String name) {
+    private Map<String, Vector> findRR(final RRCode type, String name) {
         Vector v;
         try {
             v = zone.get(type, name);
@@ -340,7 +353,9 @@ class Response {
                 addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
             }
 
-            return new StringAndVector(name, v);
+            Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
+            stringAndVector.put(name, v);
+            return stringAndVector;
         } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
 
@@ -382,9 +397,10 @@ class Response {
 
             Vector v;
             try {
-                StringAndVector snv = findRR(type, name);
-                name = snv.getString();
-                v = snv.getVector();
+                Map<String, Vector> stringAndVector = findRR(type, name);
+                Assertion.aver(stringAndVector.size() == 1);
+                name = ((String) stringAndVector.keySet().toArray()[0]);
+                v = stringAndVector.get(name);
             } catch (AssertionError AE2) {
                 return query.getBuffer();
             }
@@ -397,7 +413,18 @@ class Response {
         addAuthorities();
         addAdditionals();
         header.build();
+        logger.trace(header.getNumAnswers());
+        logger.trace(header.getNumAdditionals());
 
-        return Utils.combine(Utils.combine(header.getHeader(), query.getRawQueries()), responses);
+        byte abc[] = new byte[0];
+        abc = Utils.combine(abc, header.getHeader());
+        abc = Utils.combine(abc, query.buildResponseQueries());
+        abc = Utils.combine(abc, responses);
+
+        if(query.getOptrr()!= null)
+            abc = Utils.combine(abc, query.getOptrr().getBytes());
+
+        return abc;
+
     }
 }

@@ -1,6 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
 import lombok.Getter;
+import lombok.Setter;
 
 enum JDNSSLogLevels {OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL}
 
@@ -41,6 +42,10 @@ class jdnssArgs {
     private String DBUser;
     @Getter
     private String DBPass;
+
+    @Getter
+    @Setter
+    private String serverSecret;
 
     @Getter
     private String additional[];

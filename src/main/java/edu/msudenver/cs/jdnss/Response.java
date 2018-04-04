@@ -17,7 +17,7 @@ class Response {
     private final Header header;
     private byte[] additional;
     private int numAdditionals;
-    private byte[] authority;
+    private byte[] authority = new byte[0];
     private int numAuthorities;
     private Zone zone;
     private int minimum;
@@ -330,7 +330,14 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.debug(name + " not A or AAAA, giving up");
-        //errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
+        switch (type){
+            case MX:
+                errLookupFailed(type, name, ErrorCodes.NOERROR.getCode());
+                break;
+            default:
+                errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
+                break;
+        }
 
  //       if (DNSSEC) {
  //           addNSECRecords(name);

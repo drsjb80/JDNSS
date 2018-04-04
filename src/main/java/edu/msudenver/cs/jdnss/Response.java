@@ -46,7 +46,6 @@ class Response {
             logger.trace(type.toString());
             logger.trace(UDP);
 
-
             try {
                 setZone(name);
                 logger.trace(zone);
@@ -97,13 +96,11 @@ class Response {
                             if (firsttime && type != RRCode.NS) {
                                 createAuthorities(name);
                             }
-
                             firsttime = false;
 
                             if (type == RRCode.MX) {
                                 createAorAAAA(rr.getHost(), name);
                             }
-
                             if (type == RRCode.NS) {
                                 createAorAAAA(rr.getString(), name);
                             }
@@ -112,11 +109,9 @@ class Response {
                     } catch (AssertionError AE2) {
                         logger.catching(AE2);
                         logger.trace("unable to respond, name not found.");
-                        logger.trace(Utils.toString(SOA.getBytes(zone.getName(), minimum)));
                         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
                         numAuthorities = 1;
                     }
-                    logger.trace("hit");
                     addAuthorities();
                     addAdditionals();
                 }

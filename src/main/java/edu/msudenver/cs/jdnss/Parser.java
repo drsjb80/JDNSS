@@ -91,6 +91,7 @@ class Parser {
         st.wordChars('/', '/');
         st.wordChars('+', '+');
         st.wordChars('=', '=');
+        st.wordChars('_', '_');
 
         st.quoteChar('"');
 

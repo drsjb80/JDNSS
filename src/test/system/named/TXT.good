@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 0a2cdc91fae607573ef21ba558e6f9c5a0e7d90a945d0bef (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.TXT.com.			IN	TXT
 
@@ -13,8 +13,8 @@
 www.TXT.com.		86400	IN	TXT	"this is a test"
 
 ;; AUTHORITY SECTION:
-TXT.com.		86400	IN	NS	ns2.TXT.com.
 TXT.com.		86400	IN	NS	ns1.TXT.com.
+TXT.com.		86400	IN	NS	ns2.TXT.com.
 
 ;; ADDITIONAL SECTION:
 ns1.TXT.com.		86400	IN	A	192.168.0.1

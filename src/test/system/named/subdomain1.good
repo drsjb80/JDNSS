@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 671717fa806cbed50283a06458e6f9b239430834487b036b (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.www.subdomain.com.		IN	A
 
@@ -13,8 +13,8 @@
 www.www.subdomain.com.	86400	IN	A	192.168.2.2
 
 ;; AUTHORITY SECTION:
-subdomain.com.		86400	IN	NS	ns2.subdomain.com.
 subdomain.com.		86400	IN	NS	ns1.subdomain.com.
+subdomain.com.		86400	IN	NS	ns2.subdomain.com.
 
 ;; ADDITIONAL SECTION:
 ns1.subdomain.com.	86400	IN	A	192.168.0.1

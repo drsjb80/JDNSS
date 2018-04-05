@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: ebe75afa4f578d5a777bec8758e6f9e2a12162eeb83840a9 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;28.1.168.192.in-addr.arpa.	IN	PTR
 
@@ -13,6 +13,6 @@
 28.1.168.192.in-addr.arpa. 86400 IN	PTR	www.reverse.com.
 
 ;; AUTHORITY SECTION:
-1.168.192.in-addr.arpa.	86400	IN	NS	ns2.reverse.com.
 1.168.192.in-addr.arpa.	86400	IN	NS	ns1.reverse.com.
+1.168.192.in-addr.arpa.	86400	IN	NS	ns2.reverse.com.
 

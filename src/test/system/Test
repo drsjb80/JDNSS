@@ -21,7 +21,7 @@ do
 
     echo -n "Testing $name..."
 
-    DIGARGS='+nostats +nocmd'
+    DIGARGS='+nostats +nocmd +cookie=0123456789abcdef'
     DIGHOST='@localhost'
 
     case $name in
@@ -37,8 +37,8 @@ do
 	    DIGARGS="+dnssec $DIGARGS";;
     esac
 
-    JAR='../../../target/jdnss-2.0.jar'
-    JDNSS="java $DEBUG -jar $JAR --once=true"
+    JAR='../../../target/jdnss-2.1.jar'
+    JDNSS="java $DEBUG -jar $JAR --once=true --serverSecret=0123456789abcdef0123456789abcdef"
 
     $JDNSS --port=$PORT zone_files/$file &
     sleep 1

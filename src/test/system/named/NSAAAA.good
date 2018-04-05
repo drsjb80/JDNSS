@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 463f7f5169c35e6db2f5fd4458e6f9875ddbdb8380a1eb82 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;NSAAAA.com.			IN	NS
 

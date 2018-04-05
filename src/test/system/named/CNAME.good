@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 7e6c5d5b39dcdf2cc7115b1458e6f963d3cecb175f63130d (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.CNAME.com.			IN	CNAME
 

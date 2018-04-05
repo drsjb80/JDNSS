@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 0d161c3d318f7fbb84e7659c58e6f9afcacc3e0c6f1cecf8 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.subdomain.com.		IN	A
 

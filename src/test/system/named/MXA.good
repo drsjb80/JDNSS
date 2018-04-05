@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 3aeb9a0d26a78a4e58d0e2a158e6f98df5aa3656d6fb608f (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;MXA.com.			IN	MX
 
@@ -14,12 +14,12 @@ MXA.com.		86400	IN	MX	10 one.MXA.com.
 MXA.com.		86400	IN	MX	20 two.MXA.com.
 
 ;; AUTHORITY SECTION:
-MXA.com.		86400	IN	NS	ns2.MXA.com.
 MXA.com.		86400	IN	NS	ns1.MXA.com.
+MXA.com.		86400	IN	NS	ns2.MXA.com.
 
 ;; ADDITIONAL SECTION:
-one.MXA.com.		86400	IN	A	147.153.170.17
-two.MXA.com.		86400	IN	A	147.153.170.27
 ns1.MXA.com.		86400	IN	A	192.168.0.1
 ns2.MXA.com.		86400	IN	A	192.168.0.2
+one.MXA.com.		86400	IN	A	147.153.170.17
+two.MXA.com.		86400	IN	A	147.153.170.27
 

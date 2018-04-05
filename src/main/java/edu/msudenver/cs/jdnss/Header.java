@@ -94,7 +94,7 @@ class Header
         TC =      (flags & 0x00000200) != 0;
         RD =      (flags & 0x00000100) != 0;
         RA =      (flags & 0x00000080) != 0;
-        AD =      (flags & 0x00000020) != 0;
+        AD =      (flags & 0x00000020) == 0;
         CD =      (flags & 0x00000010) != 0;
         rcode =   flags & 0x0000000f;
     }

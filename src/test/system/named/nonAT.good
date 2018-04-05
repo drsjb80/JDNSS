@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: f597d7e67ca6fbcaec7eee3558e6f9be6d069718f06de1c2 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.nonAT.com.			IN	A
 
@@ -13,8 +13,8 @@
 www.nonAT.com.		86400	IN	A	192.168.1.1
 
 ;; AUTHORITY SECTION:
-nonAT.com.		86400	IN	NS	ns2.nonAT.com.
 nonAT.com.		86400	IN	NS	ns1.nonAT.com.
+nonAT.com.		86400	IN	NS	ns2.nonAT.com.
 
 ;; ADDITIONAL SECTION:
 ns1.nonAT.com.		86400	IN	A	192.168.0.1

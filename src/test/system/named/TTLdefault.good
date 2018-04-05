@@ -5,19 +5,19 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: acfc65a42378d18f59a53a4158e6f9a3da85579e621f96c8 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;www.TTLdefault.com.		IN	A
 
 ;; ANSWER SECTION:
 www.TTLdefault.com.	100000	IN	A	192.168.1.1
 www.TTLdefault.com.	100000	IN	A	192.168.1.2
-www.TTLdefault.com.	100000	IN	A	192.168.1.4
 www.TTLdefault.com.	100000	IN	A	192.168.1.3
+www.TTLdefault.com.	100000	IN	A	192.168.1.4
 
 ;; AUTHORITY SECTION:
-TTLdefault.com.		100000	IN	NS	ns2.TTLdefault.com.
 TTLdefault.com.		100000	IN	NS	ns1.TTLdefault.com.
+TTLdefault.com.		100000	IN	NS	ns2.TTLdefault.com.
 
 ;; ADDITIONAL SECTION:
 ns1.TTLdefault.com.	100000	IN	A	192.168.0.1

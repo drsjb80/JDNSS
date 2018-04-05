@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: a6ed13a80e5a0f88fc0eb4c558e6f9b89ab7c956870bae09 (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;oneA.com.			IN	A
 
@@ -13,8 +13,8 @@
 oneA.com.		86400	IN	A	192.168.1.2
 
 ;; AUTHORITY SECTION:
-oneA.com.		86400	IN	NS	ns2.oneA.com.
 oneA.com.		86400	IN	NS	ns1.oneA.com.
+oneA.com.		86400	IN	NS	ns2.oneA.com.
 
 ;; ADDITIONAL SECTION:
 ns1.oneA.com.		86400	IN	A	192.168.0.1

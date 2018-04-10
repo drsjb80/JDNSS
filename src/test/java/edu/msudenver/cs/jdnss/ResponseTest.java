@@ -28,19 +28,20 @@ public class ResponseTest {
 
     @Before
     public void setUp() throws Exception {
+        String[] args = {"test.com"};
+        JDNSS.main(args);
         this.query = new Query(queryNoCookie);
         this.query.parseQueries("/0:0:0:0:0:");
         this.response = new Response(query, true);
-        String[] args = {"test.com"};
-        JDNSS.main(args);
+
     }
 
-    /*
+
     @Test
     public void getBytesTest() {
         Assert.assertArrayEquals(expectedResponse, response.getBytes());
     }
-    */
+
 
 
     @After
@@ -48,7 +49,7 @@ public class ResponseTest {
     }
 
     byte[] expectedResponse = {
-              (byte) 0x1d,(byte) 0x02, (byte) 0x85, (byte) 0x21
+              (byte) 0x1d,(byte) 0x02, (byte) 0x85, (byte) 0x01
             , (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01
             , (byte) 0x00, (byte) 0x02, (byte) 0x00, (byte) 0x01
             , (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73

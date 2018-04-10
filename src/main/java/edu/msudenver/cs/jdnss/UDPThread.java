@@ -4,34 +4,29 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 public class UDPThread implements Runnable
 {
-    private Logger logger = JDNSS.getLogger();
+    private final Logger logger = JDNSS.logger;
 
-    private DatagramSocket socket;
-    private int port;
-    private InetAddress address;
-    private Query query;
-    private JDNSS dnsService;
+    private final DatagramSocket socket;
+    private final int port;
+    private final InetAddress address;
+    private final byte[] packet;
 
     /**
      * @param socket	the socket to respond through
      * @param packet	the query
      */
-    public UDPThread(Query query, DatagramSocket socket, int port,
-        InetAddress address, JDNSS dnsService)
+    public UDPThread(byte[] packet, DatagramSocket socket, int port,
+        InetAddress address)
     {
-        this.query = query;
+        this.packet = packet;
         this.socket = socket;
         this.port = port;
         this.address = address;
-        this.dnsService = dnsService;
 
         /*
         if (socket instanceof MulticastSocket)
@@ -58,14 +53,13 @@ public class UDPThread implements Runnable
     {
         logger.traceEntry();
 
-        byte b[] = query.makeResponses(dnsService, true);
+        Query query = new Query (packet);
+        query.parseQueries(address.toString());
 
-        logger.trace(port);
-        logger.trace(address);
-        logger.trace(b.length);
+        Response r = new Response(query, true);
+        byte b[] = r.getBytes();
 
-        DatagramPacket reply = new DatagramPacket(b, b.length,
-            address, port);
+        DatagramPacket reply = new DatagramPacket(b, b.length, address, port);
 
         logger.trace("\n" + Utils.toString(reply.getData()));
         logger.trace(reply.getLength());

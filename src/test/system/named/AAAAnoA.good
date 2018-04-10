@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: e336754b20bc5b08c04048df58e6f96f6875bd6d3b5dcb3e (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;ftp.CNAMEAAAA.com.		IN	A
 

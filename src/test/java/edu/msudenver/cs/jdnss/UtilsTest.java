@@ -1,11 +1,13 @@
 package edu.msudenver.cs.jdnss;
 
-import java.util.Arrays;
-import java.util.Vector;
 import org.junit.Assert;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
 ** N.B.: we use (byte) casts to make sure we're not dealing with signed
@@ -16,23 +18,6 @@ public class UtilsTest
 {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
-
-    @Test
-    public void mapStringToType()
-    {
-        Assert.assertEquals (Utils.mapStringToType ("a"), Utils.A);
-        Assert.assertEquals (Utils.mapStringToType ("A"), Utils.A);
-        Assert.assertEquals (Utils.mapStringToType ("foo"), 0);
-    }
-
-    @Test
-    public void mapTypeToString()
-    {
-        Assert.assertEquals (Utils.mapTypeToString (Utils.A), ("A"));
-
-        exception.expect (AssertionError.class);
-        Utils.mapTypeToString (-1);
-    }
 
     @Test
     public void count()
@@ -250,34 +235,34 @@ public class UtilsTest
         ** find the one that is the longest match for a requested domain.
         */
 
-        Vector<String> v = new Vector<String>();
+        Set<String> v = new HashSet<>();
 
         v.add ("b.c.d.e");
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "a.b.c.d.e").equals("b.c.d.e"));
+            Utils.findLongest (v, "a.b.c.d.e").equals("b.c.d.e"));
 
-        v = new Vector<String>();
+        v = new HashSet<>();
         v.add ("d.e");
         v.add ("b.c.d.e");
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "z.d.e").equals("d.e"));
+            Utils.findLongest (v, "z.d.e").equals("d.e"));
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "z.c.d.e").equals("d.e"));
+            Utils.findLongest (v, "z.c.d.e").equals("d.e"));
         Assert.assertTrue (
-            Utils.findLongest (v.elements(), "a.b.c.d.e").equals("b.c.d.e"));
+            Utils.findLongest (v, "a.b.c.d.e").equals("b.c.d.e"));
 
         exception.expect (AssertionError.class);
 
-        v = new Vector<String>();
+        v = new HashSet<>();
         v.add ("");
         Utils.findLongest (null, "string");
-        Utils.findLongest (v.elements(), "string");
+        Utils.findLongest (v, "string");
 
-        v = new Vector<String>();
+        v = new HashSet<>();
         v.add ("foo");
-        Utils.findLongest (v.elements(), "bar");
-        Utils.findLongest (v.elements(), null);
-        Utils.findLongest (v.elements(), "");
+        Utils.findLongest (v, "bar");
+        Utils.findLongest (v, null);
+        Utils.findLongest (v, "");
     }
 
     @Test

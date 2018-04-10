@@ -5,7 +5,7 @@
 
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
-; COOKIE: 4fb2fbb38ded5f58664164a858e6f9daff972b31f99c9b4c (good)
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
 ;; QUESTION SECTION:
 ;RR6.com.			IN	A
 
@@ -13,8 +13,8 @@
 RR6.com.		86400	IN	A	192.168.1.1
 
 ;; AUTHORITY SECTION:
-RR6.com.		86400	IN	NS	ns2.RR6.com.
 RR6.com.		86400	IN	NS	ns1.RR6.com.
+RR6.com.		86400	IN	NS	ns2.RR6.com.
 
 ;; ADDITIONAL SECTION:
 ns1.RR6.com.		86400	IN	A	192.168.0.1

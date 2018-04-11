@@ -411,7 +411,7 @@ class Parser {
             getRightParen();
         }
 
-        zone.add(currentName, new DNSNSECRR(currentName, currentTTL, nextDomainName,
+        zone.add(currentName, new NSECRR(currentName, currentTTL, nextDomainName,
                 resourceRecords));
         logger.traceExit(false);
     }
@@ -526,7 +526,7 @@ class Parser {
         Assertion.aver(tok == RRCode.RPAREN,
                 "Expecting right paren at line " + st.lineno());
 
-        final DNSRRSIGRR d = new DNSRRSIGRR(currentName, currentTTL, typeCovered,
+        final RRSIG d = new RRSIG(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,
                 keyTag, signersName, signature);
         zone.add(currentName, d);

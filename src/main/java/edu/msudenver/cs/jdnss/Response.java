@@ -149,9 +149,9 @@ class Response {
             v = zone.get(RRCode.A, host);
             createAdditionals(v, host);
 
-//            if (DNSSEC) {
-//                addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
-//            }
+            if (DNSSEC) {
+                addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
+            }
         } catch (AssertionError AE) {
 	
 	}
@@ -160,9 +160,9 @@ class Response {
             v = zone.get(RRCode.AAAA, host);
             createAdditionals(v, host);
 
-//            if (DNSSEC) {
-//                addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
-//            }
+            if (DNSSEC) {
+                addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
+            }
         } catch (AssertionError AE2) {
             // maybe we found an A
         }
@@ -180,53 +180,53 @@ class Response {
             createAorAAAA(nsrr.getString(), name);
         }
 
-//        if (DNSSEC) {
-//            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
-//        }
+        if (DNSSEC) {
+            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
+        }
     }
 
     public void addDNSKeys(final String host) {
         Vector v = zone.get(RRCode.DNSKEY, host);
         createAdditionals(v, host);
 
-//        addRRSignature(RRCode.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
+        addRRSignature(RRCode.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
     }
 
 
-//    private void addRRSignature(final RRCode type, final String name, byte[] destination, ResponseSection section) {
-//        Vector<RR> rrsigv = zone.get(RRCode.RRSIG, zone.getName());
+    private void addRRSignature(final RRCode type, final String name, byte[] destination, ResponseSection section) {
+        Vector<RR> rrsigv = zone.get(RRCode.RRSIG, zone.getName());
 
-//        for (RR foo : rrsigv) {
-//            DNSRRSIGRR rrsig = (DNSRRSIGRR) foo;
-            // DNSRRSIGRR rrsig = rrsigv.elementAt(i);
-//            if (rrsig.getTypeCovered() == type) {
-//                byte add[] = rrsig.getBytes(name, minimum);
-//                switch (section) {
-//                    case ANSWER:
-//                        if (UDP && (responses.length + add.length > maximumPayload)) {
-//                            header.setTC(true);
-//                            return;
-//                        }
-//                        responses = Utils.combine(destination, add);
-//                        header.setNumAnswers(header.getNumAnswers() + 1);
-//                        break;
-//                    case ADDITIONAL:
-//                        additional = Utils.combine(destination, add);
-//                        header.setNumAdditionals(header.getNumAdditionals() + 1);
-//                        break;
-//                    case AUTHORITY:
-//                        authority = Utils.combine(destination, add);
-//                        header.setNumAuthorities(header.getNumAuthorities() + 1);
-//                        break;
-//                }
-//            }
-//        }
-//    }
+        for (RR foo : rrsigv) {
+            RRSIG rrsig = (RRSIG) foo;
+            // RRSIG rrsig = rrsigv.elementAt(i);
+            if (rrsig.getTypeCovered() == type) {
+                byte add[] = rrsig.getBytes(name, minimum);
+                switch (section) {
+                    case ANSWER:
+                        if (UDP && (responses.length + add.length > maximumPayload)) {
+                            header.setTC(true);
+                            return;
+                        }
+                        responses = Utils.combine(destination, add);
+                        header.setNumAnswers(header.getNumAnswers() + 1);
+                        break;
+                    case ADDITIONAL:
+                        additional = Utils.combine(destination, add);
+                        header.setNumAdditionals(header.getNumAdditionals() + 1);
+                        break;
+                    case AUTHORITY:
+                        authority = Utils.combine(destination, add);
+                        header.setNumAuthorities(header.getNumAuthorities() + 1);
+                        break;
+                }
+            }
+        }
+    }
 
     private void addNSECRecords(final String name) {
         Vector<RR> nsecv = zone.get(RRCode.NSEC, zone.getName());
 
-        DNSNSECRR nsec = (DNSNSECRR) nsecv.get(0);
+        NSECRR nsec = (NSECRR) nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
         authority = Utils.combine(authority, add);
         header.setNumAuthorities(header.getNumAuthorities() + 1);
@@ -339,10 +339,10 @@ class Response {
                 break;
         }
 
- //       if (DNSSEC) {
- //           addNSECRecords(name);
- //           addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
- //       }
+        if (DNSSEC) {
+            addNSECRecords(name);
+            addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
+        }
         //addSOA(SOA);
         //addAuthorities();
     }
@@ -402,10 +402,10 @@ class Response {
             v = zone.get(type, name);
 
             // is this where this belongs?
-//            if (DNSSEC) {
-//                addNSECRecords(name);
-//                addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-//            }
+            if (DNSSEC) {
+                addNSECRecords(name);
+                addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
+            }
 
             Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
             stringAndVector.put(name, v);

@@ -318,9 +318,9 @@ class DNSKEYRR extends RR {
              final int protocol, final int algorithm, final String publicKey) {
         super(domain, RRCode.DNSKEY, ttl);
 
-        this.flags = flags;
-        this.protocol = protocol;
-        this.algorithm = algorithm;
+        this.flags = Integer.parseUnsignedInt(String.valueOf(flags));
+        this.protocol = Integer.parseUnsignedInt(String.valueOf(protocol));
+        this.algorithm = Integer.parseUnsignedInt(String.valueOf(algorithm));
         this.publicKey = publicKey;
     }
 
@@ -405,31 +405,31 @@ class NSEC3PARAMRR extends RR {
 
 @ToString
 @EqualsAndHashCode
-class DNSRRSIGRR extends RR {
+class RRSIG extends RR {
     @Getter
     private final RRCode typeCovered;
     private final int algorithm;
     private final int labels;
     private final int originalttl;
-    private final int expiration;
-    private final int inception;
+    private final int signatureExpiration; //32 bit unsigned
+    private final int signatureInception; // 32 bit unsigned
     private int keyTag;
     private final String signersName;
     private final String signature;
 
-    DNSRRSIGRR(final String domain, final int ttl, final RRCode typeCovered,
+    RRSIG(final String domain, final int ttl, final RRCode typeCovered,
                final int algorithm, final int labels, final int originalttl,
                final int expiration, final int inception, final int keyTag,
                final String signersName, final String signature) {
         super(domain, RRCode.RRSIG, ttl);
 
         this.typeCovered = typeCovered;
-        this.algorithm = algorithm;
-        this.labels = labels;
-        this.originalttl = originalttl;
-        this.expiration = expiration;
-        this.inception = inception;
-        this.keyTag = keyTag;
+        this.algorithm = Integer.parseUnsignedInt(String.valueOf(algorithm));
+        this.labels = Integer.parseUnsignedInt(String.valueOf(labels));
+        this.originalttl = Integer.parseUnsignedInt(String.valueOf(originalttl));
+        this.signatureExpiration = Integer.parseUnsignedInt(String.valueOf(expiration));
+        this.signatureInception = Integer.parseUnsignedInt(String.valueOf(inception));
+        this.keyTag = Integer.parseUnsignedInt(String.valueOf(keyTag));
         this.signersName = signersName;
         this.signature = signature;
     }
@@ -441,12 +441,12 @@ class DNSRRSIGRR extends RR {
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, Utils.getByte(labels, 1));
         a = Utils.combine(a, Utils.getBytes(originalttl));
-        a = Utils.combine(a, Utils.getBytes(expiration));
-        a = Utils.combine(a, Utils.getBytes(inception));
+        a = Utils.combine(a, Utils.getBytes(signatureExpiration));
+        a = Utils.combine(a, Utils.getBytes(signatureInception));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
         //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
         a = Utils.combine(a, new byte[1]);
-        a = Utils.combine(a, signature.getBytes());
+        a = Utils.combine(a, signature.getBytes(StandardCharsets.US_ASCII));
 
         Assertion.fail("This needs to be checked and fixed.");
 
@@ -456,11 +456,11 @@ class DNSRRSIGRR extends RR {
 
 @ToString
 @EqualsAndHashCode
-class DNSNSECRR extends RR {
+class NSECRR extends RR {
     private final String nextDomainName;
-    private final Set<RRCode> resourceRecords;
+    private final Set<RRCode> resourceRecords; //map more appopriate <RRCode, RR> ??
 
-    DNSNSECRR(final String domain, final int ttl, final String nextDomainName,
+    NSECRR(final String domain, final int ttl, final String nextDomainName,
               final Set<RRCode> resourceRecords) {
         super(domain, RRCode.NSEC, ttl);
 

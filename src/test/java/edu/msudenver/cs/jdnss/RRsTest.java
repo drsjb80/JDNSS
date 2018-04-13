@@ -72,13 +72,13 @@ public class RRsTest
     @Test
     public void rrsTest4() {
         byte four[] =
-                {
-                        0x03, 'w', 'w', 'w',
-                        0x04, 't', 'e', 's', 't',
-                        0x03, 'c', 'o', 'm',
-                        (byte) 0xc0, 0x00, 0x0,
-                        0x00, 0x01, 0x00, 0x000
-                };
+            {
+                0x03, 'w', 'w', 'w',
+                0x04, 't', 'e', 's', 't',
+                0x03, 'c', 'o', 'm',
+                (byte) 0xc0, 0x00, 0x0,
+                0x00, 0x01, 0x00, 0x000
+            };
 
         exception.expect(AssertionError.class);
         RRs rrs4 = new RRs(four, 1, 0, 0, 0);

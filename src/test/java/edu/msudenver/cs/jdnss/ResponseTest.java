@@ -19,8 +19,6 @@ public class ResponseTest {
     public void setUp() throws Exception {
         String[] args = {"--serverSecret=01234567890123456789abcdef", "test.com"};
         JDNSS.main(args);
-        System.out.println(JDNSS.jargs.getIPaddress());
-        System.out.println(JDNSS.jargs.getServerSecret());
         this.query = new Query(queryNoCookie);
         this.query.parseQueries("/0:0:0:0:0:0:0:1");
         this.response = new Response(query, true);

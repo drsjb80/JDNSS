@@ -2,7 +2,7 @@
 			11 ; serial
 			28800 ; refresh
 			7200 ; retry
-			604800 ; expire	
+			604800 ; expire
 			86400 ; minimum
 			)
 

@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
+import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
@@ -330,8 +331,8 @@ class DNSKEYRR extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(flags, 2));
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
-        a = Utils.combine(a, publicKey.getBytes(StandardCharsets.US_ASCII));
-        Assertion.aver(false, "This needs to be checked and fixed.");
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(publicKey));
+        //Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }
 }
@@ -410,16 +411,16 @@ class RRSIG extends RR {
     private final RRCode typeCovered;
     private final int algorithm;
     private final int labels;
-    private final int originalttl;
-    private final int signatureExpiration; //32 bit unsigned
-    private final int signatureInception; // 32 bit unsigned
+    private final long originalttl;
+    private final long signatureExpiration; //32 bit unsigned
+    private final long signatureInception; // 32 bit unsigned
     private int keyTag;
     private final String signersName;
     private final String signature;
 
     RRSIG(final String domain, final int ttl, final RRCode typeCovered,
-               final int algorithm, final int labels, final int originalttl,
-               final int expiration, final int inception, final int keyTag,
+               final int algorithm, final int labels, final long originalttl,
+               final long expiration, final long inception, final int keyTag,
                final String signersName, final String signature) {
         super(domain, RRCode.RRSIG, ttl);
 
@@ -444,11 +445,11 @@ class RRSIG extends RR {
         a = Utils.combine(a, Utils.getBytes(signatureExpiration));
         a = Utils.combine(a, Utils.getBytes(signatureInception));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
-        //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
+        a = Utils.combine(a, Utils.convertString(signersName));
         a = Utils.combine(a, new byte[1]);
         a = Utils.combine(a, signature.getBytes(StandardCharsets.US_ASCII));
 
-        Assertion.fail("This needs to be checked and fixed.");
+        //Assertion.fail("This needs to be checked and fixed.");
 
         return a;
     }

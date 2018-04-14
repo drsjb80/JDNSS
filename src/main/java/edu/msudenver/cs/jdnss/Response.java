@@ -21,7 +21,7 @@ class Response {
     private int numAuthorities;
     private Zone zone;
     private int minimum;
-    private final boolean DNSSEC = false;
+    private boolean DNSSEC = false;
     private byte[] responses = new byte[0];
     private final int maximumPayload = 512;
     private SOARR SOA;
@@ -57,7 +57,6 @@ class Response {
                 refuseFlag = true;
             }
             finally {
-
                 logger.trace(refuseFlag);
                 if (refuseFlag == false) {
                     try {
@@ -73,6 +72,8 @@ class Response {
                         logger.traceEntry(type.toString());
 
                         boolean firsttime = true;
+                        if(query.getOptrr() != null)
+                            DNSSEC = query.getOptrr().isDNSSEC();
 
                         for (RR rr : v) {
                             byte add[] = rr.getBytes(name, minimum);
@@ -93,7 +94,7 @@ class Response {
                             //addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
                             //            }
 
-                            if (firsttime && type != RRCode.NS) {
+                            if (firsttime && type != RRCode.NS && type != RRCode.DNSKEY) {
                                 createAuthorities(name);
                             }
                             firsttime = false;
@@ -187,8 +188,6 @@ class Response {
 
     public void addDNSKeys(final String host) {
         Vector v = zone.get(RRCode.DNSKEY, host);
-        createAdditionals(v, host);
-
         addRRSignature(RRCode.DNSKEY, host, additional, ResponseSection.ADDITIONAL);
     }
 
@@ -207,16 +206,16 @@ class Response {
                             header.setTC(true);
                             return;
                         }
-                        responses = Utils.combine(destination, add);
                         header.setNumAnswers(header.getNumAnswers() + 1);
+                        responses = Utils.combine(destination, add);
                         break;
                     case ADDITIONAL:
-                        additional = Utils.combine(destination, add);
                         header.setNumAdditionals(header.getNumAdditionals() + 1);
+                        additional = Utils.combine(destination, add);
                         break;
                     case AUTHORITY:
-                        authority = Utils.combine(destination, add);
                         header.setNumAuthorities(header.getNumAuthorities() + 1);
+                        authority = Utils.combine(destination, add);
                         break;
                 }
             }
@@ -283,6 +282,7 @@ class Response {
         } catch (AssertionError AE) {
             logger.debug(type.toString() + " lookup of " +
                     name + " failed");
+            //TODO I think we should be adding NSEC RR to prove that the record does not exist
             header.setRcode(ErrorCodes.NAMEERROR.getCode());
             throw (AE);
         }
@@ -334,6 +334,9 @@ class Response {
             case MX:
                 errLookupFailed(type, name, ErrorCodes.NOERROR.getCode());
                 break;
+            case DNSKEY:
+                if(DNSSEC)
+                    addDNSKeys(name);
             default:
                 errLookupFailed(type, name, ErrorCodes.NAMEERROR.getCode());
                 break;
@@ -363,7 +366,7 @@ class Response {
             // yes, so first put in the CNAME
             // createResponses(u, name, RRCode.CNAME);
             responses = Utils.combine(responses, u.get(0).getBytes(name, minimum));
-	    header.setNumAnswers(header.getNumAnswers() + 1); 
+	        header.setNumAnswers(header.getNumAnswers() + 1);
 
             // then continue the lookup on the original type
             // with the new name

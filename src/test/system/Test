@@ -99,4 +99,4 @@ echo -n "Testing trunc..."
 
     echo "passed"
 
-    kill %+
+    kill cat /tmp/named.pid

@@ -447,8 +447,7 @@ class RRSIG extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
         a = Utils.combine(a, Utils.convertString(signersName));
         a = Utils.combine(a, new byte[1]);
-        a = Utils.combine(a, signature.getBytes(StandardCharsets.US_ASCII));
-
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(signature));
         //Assertion.fail("This needs to be checked and fixed.");
 
         return a;

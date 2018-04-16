@@ -64,6 +64,10 @@ class Response {
                 logger.trace(refuseFlag);
                 if (refuseFlag == false) {
                     try {
+                        if(query.getOptrr() != null) {
+                            DNSSEC = query.getOptrr().isDNSSEC();
+                            maximumPayload = query.getOptrr().getPayloadSize();
+                        }
                         Map<String, Vector> stringAndVector = findRR(type, name);
                         Assertion.aver(stringAndVector.size() == 1);
                         name = ((String) stringAndVector.keySet().toArray()[0]);
@@ -76,10 +80,7 @@ class Response {
                         logger.traceEntry(type.toString());
 
                         boolean firsttime = true;
-                        if(query.getOptrr() != null) {
-                            DNSSEC = query.getOptrr().isDNSSEC();
-                            maximumPayload = query.getOptrr().getPayloadSize();
-                        }
+
                         for (RR rr : v) {
                             byte add[] = rr.getBytes(name, minimum);
                             // will we be too big and need to switch to TCP?

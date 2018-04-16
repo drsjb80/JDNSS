@@ -72,12 +72,11 @@ class Response {
                         logger.traceEntry(type.toString());
 
                         boolean firsttime = true;
-                        if(query.getOptrr() != null)
+                        if(query.getOptrr() != null) {
                             DNSSEC = query.getOptrr().isDNSSEC();
-
+                        }
                         for (RR rr : v) {
                             byte add[] = rr.getBytes(name, minimum);
-
                             // will we be too big and need to switch to TCP?
                             if (UDP && responses != null && (responses.length + add.length > maximumPayload)) {
                                 header.setTC(true);
@@ -87,9 +86,9 @@ class Response {
                             header.setNumAnswers(header.getNumAnswers() + 1);
 
                             //Add RRSIG Records Corresponding to Type
-                            //TODO seems right to add answers somewhere close but we only want to do it once, Check the
+                            //TODO seems right to add answers somewhere close but we only want to do it once one last, Check the
                             //stuff to assure its doing what I want it to
-                            if(v.indexOf(rr) == v.size() && DNSSEC){
+                            if((v.indexOf(rr) + 1 == v.size()) && DNSSEC){
                                 addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
                             }
 
@@ -119,7 +118,6 @@ class Response {
         }
         if (query.getOptrr() != null && header.getNumAdditionals() > 1)
             header.setNumAdditionals(header.getNumAdditionals() + 1);
-
         header.build();
     }
 
@@ -191,8 +189,8 @@ class Response {
                 addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
             }
         } catch (AssertionError AE) {
-	
-	}
+            // maybe there is an AAAA
+	        }
 
         try {
             v = zone.get(RRCode.AAAA, host);
@@ -232,20 +230,21 @@ class Response {
             createAorAAAA(nsrr.getString(), name);
         }
 
-        if (DNSSEC) {
-            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
-        }
+        //if (DNSSEC) {
+        //    addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
+        //}
     }
 
 
     private void addRRSignature(final RRCode type, final String name, byte[] destination, ResponseSection section) {
         logger.traceEntry(name);
         Vector<RR> rrsigv = zone.get(RRCode.RRSIG, name);
-        Assertion.aver(rrsigv != null);
+       // Assertion.aver(rrsigv != null);
         for (RR foo : rrsigv) {
+            logger.trace(foo);
             RRSIG rrsig = (RRSIG) foo;
             if (rrsig.getTypeCovered() == type) {
-                byte add[] = rrsig.getBytes();
+                byte add[] = rrsig.getBytes(name, minimum);
                 switch (section) {
                     case ANSWER:
                         if (UDP && (responses.length + add.length > maximumPayload)) {
@@ -261,7 +260,7 @@ class Response {
                         break;
                     case AUTHORITY:
                         authority = Utils.combine(destination, add);
-                        header.setNumAuthorities(header.getNumAuthorities() + 1);
+                       header.setNumAuthorities(header.getNumAuthorities() + 1);
                         break;
                 }
             }
@@ -294,6 +293,7 @@ class Response {
 
             Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
             stringAndVector.put(name, v);
+            logger.traceExit();
             return stringAndVector;
         } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
@@ -310,10 +310,6 @@ class Response {
     private void nameNotFound(final RRCode type, final String name) {
         logger.traceEntry();
         switch (type){
-            case DNSKEY:
-                if(DNSSEC)
-                    addRRSignature(RRCode.DNSKEY, name, additional, ResponseSection.ADDITIONAL);
-                break;
             case MX:
                 logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
                 header.setRcode(ErrorCodes.NOERROR.getCode());
@@ -323,10 +319,10 @@ class Response {
                 break;
         }
 
-        if (DNSSEC) {
-            addNSECRecords(name);
-            addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-        }
+       /// if (DNSSEC) {
+       //     addNSECRecords(name);
+       //     addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
+       // }
     }
 
     private Map<String, Vector> lookForCNAME(final RRCode type, final String name) {

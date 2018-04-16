@@ -23,7 +23,7 @@ class Response {
     private int minimum;
     private boolean DNSSEC = false;
     private byte[] responses = new byte[0];
-    private final int maximumPayload = 512;
+    private int maximumPayload = 512;
     private SOARR SOA;
     private boolean UDP;
     private final Query query;
@@ -74,6 +74,7 @@ class Response {
                         boolean firsttime = true;
                         if(query.getOptrr() != null) {
                             DNSSEC = query.getOptrr().isDNSSEC();
+                            maximumPayload = query.getOptrr().getPayloadSize();
                         }
                         for (RR rr : v) {
                             byte add[] = rr.getBytes(name, minimum);

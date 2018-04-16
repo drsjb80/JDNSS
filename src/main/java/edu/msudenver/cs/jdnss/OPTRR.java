@@ -10,7 +10,7 @@ class OPTRR {
     @Getter
     private boolean DNSSEC = false;
     final static Logger logger = JDNSS.logger;
-    private int payloadSize;
+    @Getter private int payloadSize;
     private int type;
     @Getter private int rdLength;
     private byte extendedrcode = 0; // extended RCODE of 0 indicates use of a regular RCODE

@@ -1,5 +1,7 @@
+
 ; File written on Wed Mar 28 16:24:38 2018
 ; dnssec_signzone version 9.12.0
+
 test.com.		86400	IN SOA	test.com. root.one.test.com.test.com. (
 					12         ; serial
 					28800      ; refresh (8 hours)

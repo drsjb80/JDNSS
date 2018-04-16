@@ -41,7 +41,11 @@ class Response {
             Vector<RR> v;
             String name = q.getName();
             final RRCode type = q.getType();
+            if(query.getOptrr() != null) {
+                DNSSEC = query.getOptrr().isDNSSEC();
+            }
 
+            logger.trace(DNSSEC);
             logger.trace(name);
             logger.trace(type.toString());
             logger.trace(UDP);
@@ -72,9 +76,7 @@ class Response {
                         logger.traceEntry(type.toString());
 
                         boolean firsttime = true;
-                        if(query.getOptrr() != null) {
-                            DNSSEC = query.getOptrr().isDNSSEC();
-                        }
+
                         for (RR rr : v) {
                             byte add[] = rr.getBytes(name, minimum);
                             // will we be too big and need to switch to TCP?
@@ -108,13 +110,19 @@ class Response {
                         }
                         logger.traceExit();
                     } catch (AssertionError AE2) {
-                        logger.catching(AE2);
-                        logger.trace("unable to respond, name not found.");
-                        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
-                        if (DNSSEC) {
-                            addRRSignature(RRCode.SOA, name, authority, ResponseSection.AUTHORITY);
+                        if (DNSSEC && type != RRCode.SOA) {
+                            addNSECRecords(name);
+                            addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
                         }
-                        numAuthorities = 1;
+                        else {
+                            logger.catching(AE2);
+                            logger.trace("unable to respond, name not found.");
+                            authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+                            if (DNSSEC) {
+                                addRRSignature(RRCode.SOA, name, authority, ResponseSection.AUTHORITY);
+                            }
+                            numAuthorities = 1;
+                        }
                     }
                     addAuthorities();
                     addAdditionals();
@@ -214,6 +222,7 @@ class Response {
         logger.traceEntry();
         Assertion.aver(v != null, "v == null");
         Assertion.aver(host != null, "host == null");
+        RRCode type = v.get(0).getType();
 
         for (int i = 0; i < v.size(); i++) {
             RR rr = v.elementAt(i);
@@ -222,7 +231,7 @@ class Response {
         }
 
         if(DNSSEC) {
-            addRRSignature(RRCode.NS, host, additional, ResponseSection.ADDITIONAL);
+            addRRSignature(type,  host, additional, ResponseSection.ADDITIONAL);
         }
     }
 
@@ -289,7 +298,7 @@ class Response {
         NSECRR nsec = (NSECRR) nsecv.get(0);
         byte add[] = nsec.getBytes(name, minimum);
         authority = Utils.combine(authority, add);
-        header.setNumAuthorities(header.getNumAuthorities() + 1);
+        numAuthorities++;
     }
 
     private Map<String, Vector> findRR(final RRCode type, String name) {
@@ -316,8 +325,8 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.traceEntry();
-        if (DNSSEC) {
-            addNSECRecords(name);
+        if(DNSSEC) {
+            throw  new AssertionError();
         }
         switch (type){
             case MX:
@@ -329,10 +338,10 @@ class Response {
                 break;
         }
 
-       /// if (DNSSEC) {
-       //     addNSECRecords(name);
-       //     addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-       // }
+        //if (DNSSEC) {
+         //   addNSECRecords(name);
+         //   addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
+       //}
     }
 
     private Map<String, Vector> lookForCNAME(final RRCode type, final String name) {

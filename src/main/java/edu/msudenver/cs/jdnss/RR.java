@@ -486,7 +486,7 @@ class NSECRR extends RR {
         }
         int length = (largestRcode + 8)/8;
         byte bitMap[] = new byte[length];
-        byte a[] = new byte[0];
+        byte a[] = {0x00};
         a = Utils.combine(a ,(byte) length);
         a = Utils.combine(a, setBits(bitMap));
         return a;

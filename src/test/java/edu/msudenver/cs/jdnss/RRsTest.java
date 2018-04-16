@@ -92,7 +92,7 @@ public class RRsTest
     public void nsecGetBytesTest() {
         byte expected[] = {0x04, 'h', 'o', 's', 't',
                 0x07, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
-                0x03, 'c', 'o', 'm', 0x00,
+                0x03, 'c', 'o', 'm', 0x00,0x00,
                 0x00, 0x06, 0x40, 0x01, 0x00, 0x00, 0x00, 0x03};
         Set<RRCode> rrSet = new HashSet<>();
         rrSet.add(RRCode.A);
@@ -109,7 +109,7 @@ public class RRsTest
     public void nsecGetBytesTest2() {
         byte expected[] = {0x04, 'h', 'o', 's', 't',
                 0x07, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
-                0x03, 'c', 'o', 'm', 0x00,
+                0x03, 'c', 'o', 'm', 0x00,0x00,
                 0x00, 0x07, 0x40, 0x00, 0x00, 0x08, 0x00, 0x03, 0x30};
         Set<RRCode> rrSet = new HashSet<>();
         rrSet.add(RRCode.A);

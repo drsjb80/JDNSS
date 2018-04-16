@@ -23,7 +23,7 @@ class Response {
     private int minimum;
     private boolean DNSSEC = false;
     private byte[] responses = new byte[0];
-    private final int maximumPayload = 512;
+    private int maximumPayload = 512;
     private SOARR SOA;
     private boolean UDP;
     private final Query query;
@@ -74,6 +74,7 @@ class Response {
                         boolean firsttime = true;
                         if(query.getOptrr() != null) {
                             DNSSEC = query.getOptrr().isDNSSEC();
+                            maximumPayload = query.getOptrr().getPayloadSize();
                         }
                         for (RR rr : v) {
                             byte add[] = rr.getBytes(name, minimum);
@@ -86,8 +87,8 @@ class Response {
                             header.setNumAnswers(header.getNumAnswers() + 1);
 
                             //Add RRSIG Records Corresponding to Type
-                            //TODO seems right to add answers somewhere close but we only want to do it once one last, Check the
-                            //stuff to assure its doing what I want it to
+                            //seems right to add answers somewhere close but we only want to do it once on last
+                            //TODO Check the stuff to assure its doing what I want it to
                             if((v.indexOf(rr) + 1 == v.size()) && DNSSEC){
                                 addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
                             }
@@ -160,6 +161,9 @@ class Response {
             if (!UDP || responses.length + authority.length < maximumPayload) {
                 responses = Utils.combine(responses, authority);
                 header.setNumAuthorities(numAuthorities);
+            }
+            else if(responses.length + authority.length >= maximumPayload){
+                header.setTC(true);
             }
         }
     }

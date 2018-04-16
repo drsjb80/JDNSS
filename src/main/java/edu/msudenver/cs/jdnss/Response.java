@@ -92,7 +92,9 @@ class Response {
                                 addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
                             }
 
-                            if (firsttime && type != RRCode.NS && type != RRCode.DNSKEY) {
+                            if (firsttime &&
+                                    type != RRCode.NS &&
+                                    type != RRCode.DNSKEY) {
                                 createAuthorities(name);
                                 firsttime = false;
                             }
@@ -109,6 +111,9 @@ class Response {
                         logger.catching(AE2);
                         logger.trace("unable to respond, name not found.");
                         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+                        if (DNSSEC) {
+                            addRRSignature(RRCode.SOA, name, authority, ResponseSection.AUTHORITY);
+                        }
                         numAuthorities = 1;
                     }
                     addAuthorities();
@@ -215,6 +220,10 @@ class Response {
             additional = Utils.combine(additional, rr.getBytes(host, minimum));
             numAdditionals++;
         }
+
+        if(DNSSEC) {
+            addRRSignature(RRCode.NS, host, additional, ResponseSection.ADDITIONAL);
+        }
     }
 
     // put the possible authorities in, but don't add to response until we know there is room for them.
@@ -230,9 +239,9 @@ class Response {
             createAorAAAA(nsrr.getString(), name);
         }
 
-        //if (DNSSEC) {
-        //    addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
-        //}
+        if (DNSSEC) {
+            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
+        }
     }
 
 
@@ -241,7 +250,6 @@ class Response {
         Vector<RR> rrsigv = zone.get(RRCode.RRSIG, name);
        // Assertion.aver(rrsigv != null);
         for (RR foo : rrsigv) {
-            logger.trace(foo);
             RRSIG rrsig = (RRSIG) foo;
             if (rrsig.getTypeCovered() == type) {
                 byte add[] = rrsig.getBytes(name, minimum);
@@ -254,14 +262,21 @@ class Response {
                         responses = Utils.combine(destination, add);
                         header.setNumAnswers(header.getNumAnswers() + 1);
                         break;
-                    case ADDITIONAL:
-                        additional = Utils.combine(destination, add);
-                        header.setNumAdditionals(header.getNumAdditionals() + 1);
-                        break;
                     case AUTHORITY:
+                        if (UDP && (responses.length + add.length > maximumPayload)) {
+                            header.setTC(true);
+                        }
                         authority = Utils.combine(destination, add);
-                       header.setNumAuthorities(header.getNumAuthorities() + 1);
+                        numAuthorities++;
                         break;
+                    case ADDITIONAL:
+                        if (UDP && (responses.length + add.length > maximumPayload)) {
+                            //if bigger then max payload exit without adding RRSIG
+                        } else {
+                            additional = Utils.combine(destination, add);
+                            numAdditionals++;
+                            break;
+                        }
                 }
             }
         }
@@ -283,14 +298,6 @@ class Response {
         try {
             v = zone.get(type, name);
 
-            // is this where this belongs?
-            //TODO I dont think this is where this goes, probably a case down in the catch block to prove it doesnt exist
-            //TODO down in the namenotfound like it is is the correct place
-           // if (DNSSEC) {
-           //    addNSECRecords(name);
-           //     addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-           // }
-
             Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
             stringAndVector.put(name, v);
             logger.traceExit();
@@ -309,6 +316,9 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.traceEntry();
+        if (DNSSEC) {
+            addNSECRecords(name);
+        }
         switch (type){
             case MX:
                 logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
@@ -337,10 +347,6 @@ class Response {
             Vector<RR> v = zone.get(type, s);
             responses = Utils.combine(responses, u.get(0).getBytes(name, minimum));
             header.setNumAnswers(header.getNumAnswers() + 1);
-
-            if(DNSSEC) {
-                addRRSignature(RRCode.CNAME, name, responses, ResponseSection.ADDITIONAL);
-            }
 
             Assertion.aver(v != null) ;
             Map<String, Vector> stringAndVector = new ConcurrentHashMap<>();
@@ -381,6 +387,9 @@ class Response {
             //TODO I think we should be adding NSEC RR to prove that the record does not exist
             header.setRcode(ErrorCodes.NAMEERROR.getCode());
             throw (AE);
+        }
+        if(DNSSEC) {
+            addNSECRecords(name);
         }
         throw (new AssertionError("lookup other failed"));
     }

@@ -1,0 +1,232 @@
+; File written on Wed Mar 28 16:24:38 2018
+; dnssec_signzone version 9.12.0
+test.com.		86400	IN SOA	test.com. root.one.test.com.test.com. (
+					12         ; serial
+					28800      ; refresh (8 hours)
+					7200       ; retry (2 hours)
+					604800     ; expire (1 week)
+					86400      ; minimum (1 day)
+					)
+			86400	RRSIG	SOA 10 2 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					e5kxrOlrbrTqL3CAsFE+4Q3VMeakBDLR66Ir
+					aFeJvEPwBPIr1QjBUzwKzBOkohZaFB2hmKce
+					BLvds1JAjC4oaTolbFCWSHMevgobbWZMfWCP
+					QX1xDOfHt9Ta2thy2Olc7VBOGyMyCTX4WJQW
+					+VljIM5ffHbQ745SrcObJ/YdIBazpnSWQaKI
+					BDufs5VHxTvwodA1xkUeY1Hu3pqrIXQLL9p2
+					xAfvHNrur5EK1I1TvNZ1GRvoH6rgWODMkZOl
+					1RBcfmcFkn6ty2N+jnEhshC5hfeBENdAwDir
+					DMfZ8K/m6u5R6R+pMf9kiFgfMOO/7nRoLiE9
+					aZVORRoS9wbz4mOffA== )
+			86400	NS	one.test.com.
+			86400	NS	two.test.com.
+			86400	RRSIG	NS 10 2 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					CEhy3L6koqgfGIsm3XVxSDxYgF4JKBKzpNkK
+					Foulis269AhJox0PxTJtrzQ++Qs7V6MF+t2Q
+					Sx+UjZ3+pwxtoasyeXtZHAGPzh5b++IvdSsy
+					Ngg+cNYktSDrC/saRwXTrP75307x69tUG+Ln
+					t5Mimw9seMWXJULYgd7b7oFbxzbCPgjHVgVc
+					fn4oQ3WveRG3Sk+o78zjrFI1ufxh2Ui7Jd0/
+					vnYEZ0iKIUy5p6zs4dbRu2YhzeokN2sx34MQ
+					6f320tY5on3KszJIuD5ceEiY+zfLcHzXtqOq
+					2uoYkWE423KpYmRaBBA24r9qkIhExpWeDLku
+					3KGIS31LwzkljDja3Q== )
+			86400	A	192.168.1.2
+			86400	RRSIG	A 10 2 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					Dce8dIYt4EGaRP1q3P86Oyot3O4g2A0EJu4A
+					LoXyViG+hcT9KCk/BND2Nz5FKpyQDEbcejW3
+					5AvcL7pIjQUC4PKskOqQ3cfgOe3k2ZD8AiaG
+					S8ryACnyNGwlOyg8P1EoaeEgtuNpp6RdHKBY
+					uUwyQ3FKnJROyz/OUk0SxA0ymq6e3QqzDLWa
+					nj6gwfOtC14ZZWCmcdM7X568Q9Ar5wC2O38q
+					hQ2GVd3GsOqy4tx6wtgBTsJ5i2b9BYFfHJ0b
+					3oQbJK4DewB08QPlsIzHB7TTu3vhSREjCX1n
+					Z+0JOZa5zAGFaszZTsub1llLwRgL0Y4UumBF
+					DOd2nhrUDBwtXkAiaQ== )
+			86400	MX	10 one.test.com.
+			86400	MX	20 two.test.com.
+			86400	RRSIG	MX 10 2 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					RCfT3jt5n80mLSAhhfW0xmsePP2DTuov9jZX
+					fD2yfeJL9yCA0BYw5OtvzOdL/dx3tJ8R3Jb5
+					pCemuCnG3ozLw1mIlOGAlnmSRmuuamTt8B3J
+					L+vIDIn+VgsbO2URxPtTwI5erNtfJJ5hMo1W
+					0W2EAcZRSjzMtGkfEmiSLwNORh2krbU0ttlv
+					IRw6ecZr3Xf0J6aBsb/ELaJiuuwPqxuKoduD
+					oIwLHP8J8sMLGy3mau2BV2qbqoK5RZ4zmuTL
+					K1FfGB7pC4Fp/RrOmfi4/jiF+w3nLtrz23QK
+					sTJXm93HPnpr0xonGlF3tUYcjgQOItR7Aj+s
+					krf2v0Xtx5OgN88KBA== )
+			86400	DNSKEY	256 3 10 (
+					AwEAAchwxdXglRhdToe0iUXTX8bSbfooJNFc
+					bGMw0lle4klxGgUS/qgJKSKPCmVqj07mE0b5
+					qReIjTftnmy+xJfsFxN8K9xagtDBWmoIZGrW
+					qmWW2gdI09MzEZsMzXybvLhd33ZU0y37Mj05
+					qudsg+CzSWVrLLsOXCKtmiCn1JstwB4Ivdb6
+					U5TXiOJNAixlnOp64FBxfM/ABFgPf/d0Vk0/
+					3sLMy3k6tl9nLOGWDJDkW9TdV9OI4CvIoEDg
+					7oOP7LSkbx+QwUO/30c5pVj8WWVWbP6E7GJX
+					v9a8x2XFIjwUuX+GfNZ/nWTUWwLLh7dhplg/
+					xrxFoTe0xjwLekX2wYyHI40=
+					) ; ZSK; alg = RSASHA512 ; key id = 39377
+			86400	DNSKEY	257 3 10 (
+					AwEAAcbcEYChuIpQxZS75rjRHxt8Vs4hIqJs
+					AYuhHElnXh4JiGgjYsnwO8Z8EpRu6SVSjlxs
+					zni0djv3A1GJi5kJH981tCzVALxL41akivxj
+					BcUQkeWEUBoLwRuGkksqyoZ4YovnR4ITAMgP
+					s24Zu9H0mWe79NY5p0aXi7x9rWwTdp7qEdWv
+					IMFZfdUTsrEEcJqV1UOLJ0KM9UBZpRJKrlze
+					txi8mANQma5l0lk8hsZ/rKPdbn77vi8ngH/L
+					rTwjcJRYPaNjFIDxMUFGabiHXqsYdFrABZjP
+					qNKSXj6eJ/HD+sjXlASyBTClmdBx22dv1Gkr
+					uwl1gDuU8mYnzsqzpRyYXTyx/UHpxKFTvWBx
+					LqXJttAofWKs6eyi+tqG3nV383DQycfh+4lg
+					OM+naXTIKGNGe1joLC6SxpEdkP/CKhKo+gvu
+					kIUva5azSjd802VQLHEvFNlwHn5AwgvX4/E5
+					3EIA7BwvuCkTG1ZHbQh/RUBNtlapTPbi0F2q
+					Q/8Yw0WIDH5nfyg+LYClB3H9xS82M2Co1XqP
+					MEb8XI7E8Lyej28K6i+Gwslrn60+7qnXD+KN
+					RjwzHntIe1lJMZToK/Eafl6ABsQw0K+uoS3z
+					iwrG565LsfCAPNsSvjokAQjFkupHyC/f+/hJ
+					WwYkwJyOYK44xXTM8G6tuAX/Uq0YfJI6x3rw
+					Tg3J
+					) ; KSK; alg = RSASHA512 ; key id = 20262
+			86400	RRSIG	DNSKEY 10 2 86400 (
+					20180427212438 20180328212438 20262 test.com.
+					Ek07lM3wV9VGWtWhbUfROdcF3LXoSl3go23L
+					0KM/Mih2asKMM8rEwcACR4Bpq2VnDsY6MaRS
+					zDu7DkyUZiYqyo4ypUNBoKXKxq7V6EQ7Tc7h
+					ESXba0jrTiITbu4lzt0qCd+yhY4+k2ynq22o
+					Fc2604L428crmVetxUfB3giM8+TuBkO9fEmk
+					OuEpitlyiRa0YCTgClgAbFkwrbpepDgvyPyt
+					iZxE6v3jbmF6DM/txUIxn49ioYdWJDZVj3pX
+					yVoGwxp/oyT53pchlxgWrb8mPVlSWr3oH0DI
+					0fv+w88N/zM4sc42TsM4LvB9YhIpV2A2KILU
+					CljUW+YDsYM4JXiR5XM2KRV+WQEHm2BvN0jM
+					jTHSDRVWCpDF1dk+DO6bYO2mCX2+YCtIRdtP
+					kPl8/krLn9R7XEVtJG1Tq5NueQ/dv0vTs/Rk
+					5GYuU5X2Jfyhu8KBdFLOUX9UiPinR99kJOyt
+					HK+5b/RVaxhgDNA67iQF9QaAdCL9P3mFPC1i
+					ymXd+Tj0Virn+gJ5NCcUX7ABrld3u6qzP9Mq
+					IkvEC/Ek8PDCbnFlR/iQtryKh5TTck6XVaBB
+					HGyapMFUrf+vxFcnzRxA8YehI60iWOj4c3+/
+					pyA4Fkn0kwf+C4bIu4FmsOxQyUfQhYxtDzQA
+					If0LfdqYzt+MP0iHLdVsjYCClYj/uC8RLTU= )
+			86400	RRSIG	DNSKEY 10 2 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					EPYfBSKP+UtHWf2rGJv6m/GAxYKWzxJS25Xd
+					vArJ1zi0XsZK8k0VKxWuiIxLvtYDt/95LRQ9
+					Wd62CugbadytpXy/U/VtAfKO7QQYEyJPTtQp
+					Dz75+BnzNNOKqoYZXAXeLdg13QqMoyWugoJG
+					0NUhFhX2SuntHtzHu7RNJz4iY0YCMMQCXJiV
+					V4Lof5zNNb+81cAMPhqaOdDKyTRM9ia9i0BL
+					kPskAVmGzYhUwPP/R8WmIiuA4UMwf2TU4K+g
+					w4v1IBQEk+LhpMdWdRYofWB1aeLjIIqOSmkg
+					ZfB5QQqzu+qlUYSU/lx91IwEytRz+ot4S7ro
+					Hi/p+jwu9HfsLHGvow== )
+			0	NSEC3PARAM 1 0 10 97682DA062D12F87
+			0	RRSIG	NSEC3PARAM 10 2 0 (
+					20180427212438 20180328212438 39377 test.com.
+					CCy+wp6RTMvxD3ZUUoh04JbiBhrARkXfCuqo
+					QpgfUQBQf+pQS93z/QmCtVL6mlAPRrHpNhyB
+					e/Gvr6puw21BDIn85oAxRtW6LTo+CHla+nab
+					gbDj86m5t4GMITnRaQFYR+hwkXiZcIFK3ZBE
+					FE2uXizgJaPJOH9txtV0ySuRr6mdV3Bu6S6C
+					gYKPQCGWOu8jPM6SrXjPqMwk1LoMWQe1ccgj
+					Qh8Gok/0hTG4lgm7k1uvgK7IxtC5axFUUDtU
+					BCZwxpxeRPRaXJNiLkAlJ06mw+0/ctJRTuvb
+					txxciTAESEcGxUojtK8fBF5jZ14nIuBk54AA
+					mOZkoHBLHSV2xA1aiw== )
+one.test.com.		86400	IN TXT	"this is a test"
+			86400	RRSIG	TXT 10 3 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					dx15DiGUyGyjX07aqFcjAaeFwJrGQLa9Q/ox
+					riS0nExRvo8wfJXVB2M/AIJ337KWlLZga24a
+					KjUyA0mgvTopCYsOpt70JJojZAbIqCd8vfiS
+					IynTfUuINYUmaIr1VWV1je7YYpLoGwDghaJo
+					yco8gyfrXvywdr2cA56bjvXSquiwDljyptVj
+					6uOM/DntfnEjb6Knu3AQXYMxxci3LCYSHMaj
+					Soz+3u7QeSIH6J2iKrp4hxFeL7wEsxlxr+HX
+					JnCE+8Yt4nPXOETxHfl5bLVLzcX2WYP/s1n/
+					yB95ueAHXnuI8qMjHbTxCF7TIpy6t68ULcNb
+					0CFoC6ecOgZCgWNhNw== )
+www.test.com.		86400	IN A	192.168.1.1
+			86400	IN A	192.168.1.2
+			86400	RRSIG	A 10 3 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					pqN/TKiDPZIUG9Ta434GS3aDvmcfcHQQTa88
+					1jMOjjR4uTdxje81G/7sVO+DdTStIIrvEsbF
+					/8lGUUZuEMW/oXLnoZ1Ypb3705O7KxC5GiHt
+					k4vv5DOqs/+vhDMZ5Z35rCg8z+OBQL9/5lyn
+					TkJWm1+jlr55nsQw9EuIy3/6UZjojr15NQTu
+					OVLFZQPaUSZhEFVF+8P8pRkU4ftt8BbMyXi9
+					YlW7/wBG3BbH4frYOGRLRQe6fWy21//lrzoz
+					fjed8IxnWY0ULKv59iqDP5w+Iy+oHad2sna8
+					jDPuG70I6FDY638pe2CwDRydJfDIGbDbGMDp
+					72hbh4BrH6ERYPPD4Q== )
+			86400	AAAA	::1
+			86400	AAAA	::13.1.68.3
+			86400	AAAA	::ffff:129.144.52.38
+			86400	AAAA	1080::8:800:200c:417a
+			86400	AAAA	fedc:ba98:7654:3210:fedc:ba98:7654:3210
+			86400	AAAA	ff01::43
+			86400	RRSIG	AAAA 10 3 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					S0M2PnBmbD2akwsXl7cAb5lNAL+nV+imK6SQ
+					bhgCg9AZXsJwxB1v9AOOi5BDE5M8aGLw9s39
+					IIvbG5CDF/qSGFiUuwC0YGFDOvdmbIv5QiGu
+					rwY75ZafQ0RYNtRWg/rqwv5gMpY3DCD+J8ZO
+					SmyDiB17WIEcuMkkCqoPdb2DhdsN38n/0vKe
+					OqjyNy0IsqyOZbO/P3wAQ9ThB38lW8NWTdYZ
+					9Arm/7pFJu/Sn3fBnucevJcphTeh5TZSXeDb
+					kiNCLLbOcyk6k+SaPD7OM7ikjMMOnrYfkZFu
+					wxPuLKV8IbSYNWzSVVsot6e/NSkPSdsBBVyM
+					HvA9Jf1dwtLjVs1MnQ== )
+9F1QKSVG08K83D491GMT8AO2NV4G3LNV.test.com. 86400 IN NSEC3 1 1 10 97682DA062D12F87 (
+					B2GJENCH73FTR4AA7DSKVUQB0COBL8JS
+					A AAAA RRSIG )
+			86400	RRSIG	NSEC3 10 3 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					rUEQwr6CNgO17mhqJ40PxL3pYORzm/Ks41bj
+					cpVOIuEUVu0nRWQrMIUS8TscdTAcbXjVDxlQ
+					3q2gjeiGtlUEZje5ewKbqy1pw4PFiXjVtMPn
+					Ms69lVWQdi5B+a+cqW/ppZt/OI05JcQ0esOo
+					tqMFbYmkJB9+sZ4nOfI1+Eblw8ddmgwH+D86
+					jl2nqUonExNkdWzGsezI3u5jQdMDRXE3R1Kj
+					5eHislWKztznLAkJwt1B6F+GOxeXr3emnWyU
+					sHZ+LuqQj8ATewtEsNFwyywZCUY4WsynVK/v
+					dThEo/BcY3PJOTfjvgwxWkdzyhxsH5WxMUJN
+					qWiVRFpgMbR84LCvAA== )
+B2GJENCH73FTR4AA7DSKVUQB0COBL8JS.test.com. 86400 IN NSEC3 1 1 10 97682DA062D12F87 (
+					CDMVR674VFNJF1QD1LB40NSHRV2K1ERP
+					TXT RRSIG )
+			86400	RRSIG	NSEC3 10 3 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					OvZTSDBXpnul/bg+AfXdrEuogHl0TJVtlKtU
+					gtWcsF2hHwR7SRbHiGVcq/WQfJp6nEU+9AeE
+					mVzG8l3pFDYRcMeGGrKZNYs6Yvi+baJkoyr7
+					WkIBgbOIJMbgiQ/jsC6FnMjnQQP88/wGV1Vd
+					8SwsXk4lgcVyyJQ4eInWReiCbYEbw0taBudl
+					QLmfFkDra9BRKke1CNT9xA2GO46aElSIMLL9
+					A2NTtvUe9geuYjekEOvcuSBDmI3R50j6mc2C
+					tRElrV4ubzaKgptv37i19aqJJ8v6Ws/JQch2
+					i1C2sZ6M84k8V9d6JJQiCKI5NL15W0LOB8f8
+					pcVEgq5qUf02buxEOQ== )
+CDMVR674VFNJF1QD1LB40NSHRV2K1ERP.test.com. 86400 IN NSEC3 1 1 10 97682DA062D12F87 (
+					9F1QKSVG08K83D491GMT8AO2NV4G3LNV
+					A NS SOA MX RRSIG DNSKEY NSEC3PARAM )
+			86400	RRSIG	NSEC3 10 3 86400 (
+					20180427212438 20180328212438 39377 test.com.
+					NzH4OozeKbw0qHsX8qkuHSSWiMLpe0NPOPLV
+					P56NTLMGjbJP7mLpjUm93lqnvBFKTbid6hy7
+					5ER5htP3aow7i0wh1aHvF7AIVkZPyUocMgD+
+					ky51KxeFPTABYRqEODoHCCHzSJmSi4873nYO
+					zmu5InDT3XTXKDd+E5VJWfCb2Ub3t4gJmBAI
+					M3k1n7UE3e7YY6F1zIYhAm+jTP3qlRU+c3a2
+					95o1mPOac9s5LgoeRZRKJeJh3pNJWLQArqGd
+					r3S9MuKyG21ONoWo/KEDGpLDZ/472uFkjW5e
+					Mp2fWzAHbPilldw+zsZ3k80aaN081vT6qFUv
+					fFn6XpEmkQnlGFnsVQ== )

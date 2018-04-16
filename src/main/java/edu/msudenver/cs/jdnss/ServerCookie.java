@@ -3,18 +3,11 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class ServerCookie {
 
 
       final static Logger logger = JDNSS.logger;
-      private String serverSecret = JDNSS.jargs.getServerSecret();
+      final private String serverSecret = JDNSS.jargs.getServerSecret();
       private long hash;
 
     ServerCookie(byte[] clientCookie, String clientIP){

@@ -411,26 +411,26 @@ class RRSIG extends RR {
     private final RRCode typeCovered;
     private final int algorithm;
     private final int labels;
-    private final long originalttl;
-    private final long signatureExpiration; //32 bit unsigned
-    private final long signatureInception; // 32 bit unsigned
-    private int keyTag;
+    private final int originalttl;
+    private final int signatureExpiration; //32 bit unsigned
+    private final int signatureInception; // 32 bit unsigned
+    private final int keyTag;
     private final String signersName;
     private final String signature;
 
     RRSIG(final String domain, final int ttl, final RRCode typeCovered,
-               final int algorithm, final int labels, final long originalttl,
-               final long expiration, final long inception, final int keyTag,
+               final int algorithm, final int labels, final int originalttl,
+               final int expiration, final int inception, final int keyTag,
                final String signersName, final String signature) {
         super(domain, RRCode.RRSIG, ttl);
 
         this.typeCovered = typeCovered;
-        this.algorithm = Integer.parseUnsignedInt(String.valueOf(algorithm));
-        this.labels = Integer.parseUnsignedInt(String.valueOf(labels));
-        this.originalttl = Integer.parseUnsignedInt(String.valueOf(originalttl));
-        this.signatureExpiration = Integer.parseUnsignedInt(String.valueOf(expiration));
-        this.signatureInception = Integer.parseUnsignedInt(String.valueOf(inception));
-        this.keyTag = Integer.parseUnsignedInt(String.valueOf(keyTag));
+        this.algorithm = algorithm;
+        this.labels = labels;
+        this.originalttl = originalttl;
+        this.signatureExpiration = expiration;
+        this.signatureInception = inception;
+        this.keyTag = keyTag;
         this.signersName = signersName;
         this.signature = signature;
     }
@@ -441,15 +441,15 @@ class RRSIG extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(typeCovered.getCode(), 2));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, Utils.getByte(labels, 1));
-        a = Utils.combine(a, Utils.getBytes(originalttl));
-        a = Utils.combine(a, Utils.getBytes(signatureExpiration));
-        a = Utils.combine(a, Utils.getBytes(signatureInception));
+        a = Utils.combine(a, Utils.getTwoBytes(originalttl, 4));
+        a = Utils.combine(a, Utils.getTwoBytes(originalttl, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 4));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 4));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 2));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
         a = Utils.combine(a, Utils.convertString(signersName));
-        a = Utils.combine(a, new byte[1]);
-        a = Utils.combine(a, signature.getBytes(StandardCharsets.US_ASCII));
-
-        //Assertion.fail("This needs to be checked and fixed.");
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(signature));
 
         return a;
     }
@@ -484,12 +484,11 @@ class NSECRR extends RR {
                 largestRcode = rr.getCode();
             }
         }
-        int length = ((largestRcode + 8) -1)/8;
+        int length = (largestRcode + 8)/8;
         byte bitMap[] = new byte[length];
         byte a[] = new byte[0];
         a = Utils.combine(a ,(byte) length);
         a = Utils.combine(a, setBits(bitMap));
-
         return a;
     }
 
@@ -546,6 +545,9 @@ class NSECRR extends RR {
                     break;
                 case NSEC3PARAM:
                     bitMap[6] = (byte) (bitMap[6] + 16);
+                    break;
+                default:
+                    logger.error("Couldn't add/find "+ rr + " to NSEC bit map");
                     break;
             }
         }

@@ -115,18 +115,18 @@ class Response {
                         }
                         logger.traceExit();
                     } catch (AssertionError AE2) {
-                        if (DNSSEC && type != RRCode.SOA) {
-                            addNSECRecords(name);
-                            addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-                        }
-                        else {
-                            logger.catching(AE2);
-                            logger.trace("unable to respond, name not found.");
-                            authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
-                            if (DNSSEC) {
-                                addRRSignature(RRCode.SOA, name, authority, ResponseSection.AUTHORITY);
-                            }
-                            numAuthorities = 1;
+
+                        logger.catching(AE2);
+                        logger.trace("unable to respond, name not found.");
+                        authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
+
+                        if (DNSSEC) {
+                            numAuthorities++;
+                            addRRSignature(RRCode.SOA, zone.getName(), authority, ResponseSection.AUTHORITY);
+                            addNSECRecords(zone.getName());
+                            logger.trace("hit");
+                            addRRSignature(RRCode.NSEC, zone.getName(), authority, ResponseSection.AUTHORITY);
+                            logger.trace("hit");
                         }
                     }
                     addAuthorities();
@@ -188,6 +188,9 @@ class Response {
             if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);
                 header.setNumAdditionals(numAdditionals);
+            }
+            else if(responses.length + authority.length >= maximumPayload){
+                header.setTC(true);
             }
         }
     }

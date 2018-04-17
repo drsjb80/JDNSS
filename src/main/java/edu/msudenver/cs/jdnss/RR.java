@@ -330,7 +330,7 @@ class DNSKEYRR extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(flags, 2));
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
-        a = Utils.combine(a, Base64.getEncoder().encode(publicKey.getBytes()));
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(publicKey));
         //Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }

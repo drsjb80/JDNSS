@@ -41,9 +41,6 @@ class Response {
             Vector<RR> v;
             String name = q.getName();
             final RRCode type = q.getType();
-            if(query.getOptrr() != null) {
-                DNSSEC = query.getOptrr().isDNSSEC();
-            }
 
             logger.trace(DNSSEC);
             logger.trace(name);
@@ -110,6 +107,10 @@ class Response {
                             }
                             if (type == RRCode.NS) {
                                 createAorAAAA(rr.getString(), name);
+                            }
+                            if(DNSSEC && type == RRCode.SOA) {
+                                Vector<RR> dnsKeyVector = zone.get(RRCode.DNSKEY, name);
+                                createAdditionals(dnsKeyVector, name);
                             }
                         }
                         logger.traceExit();
@@ -344,11 +345,6 @@ class Response {
                 header.setRcode(ErrorCodes.NAMEERROR.getCode());
                 break;
         }
-
-        //if (DNSSEC) {
-         //   addNSECRecords(name);
-         //   addRRSignature(RRCode.NSEC, name, authority, ResponseSection.AUTHORITY);
-       //}
     }
 
     private Map<String, Vector> lookForCNAME(final RRCode type, final String name) {

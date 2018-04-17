@@ -111,6 +111,10 @@ class Response {
                             if (type == RRCode.NS) {
                                 createAorAAAA(rr.getString(), name);
                             }
+                            if(DNSSEC && type == RRCode.SOA) {
+                                Vector<RR> dnsKeyVector = zone.get(RRCode.DNSKEY, name);
+                                createAdditionals(dnsKeyVector, name);
+                            }
                         }
                         logger.traceExit();
                     } catch (AssertionError AE2) {

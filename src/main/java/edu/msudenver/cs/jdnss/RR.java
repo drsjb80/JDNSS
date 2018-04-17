@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
+import javax.xml.bind.DatatypeConverter;
 import java.util.Base64;
 import java.util.Set;
 
@@ -439,15 +440,14 @@ class RRSIG extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(typeCovered.getCode(), 2));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, Utils.getByte(labels, 1));
-        a = Utils.combine(a, Utils.getTwoBytes(originalttl, 4));
-        a = Utils.combine(a, Utils.getTwoBytes(originalttl, 2));
+        a = Utils.combine(a, Utils.getBytes(originalttl));
         a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 4));
         a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 2));
         a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 4));
         a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 2));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
         a = Utils.combine(a, Utils.convertString(signersName));
-        a = Utils.combine(a, Base64.getEncoder().encode(signature.getBytes()));
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(signature));
 
         return a;
     }

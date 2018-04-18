@@ -119,7 +119,7 @@ class Response {
                         logger.catching(AE2);
                         logger.trace("unable to respond, name not found.");
                         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
-
+                        numAuthorities = 1;
                         if (DNSSEC) {
                             numAuthorities++;
                             addRRSignature(RRCode.SOA, zone.getName(), authority, ResponseSection.AUTHORITY);

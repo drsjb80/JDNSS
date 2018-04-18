@@ -5,6 +5,9 @@ import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class RRsTest
 {
     @Rule
@@ -69,20 +72,54 @@ public class RRsTest
     @Test
     public void rrsTest4() {
         byte four[] =
-        {
-            0x03, 'w', 'w', 'w',
-            0x04, 't', 'e', 's', 't',
-            0x03, 'c', 'o', 'm',
-            (byte) 0xc0, 0x00, 0x0,
-            0x00, 0x01, 0x00, 0x000
-        };
+            {
+                0x03, 'w', 'w', 'w',
+                0x04, 't', 'e', 's', 't',
+                0x03, 'c', 'o', 'm',
+                (byte) 0xc0, 0x00, 0x0,
+                0x00, 0x01, 0x00, 0x000
+            };
 
-        exception.expect (AssertionError.class);
-        RRs rrs4 = new RRs (four, 1, 0, 0, 0);
+        exception.expect(AssertionError.class);
+        RRs rrs4 = new RRs(four, 1, 0, 0, 0);
 
         String expectedRRs4 = "Questions:\n" +
-            "null";
+                "null";
 
         Assert.assertEquals(rrs4.toString(), expectedRRs4);
+    }
+    @Test
+    public void nsecGetBytesTest() {
+        byte expected[] = {0x04, 'h', 'o', 's', 't',
+                0x07, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
+                0x03, 'c', 'o', 'm', 0x00,0x00,
+                0x00, 0x06, 0x40, 0x01, 0x00, 0x00, 0x00, 0x03};
+        Set<RRCode> rrSet = new HashSet<>();
+        rrSet.add(RRCode.A);
+        rrSet.add(RRCode.MX);
+        rrSet.add(RRCode.RRSIG);
+        rrSet.add(RRCode.NSEC);
+        NSECRR nsec = new NSECRR("alfa.example.com.",
+                86400,"host.example.com.", rrSet);
+
+        Assert.assertArrayEquals(expected, nsec.getBytes());
+    }
+
+    @Test
+    public void nsecGetBytesTest2() {
+        byte expected[] = {0x04, 'h', 'o', 's', 't',
+                0x07, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
+                0x03, 'c', 'o', 'm', 0x00,0x00,
+                0x00, 0x07, 0x40, 0x00, 0x00, 0x08, 0x00, 0x03, 0x30};
+        Set<RRCode> rrSet = new HashSet<>();
+        rrSet.add(RRCode.A);
+        rrSet.add(RRCode.AAAA);
+        rrSet.add(RRCode.RRSIG);
+        rrSet.add(RRCode.NSEC);
+        rrSet.add(RRCode.NSEC3);
+        rrSet.add(RRCode.NSEC3PARAM);
+        NSECRR nsec = new NSECRR("alfa.example.com.",
+                86400,"host.example.com.", rrSet);
+        Assert.assertArrayEquals(expected, nsec.getBytes());
     }
 }

@@ -11,8 +11,8 @@ import lombok.Getter;
 import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import javax.xml.bind.DatatypeConverter;
+import java.util.Base64;
 import java.util.Set;
 
 /*
@@ -318,9 +318,9 @@ class DNSKEYRR extends RR {
              final int protocol, final int algorithm, final String publicKey) {
         super(domain, RRCode.DNSKEY, ttl);
 
-        this.flags = flags;
-        this.protocol = protocol;
-        this.algorithm = algorithm;
+        this.flags = Integer.parseUnsignedInt(String.valueOf(flags));
+        this.protocol = Integer.parseUnsignedInt(String.valueOf(protocol));
+        this.algorithm = Integer.parseUnsignedInt(String.valueOf(algorithm));
         this.publicKey = publicKey;
     }
 
@@ -330,8 +330,8 @@ class DNSKEYRR extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(flags, 2));
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
-        a = Utils.combine(a, publicKey.getBytes(StandardCharsets.US_ASCII));
-        Assertion.aver(false, "This needs to be checked and fixed.");
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(publicKey));
+        //Assertion.aver(false, "This needs to be checked and fixed.");
         return a;
     }
 }
@@ -405,19 +405,19 @@ class NSEC3PARAMRR extends RR {
 
 @ToString
 @EqualsAndHashCode
-class DNSRRSIGRR extends RR {
+class RRSIG extends RR {
     @Getter
     private final RRCode typeCovered;
     private final int algorithm;
     private final int labels;
     private final int originalttl;
-    private final int expiration;
-    private final int inception;
-    private int keyTag;
+    private final int signatureExpiration; //32 bit unsigned
+    private final int signatureInception; // 32 bit unsigned
+    private final int keyTag;
     private final String signersName;
     private final String signature;
 
-    DNSRRSIGRR(final String domain, final int ttl, final RRCode typeCovered,
+    RRSIG(final String domain, final int ttl, final RRCode typeCovered,
                final int algorithm, final int labels, final int originalttl,
                final int expiration, final int inception, final int keyTag,
                final String signersName, final String signature) {
@@ -427,8 +427,8 @@ class DNSRRSIGRR extends RR {
         this.algorithm = algorithm;
         this.labels = labels;
         this.originalttl = originalttl;
-        this.expiration = expiration;
-        this.inception = inception;
+        this.signatureExpiration = expiration;
+        this.signatureInception = inception;
         this.keyTag = keyTag;
         this.signersName = signersName;
         this.signature = signature;
@@ -441,14 +441,13 @@ class DNSRRSIGRR extends RR {
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, Utils.getByte(labels, 1));
         a = Utils.combine(a, Utils.getBytes(originalttl));
-        a = Utils.combine(a, Utils.getBytes(expiration));
-        a = Utils.combine(a, Utils.getBytes(inception));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 4));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 2));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 4));
+        a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 2));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
-        //a = Utils.combine(a, signersName.getBytes(StandardCharsets.US_ASCII));
-        a = Utils.combine(a, new byte[1]);
-        a = Utils.combine(a, signature.getBytes());
-
-        Assertion.fail("This needs to be checked and fixed.");
+        a = Utils.combine(a, Utils.convertString(signersName));
+        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(signature));
 
         return a;
     }
@@ -456,11 +455,11 @@ class DNSRRSIGRR extends RR {
 
 @ToString
 @EqualsAndHashCode
-class DNSNSECRR extends RR {
+class NSECRR extends RR {
     private final String nextDomainName;
-    private final Set<RRCode> resourceRecords;
+    private final Set<RRCode> resourceRecords; //map more appopriate <RRCode, RR> ??
 
-    DNSNSECRR(final String domain, final int ttl, final String nextDomainName,
+    NSECRR(final String domain, final int ttl, final String nextDomainName,
               final Set<RRCode> resourceRecords) {
         super(domain, RRCode.NSEC, ttl);
 
@@ -470,8 +469,87 @@ class DNSNSECRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        Assertion.fail("This needs to be checked and fixed.");
-        return null;
+        byte[] a= new byte[0];
+        a = Utils.combine(a, Utils.convertString(nextDomainName));
+        a = Utils.combine(a, buildBitMap());
+        return a;
+    }
+
+    private byte[] buildBitMap() {
+        int largestRcode = 0;
+        for(RRCode rr: resourceRecords) {
+            if(rr.getCode() > largestRcode) {
+                largestRcode = rr.getCode();
+            }
+        }
+        int length = (largestRcode + 8)/8;
+        byte bitMap[] = new byte[length];
+        byte a[] = {0x00};
+        a = Utils.combine(a ,(byte) length);
+        a = Utils.combine(a, setBits(bitMap));
+        return a;
+    }
+
+    private byte[] setBits(byte[] bitMap) {
+        for (RRCode rr : resourceRecords) {
+            switch (rr) {
+                case A:
+                    bitMap[0] = (byte) (bitMap[0] + 64);
+                    break;
+                case NS:
+                    bitMap[0] = (byte) (bitMap[0] + 32);
+                    break;
+                case CNAME:
+                    bitMap[0] = (byte) (bitMap[0] + 4);
+                    break;
+                case SOA:
+                    bitMap[0] = (byte) (bitMap[0] + 2);
+                    break;
+                case PTR:
+                    bitMap[1] = (byte) (bitMap[1] + 8);
+                    break;
+                case HINFO:
+                    bitMap[1] = (byte) (bitMap[1] + 4);
+                    break;
+                case MX:
+                    bitMap[1] = (byte) (bitMap[1] + 1);
+                    break;
+                case TXT:
+                    bitMap[2] = (byte) (bitMap[2] + 128);
+                    break;
+                case AAAA:
+                    bitMap[3] = (byte) (bitMap[3] + 8);
+                    break;
+                case A6:
+                    bitMap[4] = (byte) (bitMap[4] + 2);
+                    break;
+                case DNAME:
+                    bitMap[4] = (byte) (bitMap[4] + 1);
+                    break;
+                case DS:
+                    bitMap[5] = (byte) (bitMap[5] + 16);
+                    break;
+                case RRSIG:
+                    bitMap[5] = (byte) (bitMap[5] + 2);
+                    break;
+                case NSEC:
+                    bitMap[5] = (byte) (bitMap[5] + 1);
+                    break;
+                case DNSKEY:
+                    bitMap[6] = (byte) (bitMap[6] + 128);
+                    break;
+                case NSEC3:
+                    bitMap[6] = (byte) (bitMap[6] + 32);
+                    break;
+                case NSEC3PARAM:
+                    bitMap[6] = (byte) (bitMap[6] + 16);
+                    break;
+                default:
+                    logger.error("Couldn't add/find "+ rr + " to NSEC bit map");
+                    break;
+            }
+        }
+        return bitMap;
     }
 }
 

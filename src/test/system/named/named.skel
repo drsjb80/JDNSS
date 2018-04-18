@@ -1,6 +1,6 @@
 options {
-	directory 	"/Users/beatys/VirtualBox Shared/JDNSS/src/main/java/edu/msudenver/cs/jdnss/test";
-	pid-file 	"/Users/beatys/VirtualBox Shared/JDNSS/src/main/java/edu/msudenver/cs/jdnss/test/named/named.pid";
+	directory 	"../zone_files";
+	pid-file 	"/tmp/named.pid";
 	allow-query-cache { none; };
 	allow-query     { any; };
 	listen-on	port 53 { 127.0.0.1; } ;

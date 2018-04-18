@@ -4,6 +4,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 // IPV6 addresses: http://www.faqs.org/rfcs/rfc1884.html
@@ -183,7 +185,8 @@ class Parser {
         }
 
         // if (a.matches("[a-zA-Z0-9/\\+]+(==?)?"))
-        if (inBase64) {
+        String pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$";
+        if (inBase64 && a.matches(pattern)) {
             stringValue = a.trim();
             logger.trace(stringValue);
             logger.traceExit("BASE64");
@@ -212,18 +215,17 @@ class Parser {
     }
 
     private void calculateDate(final String a) {
-        final String year = a.substring(0, 3);
-        final String month = a.substring(4, 5);
-        final String day = a.substring(6, 7);
-        final String hour = a.substring(8, 9);
-        final String minute = a.substring(10, 11);
-        final String second = a.substring(12, 13);
-
-        final Calendar c = new GregorianCalendar();
-        c.set(Integer.parseInt(year), Integer.parseInt(month) - 1,
-                Integer.parseInt(day), Integer.parseInt(hour),
-                Integer.parseInt(minute), Integer.parseInt(second));
-        intValue = (int) c.getTime().getTime();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss:z");
+            Date dt = sdf.parse(a + ":UTC");
+            logger.trace(dt);
+            long epoch = dt.getTime();
+            intValue = (int) (epoch / 1000);
+            logger.trace(Integer.toHexString(intValue));
+        }
+        catch(ParseException e){
+            Assertion.fail();
+        }
     }
 
     private int getOneWord() {
@@ -500,31 +502,22 @@ class Parser {
 
         // https://tools.ietf.org/html/rfc4034#section-3.3
 
-        RRCode tok = getNextToken();
-        int expiration = 0;
+        getLeftParen();
 
-        if (tok == RRCode.LPAREN) {
-            expiration = getDate();
-        } else if (tok == RRCode.DATE) {
-            expiration = intValue;
-            getLeftParen();
-        } else {
-            Assertion.fail("Unknown syntax at line " + st.lineno());
-        }
-
+        final int expiration = getDate();
         final int inception = getDate();
         final int keyTag = getInt("key tag");
         final String signersName = getDomain();
 
         String signature = "";
+        RRCode tok;
+
         inBase64 = true;
         while ((tok = getNextToken()) == RRCode.BASE64) {
             signature += stringValue;
         }
         inBase64 = false;
-
-        Assertion.aver(tok == RRCode.RPAREN,
-                "Expecting right paren at line " + st.lineno());
+        Assertion.aver(tok == RRCode.RPAREN);
 
         final RRSIG d = new RRSIG(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,

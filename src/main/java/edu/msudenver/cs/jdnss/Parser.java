@@ -500,31 +500,23 @@ class Parser {
 
         // https://tools.ietf.org/html/rfc4034#section-3.3
 
-        RRCode tok = getNextToken();
-        int expiration = 0;
+        getLeftParen();
 
-        if (tok == RRCode.LPAREN) {
-            expiration = getDate();
-        } else if (tok == RRCode.DATE) {
-            expiration = intValue;
-            getLeftParen();
-        } else {
-            Assertion.fail("Unknown syntax at line " + st.lineno());
-        }
-
+        final int expiration = getDate();
         final int inception = getDate();
         final int keyTag = getInt("key tag");
         final String signersName = getDomain();
 
         String signature = "";
+        RRCode tok;
+
         inBase64 = true;
         while ((tok = getNextToken()) == RRCode.BASE64) {
             signature += stringValue;
         }
         inBase64 = false;
 
-        Assertion.aver(tok == RRCode.RPAREN,
-                "Expecting right paren at line " + st.lineno());
+        getRightParen();
 
         final DNSRRSIGRR d = new DNSRRSIGRR(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,

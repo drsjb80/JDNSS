@@ -24,12 +24,11 @@ public class ResponseTest {
         this.response = new Response(query, true);
     }
 
+
     @Test
     public void getBytesTest() {
         Assert.assertArrayEquals(expectedResponseNoCookie, response.getBytes());
     }
-
-
 
     @After
     public void tearDown() throws Exception {

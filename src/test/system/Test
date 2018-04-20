@@ -22,7 +22,7 @@ do
     echo -n "Testing $name..."
 
     DIGARGS='+nostats +nocmd +cookie=0123456789abcdef'
-    DIGHOST='@localhost'
+    DIGHOST='@::1'
 
     case $name in
     	TCP )

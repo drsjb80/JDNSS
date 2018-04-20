@@ -124,9 +124,7 @@ class Response {
                             numAuthorities++;
                             addRRSignature(RRCode.SOA, zone.getName(), authority, ResponseSection.AUTHORITY);
                             addNSECRecords(zone.getName());
-                            logger.trace("hit");
                             addRRSignature(RRCode.NSEC, zone.getName(), authority, ResponseSection.AUTHORITY);
-                            logger.trace("hit");
                         }
                     }
                     addAuthorities();
@@ -242,7 +240,7 @@ class Response {
         }
 
         if(DNSSEC) {
-            addRRSignature(type,  host, additional, ResponseSection.ADDITIONAL);
+            addRRSignature(type,  host, additional, ResponseSection.AUTHORITY);
         }
     }
 
@@ -260,7 +258,7 @@ class Response {
         }
 
         if (DNSSEC) {
-            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
+            addRRSignature(RRCode.NS, zone.getName(), authority, ResponseSection.AUTHORITY);
         }
     }
 

@@ -240,7 +240,7 @@ class Response {
         }
 
         if(DNSSEC) {
-            addRRSignature(type,  host, additional, ResponseSection.AUTHORITY);
+            addRRSignature(type,  host, additional, ResponseSection.ADDITIONAL);
         }
     }
 

@@ -187,7 +187,7 @@ class Response {
                 responses = Utils.combine(responses, additional);
                 header.setNumAdditionals(numAdditionals);
             }
-            else if(responses.length + authority.length >= maximumPayload){
+            else if(responses.length + additional.length >= maximumPayload){
                 header.setTC(true);
             }
         }
@@ -207,9 +207,11 @@ class Response {
             v = zone.get(RRCode.A, host);
             createAdditionals(v, host);
 
+            /*
             if (DNSSEC) {
                 addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
             }
+            */
         } catch (AssertionError AE) {
             // maybe there is an AAAA
 	        }
@@ -218,9 +220,11 @@ class Response {
             v = zone.get(RRCode.AAAA, host);
             createAdditionals(v, host);
 
+            /*
             if (DNSSEC) {
                 addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
             }
+            */
         } catch (AssertionError AE2) {
             // maybe we found an A
         }

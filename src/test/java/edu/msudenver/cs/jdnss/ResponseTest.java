@@ -15,42 +15,36 @@ public class ResponseTest {
     Query query;
     Response response;
 
-    byte[] queryNoCookie = {(byte) 0x1d, (byte) 0x02, (byte) 0x01
-            , (byte) 0x20, (byte) 0x00, (byte) 0x01, (byte) 0x00
-            , (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
-            , (byte) 0x01, (byte) 0x04, (byte) 0x74, (byte) 0x65
-            , (byte) 0x73, (byte) 0x74, (byte) 0x03, (byte) 0x63
-            , (byte) 0x6f, (byte) 0x6d, (byte) 0x00, (byte) 0x00
-            , (byte) 0x01, (byte) 0x00, (byte) 0x01, (byte) 0x00
-            , (byte) 0x00, (byte) 0x29, (byte) 0x10, (byte) 0x00
-            , (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
-            , (byte) 0x00, (byte) 0x00};
-
     @Before
     public void setUp() throws Exception {
-        this.query = new Query(queryNoCookie);
-        this.query.parseQueries("/0:0:0:0:0:");
-        this.response = new Response(query, true);
-        String[] args = {"test.com"};
+        String[] args = {"--serverSecret=01234567890123456789abcdef", "test.com"};
         JDNSS.main(args);
+        this.query = new Query(queryNoCookie);
+        this.query.parseQueries("/0:0:0:0:0:0:0:1");
+        this.response = new Response(query, true);
     }
 
-    /*
+
     @Test
     public void getBytesTest() {
-        Assert.assertArrayEquals(expectedResponse, response.getBytes());
+        Assert.assertArrayEquals(expectedResponseNoCookie, response.getBytes());
     }
-    */
-
 
     @After
     public void tearDown() throws Exception {
     }
 
-    byte[] expectedResponse = {
-              (byte) 0x1d,(byte) 0x02, (byte) 0x85, (byte) 0x21
+    byte[] queryNoCookie = {(byte) 0x5f, (byte) 0x3e, (byte) 0x01
+            , (byte) 0x20, (byte) 0x00, (byte) 0x01, (byte) 0x00
+            , (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
+            , (byte) 0x00, (byte) 0x04, (byte) 0x74, (byte) 0x65
+            , (byte) 0x73, (byte) 0x74, (byte) 0x03, (byte) 0x63
+            , (byte) 0x6f, (byte) 0x6d, (byte) 0x00, (byte) 0x00
+            , (byte) 0x01, (byte) 0x00, (byte) 0x01};
+
+    byte[] expectedResponseNoCookie = {(byte) 0x5f, (byte) 0x3e, (byte) 0x85, (byte) 0x00
             , (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01
-            , (byte) 0x00, (byte) 0x02, (byte) 0x00, (byte) 0x01
+            , (byte) 0x00, (byte) 0x02, (byte) 0x00, (byte) 0x00
             , (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73
             , (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f
             , (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01
@@ -64,7 +58,7 @@ public class ResponseTest {
             , (byte) 0x65, (byte) 0x73, (byte) 0x74, (byte) 0x03
             , (byte) 0x63, (byte) 0x6f, (byte) 0x6d, (byte) 0x00
             , (byte) 0x00, (byte) 0x02, (byte) 0x00, (byte) 0x01
-            , (byte) 0x00, (byte) 0x01, (byte) 0x51 , (byte) 0x80
+            , (byte) 0x00, (byte) 0x01, (byte) 0x51, (byte) 0x80
             , (byte) 0x00, (byte) 0x0e, (byte) 0x03, (byte) 0x6f
             , (byte) 0x6e, (byte) 0x65, (byte) 0x04, (byte) 0x74
             , (byte) 0x65, (byte) 0x73, (byte) 0x74, (byte) 0x03
@@ -77,8 +71,5 @@ public class ResponseTest {
             , (byte) 0x03, (byte) 0x74, (byte) 0x77, (byte) 0x6f
             , (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73
             , (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f
-            , (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x00
-            , (byte) 0x29, (byte) 0x10, (byte) 0x00, (byte) 0x00
-            , (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
-            , (byte) 0x00};
+            , (byte) 0x6d, (byte) 0x00};
 }

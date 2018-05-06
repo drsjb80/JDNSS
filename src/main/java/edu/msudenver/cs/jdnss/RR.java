@@ -330,8 +330,11 @@ class DNSKEYRR extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(flags, 2));
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
-        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(publicKey));
-        //Assertion.aver(false, "This needs to be checked and fixed.");
+        try {
+            a = Utils.combine(a, Base64.getDecoder().decode(publicKey.getBytes()));
+        } catch (Exception e ){
+            Assertion.fail();
+        }
         return a;
     }
 }
@@ -447,8 +450,11 @@ class RRSIG extends RR {
         a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 2));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
         a = Utils.combine(a, Utils.convertString(signersName));
-        a = Utils.combine(a, DatatypeConverter.parseBase64Binary(signature));
-
+        try {
+            a = Utils.combine(a, Base64.getDecoder().decode(signature.getBytes()));
+        } catch (Exception e ){
+            Assertion.fail();
+        }
         return a;
     }
 }

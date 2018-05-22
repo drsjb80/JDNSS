@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=dev)](https://travis-ci.org/drsjb80/JDNSS)
 
+![Now with DNSSEC!][JDNSS/NowwithDNSSEC.png]
+
 # JDNSS
-An authoritative-only leaf DNS server in Java
+An authoritative-only, DNSSEC capable, leaf DNS server in Java
 
 JDNSS is a small DNS server written in Java.  It was written to be both
 more portable and more secure due to its implementation in Java.  It is

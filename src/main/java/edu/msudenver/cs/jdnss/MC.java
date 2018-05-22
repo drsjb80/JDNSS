@@ -1,33 +1,15 @@
 package edu.msudenver.cs.jdnss;
 
 import java.io.IOException;
-import java.lang.AssertionError;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.MulticastSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 class MC extends UDP
 {
-    public MC(JDNSS dnsService) throws SocketException, UnknownHostException,
-        IOException
+    public MC() throws IOException
     {
-        logger.traceEntry(new ObjectMessage(dnsService));
-        this.dnsService = dnsService;
-
-
-        final int port = JDNSS.getJdnssArgs().MCport;
-        final String address = JDNSS.getJdnssArgs().MCaddress;
-
-        // logger.fatal(port);
-        // logger.fatal(address);
+        final int port = JDNSS.jargs.getMCport();
+        final String address = JDNSS.jargs.getMCaddress();
 
         MulticastSocket msocket = new MulticastSocket(port);
 

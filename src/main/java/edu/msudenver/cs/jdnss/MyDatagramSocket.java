@@ -11,7 +11,7 @@ import java.net.SocketException;
  * @version $Id: MyDatagramSocket.java,v 1.1.1.1 2004/06/30 18:42:22 drb80 Exp $
  */
 
-public class MyDatagramSocket extends DatagramSocket
+class MyDatagramSocket extends DatagramSocket
 {
     public MyDatagramSocket() throws SocketException { super(); }
 

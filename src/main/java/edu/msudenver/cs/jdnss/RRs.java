@@ -1,27 +1,26 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
+
 import java.util.Arrays;
+import java.util.Vector;
 
-public class RRs
-{
+class RRs {
     private int location;
-    private byte buffer[];
-    private static Logger logger = JDNSS.getLogger();
-    private int numQuestions;
-    private int numAnswers;
-    private int numAuthorities;
-    private int numAdditionals;
+    private final byte[] buffer;
+    private static final Logger logger = JDNSS.logger;
+    private final int numQuestions;
+    private final int numAnswers;
+    private final int numAuthorities;
+    private final int numAdditionals;
 
-    private RR questions[];
-    private RR answers[];
-    private RR authorities[];
-    private RR additionals[];
+    private final RR[] questions;
+    private final RR[] answers;
+    private final RR[] authorities;
+    private final RR[] additionals;
 
     public RRs(byte buffer[], int numQuestions, int numAnswers,
-        int numAuthorities, int numAdditionals)
-    {
+               int numAuthorities, int numAdditionals) {
         this.buffer = Arrays.copyOf(buffer, buffer.length);
         this.numQuestions = numQuestions;
         this.numAnswers = numAnswers;
@@ -36,8 +35,7 @@ public class RRs
         parseQuestions();
     }
 
-    private void parseQuestions()
-    {
+    private void parseQuestions() {
         logger.traceEntry();
 
         /*
@@ -58,34 +56,30 @@ public class RRs
         +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
         */
 
-        for (int i = 0; i < numQuestions; i++)
-        {
-            StringAndNumber sn = null;
+        for (int i = 0; i < numQuestions; i++) {
+            Vector<Object> StringAndNumber = null;
 
-            try
-            {
-                sn = Utils.parseName(location, buffer);
-            }
-            catch (AssertionError ae)
-            {
+            try {
+                StringAndNumber = Utils.parseName(location, buffer);
+            } catch (AssertionError ae) {
                 questions[i] = null;
-                Assertion.aver(false);
+                Assertion.fail();
             }
 
-            location = sn.getNumber();
+            location = (int) StringAndNumber.elementAt(1);
             int qtype = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
-            // QU/QM
+            // FIXME: QU/QM
             // logger.fatal(buffer[location] & 0x80);
             int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 
-            questions[i] = new QRR(sn.getString(), qtype);
+            questions[i] = new QRR((String) StringAndNumber.elementAt(0),
+                    RRCode.findCode(qtype));
         }
     }
 
-    public void parseAnswers(int location)
-    {
+    public void parseAnswers(int location) {
         logger.traceEntry();
 
         /*
@@ -128,37 +122,30 @@ public class RRs
         */
     }
 
-    private String display(String title, RR rrs[])
-    {
+    private String display(String title, RR rrs[]) {
         String s = title + "\n";
 
-        for (int i = 0; i < rrs.length; i++)
-        {
+        for (int i = 0; i < rrs.length; i++) {
             // put a newline on all except the last
-            s += rrs[i] + (i < rrs.length-1 ? "\n" : "");
+            s += rrs[i] + (i < rrs.length - 1 ? "\n" : "");
         }
 
         return s;
     }
 
-    public String toString()
-    {
+    public String toString() {
         String s = "";
 
-        if (numQuestions > 0)
-        {
+        if (numQuestions > 0) {
             s += display("Questions:", questions);
         }
-        if (numAnswers > 0)
-        {
+        if (numAnswers > 0) {
             s += display("Answers:", answers);
         }
-        if (numAuthorities > 0)
-        {
+        if (numAuthorities > 0) {
             s += display("Authorities:", authorities);
         }
-        if (numAdditionals > 0)
-        {
+        if (numAdditionals > 0) {
             s += display("Additional:", additionals);
         }
 

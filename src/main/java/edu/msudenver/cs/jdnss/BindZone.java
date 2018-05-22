@@ -4,16 +4,15 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: BindZone.java,v 1.1 2011/03/03 22:35:14 drb80 Exp $
  */
 
-import java.util.Enumeration;
+import lombok.Getter;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
-
-class BindZone implements Zone
-{
-    private String name;
+class BindZone implements Zone {
+    @Getter private String name;
 
     /*
     ** might not be the best to have different tables for each, but
@@ -21,104 +20,79 @@ class BindZone implements Zone
     ** in the single table...
     */
 
-    private Hashtable<String, Vector> hA = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hAAAA = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hNS = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hMX = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hCNAME = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hPTR = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hTXT = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hHINFO = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hSOA = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hDNSKEY = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hDNSRRSIG = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hNSEC = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hNSEC3 = new Hashtable<String, Vector>();
-    private Hashtable<String, Vector> hNSEC3PARAM = new Hashtable<String, Vector>();
+    private final Map<RRCode, Map<String, Vector<RR>>> tableOfTables = new Hashtable<>();
 
-    private Hashtable<Integer, Hashtable> tableOfTables =
-            new Hashtable<Integer, Hashtable>();
+    private final Logger logger = JDNSS.logger;
 
-    private Logger logger = JDNSS.getLogger();
-
-    public BindZone(final String name)
-    {
+    public BindZone(final String name) {
         this.name = name;
 
-        tableOfTables.put(Utils.A, hA);
-        tableOfTables.put(Utils.AAAA, hAAAA);
-        tableOfTables.put(Utils.NS, hNS);
-        tableOfTables.put(Utils.MX, hMX);
-        tableOfTables.put(Utils.CNAME, hCNAME);
-        tableOfTables.put(Utils.PTR, hPTR);
-        tableOfTables.put(Utils.TXT, hTXT);
-        tableOfTables.put(Utils.HINFO, hHINFO);
-        tableOfTables.put(Utils.SOA, hSOA);
-        tableOfTables.put(Utils.DNSKEY, hDNSKEY);
-        tableOfTables.put(Utils.RRSIG, hDNSRRSIG);
-        tableOfTables.put(Utils.NSEC, hNSEC);
-        tableOfTables.put(Utils.NSEC3, hNSEC3);
-        tableOfTables.put(Utils.NSEC3PARAM, hNSEC3PARAM);
-    }
-
-    /**
-     * @return the domain name
-     */
-    public String getName()
-    {
-        return name;
+        Map<String, Vector<RR>> hA = new Hashtable<>();
+        tableOfTables.put(RRCode.A, hA);
+        Map<String, Vector<RR>> hAAAA = new Hashtable<>();
+        tableOfTables.put(RRCode.AAAA, hAAAA);
+        Map<String, Vector<RR>> hNS = new Hashtable<>();
+        tableOfTables.put(RRCode.NS, hNS);
+        Map<String, Vector<RR>> hMX = new Hashtable<>();
+        tableOfTables.put(RRCode.MX, hMX);
+        Map<String, Vector<RR>> hCNAME = new Hashtable<>();
+        tableOfTables.put(RRCode.CNAME, hCNAME);
+        Map<String, Vector<RR>> hPTR = new Hashtable<>();
+        tableOfTables.put(RRCode.PTR, hPTR);
+        Map<String, Vector<RR>> hTXT = new Hashtable<>();
+        tableOfTables.put(RRCode.TXT, hTXT);
+        Map<String, Vector<RR>> hHINFO = new Hashtable<>();
+        tableOfTables.put(RRCode.HINFO, hHINFO);
+        Map<String, Vector<RR>> hSOA = new Hashtable<>();
+        tableOfTables.put(RRCode.SOA, hSOA);
+        Map<String, Vector<RR>> hDNSKEY = new Hashtable<>();
+        tableOfTables.put(RRCode.DNSKEY, hDNSKEY);
+        Map<String, Vector<RR>> hDNSRRSIG = new Hashtable<>();
+        tableOfTables.put(RRCode.RRSIG, hDNSRRSIG);
+        Map<String, Vector<RR>> hNSEC = new Hashtable<>();
+        tableOfTables.put(RRCode.NSEC, hNSEC);
+        Map<String, Vector<RR>> hNSEC3 = new Hashtable<>();
+        tableOfTables.put(RRCode.NSEC3, hNSEC3);
+        Map<String, Vector<RR>> hNSEC3PARAM = new Hashtable<>();
+        tableOfTables.put(RRCode.NSEC3PARAM, hNSEC3PARAM);
     }
 
     /**
      * Create a printable String.
-     * @param h        a Hashtable
-     * @return        the contents in String form
+     *
+     * @param h a Hashtable
+     * @return the contents in String form
      */
-    private String dumphash(final Hashtable h)
-    {
+    private String dumphash(final Map<String, Vector<RR>> h) {
         String s = "";
-        final Enumeration e = h.keys();
 
-        while (e.hasMoreElements())
-        {
-            final Object o = e.nextElement();
-            s += o + ": " + h.get(o) + " ";
+        for (String foo : h.keySet()) {
+            s += foo + ": " + h.get(foo) + " ";
         }
+
         return s;
     }
 
     /**
      * A printable version of the Zone.
+     *
      * @return the string
      */
-    public String toString()
-    {
+    public String toString() {
         String s = "---- Zone " + name + " -----" + '\n';
 
-        s += "SOA: " + dumphash(hSOA) + "\n";
-        s += "A: " + dumphash(hA) + "\n";
-        s += "AAAA: " + dumphash(hAAAA) + "\n";
-        s += "CNAME: " + dumphash(hCNAME) + "\n";
-        s += "MX: " + dumphash(hMX) + "\n";
-        s += "NS: " + dumphash(hNS) + "\n";
-        s += "PTR: " + dumphash(hPTR) + "\n";
-        s += "TXT: " + dumphash(hTXT) + "\n";
-        s += "HINFO: " + dumphash(hHINFO) + "\n";
-        s += "DNSKEY: " + dumphash(hDNSKEY) + "\n";
-        s += "DNSRRSIG: " + dumphash(hDNSRRSIG) + "\n";
-        s += "NSEC: " + dumphash(hNSEC) + "\n";
-        s += "NSEC3: " + dumphash(hNSEC3) + "\n";
-        s += "NSEC3PARAM: " + dumphash(hNSEC3PARAM) + "\n";
+        for (RRCode i : tableOfTables.keySet()) {
+            s += i.toString() + ": " + dumphash(tableOfTables.get(i)) + "\n";
+        }
+
         s += "--------";
 
         return s;
     }
 
-    private Hashtable<String, Vector> getTable(final int type)
-    {
-        logger.traceEntry(new ObjectMessage(type));
+    private Map<String, Vector<RR>> getTable(final RRCode type) {
 
-        final Hashtable ret = tableOfTables.get(type);
+        final Map<String, Vector<RR>> ret = tableOfTables.get(type);
 
         Assertion.aver(ret != null);
 
@@ -127,66 +101,53 @@ class BindZone implements Zone
 
     /**
      * Add an address to a name.  There may be multiple addresses per name.
-     * @param name        the name
-     * @param rr        the resource record
+     *
+     * @param name the name
+     * @param rr   the resource record
      */
-    public void add(final String name, final RR rr)
-    {
-        logger.traceEntry(new ObjectMessage(name));
-        logger.traceEntry(new ObjectMessage(rr));
+    public void add(final String name, final RR rr) {
+        logger.traceEntry(name);
+        logger.traceEntry(rr.toString());
 
-        if ((rr instanceof SOARR) && ! name.equals(this.name))
-        {
+        if ((rr instanceof SOARR) && !name.equals(this.name)) {
             this.name = name;
         }
 
-        Hashtable<String, Vector> h = getTable(rr.getType());
+        Map<String, Vector<RR>> h = getTable(rr.getType());
 
         logger.trace(h.get(name));
 
-        Vector value = h.get(name);
+        Vector<RR> value = h.get(name);
 
         /*
         ** if there isn't already a entry
         */
-        if (value == null)
-        {
-            value = new Vector();
+        if (value == null) {
+            value = new Vector<>();
             h.put(name, value);
             value.add(rr);
-        }
-        else if (! value.contains(rr))
-        {
+        } else if (!value.contains(rr)) {
             value.add(rr);
-        }
-        else
-        {
+        } else {
             logger.info(rr + " already present");
         }
     }
 
     /**
      * Get the Vector for a particular name.
-     * @param type        the query type
-     * @param name        the name
+     *
+     * @param type the query type
+     * @param name the name
      * @return a Vector with the appropriate addresses for the given name
      */
-    public Vector get(final int type, final String name)
-    {
-        logger.traceEntry(new ObjectMessage(type));
-        logger.traceEntry(new ObjectMessage(name));
-
-        final Hashtable<String, Vector> h = getTable(type);
+    public Vector<RR> get(final RRCode type, final String name) {
+        final Map<String, Vector<RR>> h = getTable(type);
+        Assertion.aver(h != null);
         logger.trace(h);
 
-        Vector v = null;
+        Vector<RR> v = h.get(name);
+        logger.traceExit(v);
 
-        if (h != null)
-        {
-            v = h.get(name);
-        }
-
-        logger.traceExit (v);
         Assertion.aver(v != null);
         return v;
     }

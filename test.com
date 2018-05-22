@@ -2,7 +2,7 @@
 			11 ; serial
 			28800 ; refresh
 			7200 ; retry
-			604800 ; expire	
+			604800 ; expire
 			86400 ; minimum
 			)
 
@@ -27,3 +27,13 @@ www	IN	A	192.168.1.1
 	IN	AAAA	0:0:0:0:0:FFFF:129.144.52.38
 	IN	AAAA	::13.1.68.3
 	IN	AAAA	::FFFF:129.144.52.38
+; This is a zone-signing key, keyid 12023, for test.com.
+; Created: 20180415043321 (Sat Apr 14 22:33:21 2018)
+; Publish: 20180415043321 (Sat Apr 14 22:33:21 2018)
+; Activate: 20180415043321 (Sat Apr 14 22:33:21 2018)
+test.com. IN DNSKEY 256 3 10 ( AwEAAbrtgQCC5bN+BM3ZC2OB+R045DPPwSbu5vU5xrZKy+6AHHuDzOn6 TbnIE8vSwGK+vJQ1TAM6RK8OGnrChaZt8U80C2CNCkFFXeKi5rXMCUkw I0qLppOVqDXBCxzu5Rzed5l6WecKNb2y3BmwfZRzYaQH8ggkH9sdfYny AbzM+FEQNCTqcI3MrE3JPHB4WJnaKWiRSS6T+zNKnBsjaB/dHcfKns9H Xt25ZcIAYQBGTO5ZM5G9ZVvAnow4fVifAyKFXwRCcKdFxfgTLHGzNnMg gbyHOJ6tRMYUFAuLayg0hMCBBIEapwwcv2fTIxwvd2ct2Nsov+Q+YpZT fESxAxWMzgM= )
+; This is a key-signing key, keyid 45171, for test.com.
+; Created: 20180415043404 (Sat Apr 14 22:34:04 2018)
+; Publish: 20180415043404 (Sat Apr 14 22:34:04 2018)
+; Activate: 20180415043404 (Sat Apr 14 22:34:04 2018)
+test.com. IN DNSKEY 257 3 10 ( AwEAAdfEF4LeinCek1mAnAb3XC3Opd23wPgGqDnH/8vJubf+oFAhe25N 4qbT55V8LVdag3SDaoY+Uy8/1S+YizikFg2UCVKFSKXkha+r0r5cF5jF ubWji7Hxd+U6RL+CK41UfGPydRrbJuZnJ2MmrSAxCpZOsyHUETSJuPqH gNe7mkcwnPHpPZ5YVIoqkuBL1B1Vuy7FllwAdA7YVd7nq7P5DrzQyMiJ u+9DLTylokjc92cet1wUhBfgkqdarDULLVc08bE+x3/snZfRrip3/yrj JYQoCC+J3ArazYQpOfvzjm7AFN/QIjqss99gtDl0E6JUGWkNhkYiAMyq KDw/zie7kF6TTgBtu3RWMb+xyZwAWP58d6CcNaCWx06UnodF5b1nti+X 8te9f0MANzYqKxxrFdcW0HFCFegn+IXUZSjW5lpJK3g6sYS1fbX4FOsq Q+3oXZq/Uui2KFc6lkH+1N5BMNHl3zNLcR0ZoQTKxywHkG+5TjEeJyCr NpyFjUZHQyaIpYG/N+NORGySiOgSaU0XN9H8TwfmuWEPsR84UOZqkqH4 YBgSXbm8UaPRW66jFFlto3Vx5rp+4q8r5YBR6FOXDyleHaO9Yt1Cplg4 xdMybwlLTxqUVv2nTrLfbYj0iKN1jAEJ+dTQW4qWfgsyv/5F1g01HOBe ykoVgdN1RnmdcMsJ )

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=master)](https://travis-ci.org/drsjb80/JDNSS)
+[![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=dev)](https://travis-ci.org/drsjb80/JDNSS)
 
 # JDNSS
 An authoritative-only leaf DNS server in Java
@@ -24,11 +24,11 @@ Argument     | Use
 --DBURL=(string)    | The URL of the database (e.g.: jdbc:mysql://localhost/JDNSS).
 --DBUser=(string)   | The database user name
 --DBPass=(string)   | The database user password
---RFC2671=(true\|false) | Default: false.  Whether or not JDNSS sends back an NOTIMPL message when an EDNS query is sent (e.g. for DNSSEC).  Most servers choose to silently ignore these and send back the answer, which is JDNSS's approach too.  If you want to send back a NOTIMPL, set this to true.  Here is the relevant passage from RFC2671.  "Responders who do not understand these protocol extensions are expected to send a response with RCODE NOTIMPL, FORMERR, or SERVFAIL.  Therefore use of extensions should be "probed" such that a responder who isn't known to support them be allowed a retry with no extensions if it responds with such an RCODE."
---version   | display the JDNSS version number and exit.
+--version           | display the JDNSS version number and exit.
+--serverSecret=(String)      | Define Server Cookie Secret used. 
 
-You can run it via "java -jar JDNSS-VERSION.jar zone1 zone2" if zone1
-and zone2 are two zone files you want to serve.
+You can run it via "java -jar target/jdnss-2.0.jar zone1..." where zone1...
+are zone files you want to serve.
 
 For a quick test, download and save the https://github.com/drsjb80/JDNSS/blob/master/test.com file and run JDNSS with the following options:
 
@@ -43,3 +43,7 @@ You should be able to run the following queries (from a different window):
 * nslookup -port=5300 -type=MX test.com localhost
 * nslookup -port=5300 -type=AAAA www.test.com localhost
 * nslookup -port=5300 -type=TXT one.test.com localhost
+* dig @localhost test.com 
+* dig @localhost test.com +cookie="0123456789abcdef"
+* dig @localhost www.test.com AAAA
+* dig @localhost www.test.com +noedns

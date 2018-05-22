@@ -1,43 +1,30 @@
 package edu.msudenver.cs.jdnss;
 
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
-import java.lang.AssertionError;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.MulticastSocket;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ObjectMessage;
 
 /**
  * This class is used by UDP and for extended for MC queries.
  */
 class UDP extends Thread
 {
-    protected DatagramSocket dsocket;
-    protected JDNSS dnsService;
-    protected Logger logger = JDNSS.getLogger();
-    protected int threadPoolSize = JDNSS.getJdnssArgs().threads;
-    protected int port = JDNSS.getJdnssArgs().port;
-    protected String ipaddress = JDNSS.getJdnssArgs().IPaddress;
+    DatagramSocket dsocket;
+    final Logger logger = JDNSS.logger;
 
-    public UDP() {} // don't do anything, let MC() do all the work.
+    // public UDP() {} // don't do anything, let MC() do all the work.
 
-    public UDP(JDNSS dnsService) throws SocketException, UnknownHostException
+    public UDP() throws SocketException, UnknownHostException
     {
-        logger.traceEntry(new ObjectMessage(dnsService));
-        this.dnsService = dnsService;
-
         try
         {
+            jdnssArgs JdnssArgs = JDNSS.jargs;
+            String ipaddress = JdnssArgs.getIPaddress();
+            int port = JdnssArgs.getPort();
             if (ipaddress != null)
             {
                 dsocket = new DatagramSocket(port,
@@ -48,15 +35,10 @@ class UDP extends Thread
                 dsocket = new DatagramSocket(port);
             }
         }
-        catch (UnknownHostException uhe)
+        catch (UnknownHostException | SocketException uhe)
         {
             logger.catching(uhe);
             throw uhe;
-        }
-        catch (SocketException se)
-        {
-            logger.catching(se);
-            throw se;
         }
     }
 
@@ -77,58 +59,51 @@ class UDP extends Thread
         */
 
         int size = this instanceof MC ? 1500 : 512;
-        if (this instanceof MC)
-        {
-            // logger.fatal("In MC run");
-            // logger.fatal(Utils.toString((MulticastSocket)dsocket));
-        }
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        int threadPoolSize = JDNSS.jargs.getThreads();
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true)
         {
-            Query q = null;
             try
             {
                 dsocket.receive(packet);
-                // logger.fatal("Received a packet");
-                q = new Query(Utils.trimByteArray(packet.getData(),
-                    packet.getLength()));
             }
             catch (IOException ioe)
             {
                 logger.catching(ioe);
                 continue;
             }
-            catch (AssertionError ae)
-            {
-                logger.catching(ae);
-                continue;
-            }
 
-            // logger.fatal("Port: " + packet.getPort());
-            // logger.fatal("Address: " + packet.getAddress());
-            Future f = pool.submit(new UDPThread(q, dsocket, packet.getPort(),
-                packet.getAddress(), dnsService));
+            Future f = pool.submit(
+                new UDPThread(
+                    Utils.trimByteArray(packet.getData(), packet.getLength()),
+                    dsocket, packet.getPort(), packet.getAddress()
+                )
+            );
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
-            if (JDNSS.getJdnssArgs().once)
-            {   
+            if (JDNSS.jargs.isOnce()) {
+                while (!f.isDone()) {
+                    try {
+                        sleep(100);
+
+                    } catch (InterruptedException IE) {
+                    }
+                }
+                /*
                 try 
                 {   
                     f.get();
                 }
-                catch (InterruptedException ie)
+                catch (InterruptedException | ExecutionException ie)
                 {   
                     logger.catching(ie);
                 }
-                catch (ExecutionException ee)
-                {   
-                    logger.catching(ee);
-                }
+                */
 
                 System.exit(0);
             }

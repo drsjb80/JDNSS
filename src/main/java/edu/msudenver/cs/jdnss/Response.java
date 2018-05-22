@@ -124,9 +124,7 @@ class Response {
                             numAuthorities++;
                             addRRSignature(RRCode.SOA, zone.getName(), authority, ResponseSection.AUTHORITY);
                             addNSECRecords(zone.getName());
-                            logger.trace("hit");
                             addRRSignature(RRCode.NSEC, zone.getName(), authority, ResponseSection.AUTHORITY);
-                            logger.trace("hit");
                         }
                     }
                     addAuthorities();
@@ -189,7 +187,7 @@ class Response {
                 responses = Utils.combine(responses, additional);
                 header.setNumAdditionals(numAdditionals);
             }
-            else if(responses.length + authority.length >= maximumPayload){
+            else if(responses.length + additional.length >= maximumPayload){
                 header.setTC(true);
             }
         }
@@ -209,9 +207,11 @@ class Response {
             v = zone.get(RRCode.A, host);
             createAdditionals(v, host);
 
+            /*
             if (DNSSEC) {
                 addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
             }
+            */
         } catch (AssertionError AE) {
             // maybe there is an AAAA
 	        }
@@ -220,9 +220,11 @@ class Response {
             v = zone.get(RRCode.AAAA, host);
             createAdditionals(v, host);
 
+            /*
             if (DNSSEC) {
                 addRRSignature(RRCode.AAAA, name, additional, ResponseSection.ADDITIONAL);
             }
+            */
         } catch (AssertionError AE2) {
             // maybe we found an A
         }
@@ -260,7 +262,7 @@ class Response {
         }
 
         if (DNSSEC) {
-            addRRSignature(RRCode.NS, name, authority, ResponseSection.AUTHORITY);
+            addRRSignature(RRCode.NS, zone.getName(), authority, ResponseSection.AUTHORITY);
         }
     }
 

@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=dev)](https://travis-ci.org/drsjb80/JDNSS)
 
-![Now with DNSSEC!][JDNSS/NowwithDNSSEC.png]
+![Now with DNSSEC!](JDNSS/NowwithDNSSEC.png)
 
 # JDNSS
 An authoritative-only, DNSSEC capable, leaf DNS server in Java

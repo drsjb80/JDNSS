@@ -1,0 +1,30 @@
+mvn package -Dwith-database=true
+mvn checkstyle:checkstyle
+mvn findbugs:findbugs
+mvn findbugs:gui
+----
+git push origin --delete dev
+git branch -D dev
+----
+git branch dev
+git push origin dev
+----
+open https://travis-ci.org/drsjb80/JDNSS
+----
+sudo java -jar target/jdnss-2.0.jar --logLevel=ALL test.com
+sudo java -jar target/jdnss-2.0.jar test.com
+nslookup www.test.com localhost
+dig @localhost www.test.com
+dig @localhost www.test.com +dnssec 
+-----
+java -jar target/jdnss-2.1.jar --port=5300 test.com
+nslookup -port=5300 www.test.com localhost
+----
+java -Djava.net.preferIPv4Stack=true -jar target/jdnss-2.0.jar --MC --TCP=false --UDP=false --MCaddress=224.224.224.224 test.com 
+dig @224.0.0.251 -p 5353 www.test.com
+dig @224.224.224.224 -p 5353 www.test.com
+ping -t 1 -c 2 224.0.0.25
+ping -t 1 -c 2 224.224.224.224
+----
+scp target/jdnss-2.0.jar beaty@192.168.1.50:
+echo 'pass quick proto udp from any to 237.0.0.1/32 port 9000 allow-opts' | sudo pfctl -f -

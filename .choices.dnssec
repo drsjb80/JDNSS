@@ -1,0 +1,5 @@
+rm Ktest.com.*.key Ktest.com.*.private
+dnssec-keygen -a RSASHA512 -b 2048 -n ZONE test.com
+dnssec-keygen -f KSK -a RSASHA512 -b 4096 -n ZONE test.com
+cat *.key >> test.com
+dnssec-signzone -3 `openssl rand 32 | xxd -len 8 -g 0 -p` -A -N INCREMENT -o test.com -t test.com

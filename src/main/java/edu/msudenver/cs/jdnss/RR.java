@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
-import javax.xml.bind.DatatypeConverter;
 import java.util.Base64;
 import java.util.Set;
 

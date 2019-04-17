@@ -30,6 +30,8 @@ class jdnssArgs {
     private int backlog = 4;
     @Getter
     private JDNSSLogLevels logLevel = JDNSSLogLevels.OFF;
+    @Getter
+    private boolean PID = false;
 
     @Getter
     private boolean help;

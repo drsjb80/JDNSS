@@ -5,99 +5,68 @@ import java.io.*;
 
 import org.apache.logging.log4j.Logger;
 
+import static edu.msudenver.cs.jdnss.Assertion.*;
+
 class TCPThread implements Runnable {
     private final Socket socket;
     private final Logger logger = JDNSS.logger;
-
+    private InputStream is;
+    private OutputStream os;
     /**
      * @param socket the socket to talk to
      */
-    public TCPThread(Socket socket) {
-        this.socket = socket;
+    TCPThread(Socket socket) { this.socket = socket; }
+
+    private void openStreams() throws IOException {
+        is = socket.getInputStream();
+        os = socket.getOutputStream();
+    }
+
+    private void closeStreams() throws IOException {
+        is.close();
+        os.close();
+        socket.close();
+    }
+
+    private int getLength() throws IOException{
+        // in TCP, the first two bytes signify the length of the request
+        byte buffer[] = new byte[2];
+
+        aver(is.read(buffer, 0, 2) == 2);
+
+        return Utils.addThem(buffer[0], buffer[1]);
+    }
+
+    private Query getQuery() throws IOException{
+        byte query[] = new byte[getLength()];
+        aver(is.read(query) == query.length);
+
+        Query q = new Query(query);
+        q.parseQueries(socket.getInetAddress().toString());
+        return q;
+    }
+
+    private void sendResponse (Query q) throws IOException{
+        Response r = new Response(q, false);
+        byte b[] = r.getBytes();
+
+        byte buffer[] = new byte[2];
+        int count = b.length;
+        buffer[0] = Utils.getByte(count, 2);
+        buffer[1] = Utils.getByte(count, 1);
+
+        os.write(Utils.combine(buffer, b));
     }
 
     public void run() {
         logger.traceEntry();
 
-        InputStream is;
-        OutputStream os;
-
         try {
-            is = socket.getInputStream();
+            openStreams();
+            sendResponse(getQuery());
+            closeStreams();
         } catch (IOException ioe) {
             logger.catching(ioe);
-            return;
         }
-
-        try {
-            os = socket.getOutputStream();
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-
-        // in TCP, the first two bytes signify the length of the request
-        byte buffer[] = new byte[2];
-
-        try {
-            Assertion.aver(is.read(buffer, 0, 2) == 2);
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-
-        byte query[] = new byte[Utils.addThem(buffer[0], buffer[1])];
-
-        try {
-            Assertion.aver(is.read(query) == query.length);
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-
-        Query q = new Query(query);
-        q.parseQueries(socket.getInetAddress().toString());
-
-        Response r = new Response(q, false);
-        byte b[] = r.getBytes();
-
-        int count = b.length;
-        buffer[0] = Utils.getByte(count, 2);
-        buffer[1] = Utils.getByte(count, 1);
-
-        try {
-            os.write(Utils.combine(buffer, b));
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-
-        try {
-            is.close();
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-
-        try {
-            os.close();
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-
-        try {
-            socket.close();
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            return;
-        }
-        // }
-        /*
-        catch (Throwable t)
-        {
-            logger.catching(t);
-        }
-        */
     }
 }

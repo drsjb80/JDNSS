@@ -8,7 +8,6 @@ PORT=5354
 #	name		file		query	type
 # tests=( 'subdomain	subdomain.com  	www.subdomain.com' )
 
-
 for i in "${tests[@]}"
 do
     # create an array with the contents of the current array element
@@ -25,7 +24,7 @@ do
     DIGHOST='@::1'
 
     case $name in
-    	TCP )
+    TCP )
 	    DIGARGS="+vc $DIGARGS"
 	    JDNSSARGS='--TCP=true';;
 	ip )
@@ -38,10 +37,15 @@ do
     esac
 
     JAR='../../../target/jdnss-2.1.jar'
-    JDNSS="java $DEBUG -jar $JAR --once=true --serverSecret=0123456789abcdef0123456789abcdef"
+    JDNSS="java $DEBUG -jar $JAR $JDNSSARGS --once=true --serverSecret=0123456789abcdef0123456789abcdef"
 
     $JDNSS --port=$PORT zone_files/$file &
-    sleep 1
+    if [[ $name == 'TCP' ]]
+    then
+        sleep 5
+    else
+        sleep 1
+    fi
 
     dig $DIGARGS $DIGHOST $query -p $PORT $type | \
         sed -e 's/, id: [0-9][0-9]*$//' > /tmp/$name

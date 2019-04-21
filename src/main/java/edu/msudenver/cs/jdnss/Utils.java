@@ -9,6 +9,7 @@ import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.Map;
 
 /**
  * Common methods used throughout
@@ -448,7 +449,7 @@ class Utils {
      * @param s the IPv6 String
      * @return the IPv6 bytes
      */
-    public static byte[] IPV6(String s) {
+    static byte[] IPV6(String s) {
         // if this is an v6t/v4 address
         if (count(s, ".") > 0) {
             return dodots(s);
@@ -513,8 +514,7 @@ class Utils {
         return s;
     }
 
-    // using vector for thread safeness
-    public static Vector parseName(int start, byte buffer[]) {
+    static Map.Entry<String, Integer> parseName(int start, byte buffer[]) {
         logger.traceEntry(new ObjectMessage(start));
 
         if (start >= buffer.length) {
@@ -535,17 +535,14 @@ class Utils {
                 Assertion.fail();
             }
 
-            name += (String) parseName(tmp, buffer).elementAt(0);
+            name += parseName(tmp, buffer).getKey();
             current += 2;
         }
 
         int length = buffer[current++] & 0x3f;
 
         if (length == 0) {
-            Vector<Object> StringAndNumber = new Vector<Object>();
-            StringAndNumber.add("");
-            StringAndNumber.add(1);
-            return StringAndNumber;
+            return Map.entry("", 1);
         }
 
         while (length > 0) {
@@ -569,7 +566,7 @@ class Utils {
                     Assertion.fail();
                 }
 
-                name += (String) parseName(tmp, buffer).elementAt(0);
+                name += parseName(tmp, buffer).getKey();
                 current += 2;
             }
 
@@ -580,11 +577,6 @@ class Utils {
             }
         }
 
-        Vector<Object> StringAndNumber = new Vector<Object>();
-        StringAndNumber.add(name);
-        StringAndNumber.add(current);
-
-        logger.traceExit(StringAndNumber);
-        return StringAndNumber;
+        return Map.entry(name, current);
     }
 }

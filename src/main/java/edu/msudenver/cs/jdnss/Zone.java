@@ -5,10 +5,10 @@ package edu.msudenver.cs.jdnss;
  * @version $Id: Zone.java,v 1.20 2011/02/14 16:30:32 drb80 Exp $
  */
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 interface Zone
 {
-    Vector<RR> get(RRCode type, String name);
+    ArrayList<RR> get(RRCode type, String name);
     String getName();
 }

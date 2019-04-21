@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Vector;
 
 class Queries {
@@ -13,7 +14,7 @@ class Queries {
     @Getter private int qclass;
     @Getter private boolean QU;
 
-    public Queries(final String name, final RRCode type, final int qclass, final boolean QU) {
+    Queries(final String name, final RRCode type, final int qclass, final boolean QU) {
         this.name = name;
         this.type = type;
         this.qclass = qclass;
@@ -29,12 +30,12 @@ class Query {
     @Getter private Queries[] queries;
     @Getter private OPTRR optrr;
 
-    private int maximumPayload = 512;
+    // private int maximumPayload = 512;
 
     /**
      * creates a Query from a packet
      */
-    public Query(byte buffer[]) {
+    Query(byte buffer[]) {
         this.buffer = buffer;
         this.header = new Header(buffer);
     }
@@ -42,7 +43,7 @@ class Query {
     /**
      * Evaluates and saves all questions
      */
-    public void parseQueries(String clientIPaddress) {
+    void parseQueries(String clientIPaddress) {
         logger.traceEntry();
 
         /*
@@ -68,14 +69,14 @@ class Query {
         
 
         for (int i = 0; i < header.getNumQuestions(); i++) {
-            Vector<Object> StringAndNumber = Utils.parseName(location, buffer);
+            Map.Entry<String, Integer> StringAndNumber = Utils.parseName(location, buffer);
 
-            location = (int) StringAndNumber.elementAt(1);
+            location = StringAndNumber.getValue();
             int qtype = Utils.addThem(buffer[location++], buffer[location++]);
             int qclass = Utils.addThem(buffer[location++], buffer[location++]);
             boolean QU = (qclass & 0xc000) == 0xc000;
 
-            queries[i] = new Queries((String) StringAndNumber.elementAt(0),
+            queries[i] = new Queries(StringAndNumber.getKey(),
                     RRCode.findCode(qtype), qclass, QU);
 
             /*
@@ -121,7 +122,7 @@ class Query {
         }
     }
 
-    public byte[] buildResponseQueries() {
+    byte[] buildResponseQueries() {
         byte[] questions = new byte[0];
         for(Queries query: this.getQueries()) {
             questions = Utils.combine(questions, Utils.convertString(query.getName()));

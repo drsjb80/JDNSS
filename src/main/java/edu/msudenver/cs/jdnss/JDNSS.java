@@ -11,9 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,9 +20,10 @@ public class JDNSS {
     // a few AOP singletons
     static final jdnssArgs jargs = new jdnssArgs();
     static final Logger logger = LogManager.getLogger("JDNSS");
-    static DBConnection DBConnection;
+    private static DBConnection DBConnection;
 
-    private static final Map<String, Zone> bindZones = new Hashtable();
+    private static final Map<String, Zone> bindZones = new HashMap<>();
+
 
     /**
      * Finds the Zone associated with the domain name passed in
@@ -65,8 +64,6 @@ public class JDNSS {
             if (jargs.isUDP()) new UDP().start();
             if (jargs.isTCP()) new TCP().start();
             if (jargs.isMC()) new MC().start();
-        } catch (SocketException | UnknownHostException se) {
-            logger.catching(se);
         } catch (IOException ie) {
             logger.catching(ie);
         }
@@ -76,7 +73,6 @@ public class JDNSS {
         Level level = Level.OFF;
 
         switch (jargs.getLogLevel()) {
-            case OFF: level = Level.OFF; break;
             case FATAL: level = Level.FATAL; break;
             case ERROR: level = Level.ERROR; break;
             case WARN: level = Level.WARN; break;

@@ -8,7 +8,7 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 class DBZone implements Zone
 {
@@ -29,7 +29,7 @@ class DBZone implements Zone
 
     public String getName() { return zoneName; }
 
-    public Vector<RR> get(final RRCode type, final String name)
+    public ArrayList<RR> get(final RRCode type, final String name)
     {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));

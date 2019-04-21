@@ -3,6 +3,7 @@ package edu.msudenver.cs.jdnss;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Vector;
 
 class RRs {
@@ -57,7 +58,7 @@ class RRs {
         */
 
         for (int i = 0; i < numQuestions; i++) {
-            Vector<Object> StringAndNumber = null;
+            Map.Entry<String, Integer> StringAndNumber = null;
 
             try {
                 StringAndNumber = Utils.parseName(location, buffer);
@@ -66,7 +67,7 @@ class RRs {
                 Assertion.fail();
             }
 
-            location = (int) StringAndNumber.elementAt(1);
+            location = StringAndNumber.getValue();
             int qtype = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
             // FIXME: QU/QM
@@ -74,7 +75,7 @@ class RRs {
             int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 
-            questions[i] = new QRR((String) StringAndNumber.elementAt(0),
+            questions[i] = new QRR(StringAndNumber.getKey(),
                     RRCode.findCode(qtype));
         }
     }

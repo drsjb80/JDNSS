@@ -9,14 +9,6 @@ import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.Map;
-
-/**
- * Common methods used throughout
- *
- * @author Steve Beaty
- * @version $Id: Utils.java,v 1.20 2011/03/14 19:07:22 drb80 Exp $
- */
 
 class Utils {
     private static final Logger logger = JDNSS.logger;
@@ -25,7 +17,7 @@ class Utils {
      * Ignoring case, find the String in the Set that
      * matches the end of s, and is the longest that does so.
      */
-    public static String findLongest(final Set<String> e, final String s) {
+    static String findLongest(final Set<String> e, final String s) {
         Assertion.aver(e != null);
         Assertion.aver(s != null);
         Assertion.aver(!s.equals(""));
@@ -57,7 +49,7 @@ class Utils {
      * character(or dot if not a character) followed by
      * the an integer representation.
      */
-    public static String toString(byte buffer[]) {
+    static String toString(byte buffer[]) {
         String s = "";
         DecimalFormat df = new DecimalFormat("000");
 
@@ -84,7 +76,7 @@ class Utils {
      * @param which which byte(1 = lowest, 4 = highest)
      * @return the requested byte
      */
-    public static byte getByte(int from, int which) {
+    static byte getByte(int from, int which) {
         Assertion.aver(which >= 1 && which <= 4);
 
         int shift = (which - 1) * 8;
@@ -98,7 +90,7 @@ class Utils {
      * @param which which byte(1 = lowest, 8 = highest)
      * @return the requested byte
      */
-    public static byte getByte(long from, int which) {
+    static byte getByte(long from, int which) {
         Assertion.aver(which >= 1 && which <= 8);
 
         int shift = (which - 1) * 8;
@@ -112,7 +104,7 @@ class Utils {
      * @param which which byte to start with
      * @return the requested byte array
      */
-    public static byte[] getTwoBytes(int from, int which) {
+    static byte[] getTwoBytes(int from, int which) {
         Assertion.aver(which > 1 && which <= 4);
 
         byte ret[] = new byte[2];
@@ -127,7 +119,7 @@ class Utils {
      * @param from the integer to retrive from
      * @return the requested byte array
      */
-    public static byte[] getBytes(int from) {
+    static byte[] getBytes(int from) {
         byte ret[] = new byte[4];
         ret[0] = getByte(from, 4);
         ret[1] = getByte(from, 3);
@@ -142,7 +134,7 @@ class Utils {
      * @param from the integer to retrive from
      * @return the requested byte array
      */
-    public static byte[] getBytes(long from) {
+    static byte[] getBytes(long from) {
         byte ret[] = new byte[8];
         ret[0] = getByte(from, 8);
         ret[1] = getByte(from, 7);
@@ -162,7 +154,7 @@ class Utils {
      * @param which which nybble(1 = lowest, 8 = highest)
      * @return the requested nybble
      */
-    public static byte getNybble(int from, int which) {
+    static byte getNybble(int from, int which) {
         Assertion.aver(which >= 1 && which <= 8);
 
         int shift = (which - 1) * 4;
@@ -176,7 +168,7 @@ class Utils {
      * @param b the other one
      * @return the sum
      */
-    public static int addThem(byte a, byte b) {
+    static int addThem(byte a, byte b) {
         return ((a & 0xff) << 8) + (b & 0xff);
     }
 
@@ -189,7 +181,7 @@ class Utils {
      * @param d the other other other one
      * @return the sum
      */
-    public static int addThem(byte a, byte b, byte c, byte d) {
+    static int addThem(byte a, byte b, byte c, byte d) {
         return ((a & 0xff) << 24) +
                ((b & 0xff) << 16) +
                ((c & 0xff) << 8) +
@@ -203,7 +195,7 @@ class Utils {
      * @param b the other one
      * @return the sum
      */
-    public static int addThem(int a, int b) {
+    static int addThem(int a, int b) {
         return ((a & 0x000000ff) << 8) + (b & 0x000000ff);
     }
 
@@ -213,7 +205,7 @@ class Utils {
      * @param s the dotted IPV4 address
      * @return 4 byte array of the address
      */
-    public static byte[] IPV4(String s) {
+    static byte[] IPV4(String s) {
         String a[] = s.split("\\.");
         byte r[] = new byte[4];
 
@@ -230,7 +222,7 @@ class Utils {
      * @param s the original String
      * @return the converted form in bytes
      */
-    public static byte[] toCS(String s) {
+    static byte[] toCS(String s) {
         Assertion.aver(s != null && !s.equals(""));
 
         byte a[] = new byte[1];
@@ -245,7 +237,7 @@ class Utils {
      * @param s the original String
      * @return the converted form in bytes
      */
-    public static byte[] convertString(String s) {
+    static byte[] convertString(String s) {
         Assertion.aver(s != null && !s.equals(""));
 
         // there's an extra byte needed both before and after
@@ -278,7 +270,7 @@ class Utils {
      * @param two the other one
      * @return byte array made from one and two
      */
-    public static byte[] combine(byte one[], byte two[]) {
+    static byte[] combine(byte one[], byte two[]) {
         Assertion.aver(one != null || two != null);
 
         if (one == null) {
@@ -294,7 +286,7 @@ class Utils {
         return temp;
     }
 
-    public static byte[] combine(byte one[], byte two) {
+    static byte[] combine(byte one[], byte two) {
         byte[] a = new byte[1];
         a[0] = two;
 
@@ -308,7 +300,7 @@ class Utils {
         return temp;
     }
 
-    public static byte[] trimByteArray(byte[] old, int length) {
+    static byte[] trimByteArray(byte[] old, int length) {
         Assertion.aver(old != null, "Byte array is null");
         Assertion.aver(length > 0, length + " is invalid");
         Assertion.aver(length <= old.length, length + " is invalid");
@@ -321,7 +313,7 @@ class Utils {
     /**
      * split the sting using the dots and reassemble backwards.
      */
-    public static String reverseIP(String s) {
+    static String reverseIP(String s) {
         Assertion.aver(s != null);
 
         String a[] = s.split("\\.");
@@ -353,7 +345,7 @@ class Utils {
      * @param c what to search for
      * @return the number of matches
      */
-    public static int count(String s, String c) {
+    static int count(String s, String c) {
         Assertion.aver(s != null);
         Assertion.aver(c != null);
 
@@ -458,7 +450,7 @@ class Utils {
         return docolons(s, 16);
     }
 
-    public static String toString(DatagramPacket dgp) {
+    static String toString(DatagramPacket dgp) {
         String s = "";
 
         s += "getAddress() = " + dgp.getAddress() + "\n";
@@ -471,7 +463,7 @@ class Utils {
         return s;
     }
 
-    private static String toString(DatagramSocket dgs) {
+    static String toString(DatagramSocket dgs) {
         String s = "";
 
         try {
@@ -498,7 +490,7 @@ class Utils {
         return s;
     }
 
-    public static String toString(MulticastSocket mcs) {
+    static String toString(MulticastSocket mcs) {
         String s = toString((DatagramSocket) mcs) + "\n";
 
         try {
@@ -523,7 +515,7 @@ class Utils {
         }
 
         int current = start;
-        String name = "";
+        StringBuilder name = new StringBuilder();
 
         // if the first thing is a compression
         if ((buffer[current] & 0xc0) == 0xc0) {
@@ -535,7 +527,7 @@ class Utils {
                 Assertion.fail();
             }
 
-            name += parseName(tmp, buffer).getKey();
+            name.append(parseName(tmp, buffer).getKey());
             current += 2;
         }
 
@@ -549,14 +541,14 @@ class Utils {
             for (int i = 1; i <= length; i++) {
                 char c = (char) buffer[current];
                 logger.trace("Adding " + c);
-                name += c;
+                name.append(c);
                 current++;
             }
 
             // if we get to the end of a real string and there's a
             // compression...
             if ((buffer[current] & 0xc0) == 0xc0) {
-                name += ".";
+                name.append(".");
 
                 int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
                 logger.trace(tmp);
@@ -566,17 +558,17 @@ class Utils {
                     Assertion.fail();
                 }
 
-                name += parseName(tmp, buffer).getKey();
+                name.append(parseName(tmp, buffer).getKey());
                 current += 2;
             }
 
             // if there's more, put in the separator
             length = buffer[current++] & 0x3f;
             if (length > 0) {
-                name += ".";
+                name.append(".");
             }
         }
 
-        return Map.entry(name, current);
+        return Map.entry(name.toString(), current);
     }
 }

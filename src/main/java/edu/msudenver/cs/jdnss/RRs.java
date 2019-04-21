@@ -4,7 +4,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Vector;
 
 class RRs {
     private int location;
@@ -20,7 +19,7 @@ class RRs {
     private final RR[] authorities;
     private final RR[] additionals;
 
-    public RRs(byte buffer[], int numQuestions, int numAnswers,
+    RRs(byte buffer[], int numQuestions, int numAnswers,
                int numAuthorities, int numAdditionals) {
         this.buffer = Arrays.copyOf(buffer, buffer.length);
         this.numQuestions = numQuestions;
@@ -72,55 +71,12 @@ class RRs {
             location += 2;
             // FIXME: QU/QM
             // logger.fatal(buffer[location] & 0x80);
-            int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
+            // int qclass = Utils.addThem(buffer[location], buffer[location + 1]);
             location += 2;
 
             questions[i] = new QRR(StringAndNumber.getKey(),
                     RRCode.findCode(qtype));
         }
-    }
-
-    public void parseAnswers(int location) {
-        logger.traceEntry();
-
-        /*
-        The answer, authority, and additional sections all share the same
-        format: a variable number of resource records, where the number of
-        records is specified in the corresponding count field in the header.
-        Each resource record has the following format:
-        1  1  1  1  1  1
-        0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-        |                                               |
-        /                                               /
-        /                      NAME                     /
-        |                                               |
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-        |                      TYPE                     |
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-        |                     CLASS                     |
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-        |                      TTL                      |
-        |                                               |
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-        |                   RDLENGTH                    |
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
-        /                     RDATA                     /
-        /                                               /
-        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-        */
-
-        /*
-        for (int i = 0; i < numAnswers; i++)
-        {
-            name[i] = "";
-            location = parseName(location, i);
-            type[i] = Utils.addThem(buffer[location], buffer[location + 1]);
-            location += 2;
-            qclass[i] = Utils.addThem(buffer[location], buffer[location + 1]);
-            location += 2;
-        }
-        */
     }
 
     private String display(String title, RR rrs[]) {

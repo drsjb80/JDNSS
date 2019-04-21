@@ -2,7 +2,6 @@ package edu.msudenver.cs.jdnss;
 
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.Arrays;
 
@@ -72,7 +71,7 @@ class OPTRR {
         }
     }
 
-    protected boolean hasCookie(){
+    boolean hasCookie(){
         return this.getRdLength() > 0;
     }
 
@@ -85,13 +84,13 @@ class OPTRR {
       generated.  If the COOKIE option is longer than the maximum valid
       COOKIE option (40 bytes), then FORMERR is generated.
     */
-    protected boolean hasFormErr(){
+    boolean hasFormErr(){
         return this.getOptionLength() < 8
             || (this.getOptionLength() > 8 && this.getOptionLength() < 16)
             || this.getOptionLength() > 40;
     }
 
-    protected byte[] getBytes(){
+    byte[] getBytes(){
         byte a[] = {(byte) 0x00};
         a = Utils.combine(a, Utils.getTwoBytes(this.type, 2));
         a = Utils.combine(a, Utils.getTwoBytes(this.payloadSize, 2));
@@ -104,7 +103,7 @@ class OPTRR {
             a = Utils.combine(a, Utils.getTwoBytes(this.optionLength, 2));
             a = Utils.combine(a, this.clientCookie);
             a = Utils.combine(a, this.serverCookie);
-        } else{ }
+        }
         return a;
     }
 
@@ -114,7 +113,7 @@ class OPTRR {
      from a valid client cookie
      adds this serverCookie to this OPTRR
      */
-    protected void createServerCookie(String clientIPaddress, Header header) {
+    void createServerCookie(String clientIPaddress, Header header) {
         ServerCookie sCookie = new ServerCookie(clientCookie, clientIPaddress);
 
         if (!Arrays.equals(sCookie.getBytes(), serverCookie)

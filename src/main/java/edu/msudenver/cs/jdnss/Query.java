@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Vector;
 
 class Queries {
     @Getter private String name;
@@ -29,8 +28,6 @@ class Query {
     @Getter private byte[] buffer;
     @Getter private Queries[] queries;
     @Getter private OPTRR optrr;
-
-    // private int maximumPayload = 512;
 
     /**
      * creates a Query from a packet

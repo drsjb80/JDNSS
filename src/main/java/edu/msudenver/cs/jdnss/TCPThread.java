@@ -1,11 +1,13 @@
 package edu.msudenver.cs.jdnss;
 
-import java.net.*;
-import java.io.*;
-
 import org.apache.logging.log4j.Logger;
 
-import static edu.msudenver.cs.jdnss.Assertion.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+
+import static edu.msudenver.cs.jdnss.Assertion.aver;
 
 class TCPThread implements Runnable {
     private final Socket socket;

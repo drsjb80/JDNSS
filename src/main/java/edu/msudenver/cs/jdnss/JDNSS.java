@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class JDNSS {
     // a few AOP singletons
-    static final jdnssArgs jargs = new jdnssArgs();
+    static jdnssArgs jargs = new jdnssArgs();
     static final Logger logger = LogManager.getLogger("JDNSS");
     private static DBConnection DBConnection;
 

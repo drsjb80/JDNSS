@@ -2,6 +2,7 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -12,21 +13,39 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 class TCP extends Thread {
-    private ServerSocket ssocket;
+    private ServerSocket serverSocket;
     private final Logger logger = JDNSS.logger;
+    private final int defaultDNSPort = 53;
+    private final int defaultDNSOverTLSPort = 853;
 
     public TCP() throws IOException {
         try {
-            String ipaddress = JDNSS.jargs.getIPaddress();
+            String ipAddress = JDNSS.jargs.getIPaddress();
             int backlog = JDNSS.jargs.getBacklog();
             int port = JDNSS.jargs.getPort();
-            if (ipaddress != null) {
-                ssocket = new ServerSocket(port, backlog,
-                        InetAddress.getByName(ipaddress));
-            } else if (backlog != 0) {
-                ssocket = new ServerSocket(port, backlog);
+            if (ipAddress != null && backlog != 0 && port != 0) {
+                if (port == defaultDNSOverTLSPort) {
+                    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+                    serverSocket = ssf.createServerSocket(port, backlog, InetAddress.getByName(ipAddress));
+                } else {
+                    serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(ipAddress));
+                }
+            } else if (backlog != 0 && port != 0) {
+                if (port == defaultDNSOverTLSPort) {
+                    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+                    serverSocket = ssf.createServerSocket(port, backlog);
+                } else {
+                    serverSocket = new ServerSocket(port, backlog);
+                }
+            } else if (port != 0) {
+                if (port == defaultDNSOverTLSPort) {
+                    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+                    serverSocket = ssf.createServerSocket(port);
+                } else {
+                    serverSocket = new ServerSocket(port);
+                }
             } else {
-                ssocket = new ServerSocket(port);
+                serverSocket = new ServerSocket(defaultDNSPort);
             }
         } catch (IOException ioe) {
             logger.catching(ioe);
@@ -45,7 +64,7 @@ class TCP extends Thread {
 
         while (true) {
             try {
-                socket = ssocket.accept();
+                socket = serverSocket.accept();
             } catch (IOException ioe) {
                 logger.catching(ioe);
                 return;

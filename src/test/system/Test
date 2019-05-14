@@ -1,12 +1,12 @@
 #! /bin/bash -e
 
-# 5353 used by Bonjour?
-PORT=5354
-
 . TESTS
 
 #	name		file		query	type
 # tests=( 'subdomain	subdomain.com  	www.subdomain.com' )
+
+# 5353 used by Bonjour?
+PORT=5354
 
 for i in "${tests[@]}"
 do
@@ -23,23 +23,29 @@ do
     DIGARGS='+nostats +nocmd +cookie=0123456789abcdef'
     DIGHOST='@::1'
 
+    JDNSSARGS="--IPaddresses=UDP@0.0.0.0@$PORT"
+
     case $name in
     TCP )
 	    DIGARGS="+vc $DIGARGS"
-	    JDNSSARGS='--TCP=true';;
+        JDNSSARGS="--IPaddresses=TCP@0.0.0.0@$PORT"
+        ;;
 	ip )
 	    DIGHOST='@127.0.0.2'
-	    JDNSSARGS='--IPAddress=127.0.0.2';;
+        JDNSSARGS="--IPaddresses=UDP@127.0.0.2@$PORT"
+        ;;
 	192* | *reverse | *.in-addr.arpa )
-	    query="-x $query";;
+	    query="-x $query"
+        ;;
 	dnssec )
-	    DIGARGS="+dnssec $DIGARGS";;
+	    DIGARGS="+dnssec $DIGARGS"
+        ;;
     esac
 
     JAR='../../../target/jdnss-2.1.jar'
     JDNSS="java $DEBUG -jar $JAR $JDNSSARGS --once=true --serverSecret=0123456789abcdef0123456789abcdef"
 
-    $JDNSS --port=$PORT zone_files/$file &
+    $JDNSS zone_files/$file &
     if [[ $name == 'TCP' ]]
     then
         sleep 5

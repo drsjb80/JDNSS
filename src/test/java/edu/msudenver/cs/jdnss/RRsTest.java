@@ -29,9 +29,7 @@ public class RRsTest
 
         RRs rrs1 = new RRs(one, 1, 0, 0, 0);
 
-        String expectedRRs1 = "Questions:\n" +
-            "name = www.test.com, type = A, TTL = 0";
-
+        String expectedRRs1 = "Questions:\nRR(name=www.test.com, type=A, rrclass=1, ttl=0)";
         Assert.assertEquals(rrs1.toString(), expectedRRs1);
     }
 
@@ -52,8 +50,8 @@ public class RRsTest
         RRs rrs2 = new RRs(two, 2, 0, 0, 0);
 
         String expectedRRs2 = "Questions:\n" +
-            "name = www.test.com, type = A, TTL = 0\n" +
-            "name = mail.test.com, type = A, TTL = 0";
+                "RR(name=www.test.com, type=A, rrclass=1, ttl=0)\n" +
+                "RR(name=mail.test.com, type=A, rrclass=1, ttl=0)";
 
         Assert.assertEquals(rrs2.toString(), expectedRRs2);
     }

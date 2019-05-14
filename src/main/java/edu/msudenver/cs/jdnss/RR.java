@@ -1,10 +1,4 @@
 package edu.msudenver.cs.jdnss;
-/**
- * Create and manipulate resource records
- *
- * @author Steve Beaty
- * @see <a href="http://www.faqs.org/rfcs/rfc1035.html"> faqs.org </a>
- */
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -94,17 +88,13 @@ public abstract class RR {
     }
 
     protected abstract byte[] getBytes();
-
-    public String toString() {
-        return "name = " + name + ", type = " + type.toString() + ", TTL = " + ttl;
-    }
 }
 
 /**
  * Just a simple class for queries.
  */
 class QRR extends RR {
-    public QRR(final String name, final RRCode type) {
+    QRR(final String name, final RRCode type) {
         super(name, type, 0);
     }
 
@@ -115,7 +105,7 @@ class QRR extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class SOARR extends RR {
     private final String domain;
     private final String server;
@@ -176,7 +166,7 @@ class SOARR extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class HINFORR extends RR {
     private final String CPU;
     private final String OS;
@@ -194,7 +184,7 @@ class HINFORR extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class MXRR extends RR {
     @Getter
     private final String host;
@@ -218,7 +208,7 @@ class MXRR extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 abstract class STRINGRR extends RR {
     @Getter
     String string;
@@ -272,7 +262,7 @@ class PTRRR extends STRINGRR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 abstract class ADDRRR extends RR {
     protected String address;
 
@@ -306,7 +296,7 @@ class AAAARR extends ADDRRR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class DNSKEYRR extends RR {
     private final int flags;
     private final int protocol;
@@ -340,7 +330,7 @@ class DNSKEYRR extends RR {
 
 // https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class NSEC3RR extends RR {
     private final int hashAlgorithm;
     private final int flags;
@@ -382,7 +372,7 @@ class NSEC3RR extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class NSEC3PARAMRR extends RR {
     private final int hashAlgorithm;
     private final int flags;
@@ -406,7 +396,7 @@ class NSEC3PARAMRR extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class RRSIG extends RR {
     @Getter
     private final RRCode typeCovered;
@@ -459,7 +449,7 @@ class RRSIG extends RR {
 }
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 class NSECRR extends RR {
     private final String nextDomainName;
     private final Set<RRCode> resourceRecords; //map more appopriate <RRCode, RR> ??

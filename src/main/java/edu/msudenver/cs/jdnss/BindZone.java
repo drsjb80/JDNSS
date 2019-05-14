@@ -27,20 +27,20 @@ class BindZone implements Zone {
     BindZone(final String name) {
         this.name = name;
 
-        tableOfTables.put(RRCode.A, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.AAAA, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.NS, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.MX, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.CNAME, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.PTR, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.TXT, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.HINFO, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.SOA, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.DNSKEY, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.RRSIG, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.NSEC, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.NSEC3, new HashMap<String, ArrayList<RR>>());
-        tableOfTables.put(RRCode.NSEC3PARAM, new HashMap<String, ArrayList<RR>>());
+        tableOfTables.put(RRCode.A, new HashMap<>());
+        tableOfTables.put(RRCode.AAAA, new HashMap<>());
+        tableOfTables.put(RRCode.NS, new HashMap<>());
+        tableOfTables.put(RRCode.MX, new HashMap<>());
+        tableOfTables.put(RRCode.CNAME, new HashMap<>());
+        tableOfTables.put(RRCode.PTR, new HashMap<>());
+        tableOfTables.put(RRCode.TXT, new HashMap<>());
+        tableOfTables.put(RRCode.HINFO, new HashMap<>());
+        tableOfTables.put(RRCode.SOA, new HashMap<>());
+        tableOfTables.put(RRCode.DNSKEY, new HashMap<>());
+        tableOfTables.put(RRCode.RRSIG, new HashMap<>());
+        tableOfTables.put(RRCode.NSEC, new HashMap<>());
+        tableOfTables.put(RRCode.NSEC3, new HashMap<>());
+        tableOfTables.put(RRCode.NSEC3PARAM, new HashMap<>());
     }
 
     /**

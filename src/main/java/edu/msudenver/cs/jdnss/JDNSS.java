@@ -24,7 +24,6 @@ public class JDNSS {
 
     private static final Map<String, Zone> bindZones = new HashMap<>();
 
-
     /**
      * Finds the Zone associated with the domain name passed in
      *
@@ -60,17 +59,19 @@ public class JDNSS {
     }
 
     private static void start() {
-        try {
-            if (jargs.isUDP()) new UDP().start();
-            if (jargs.isTCP()) new TCP().start();
-            if (jargs.isMC()) new MC().start();
-        } catch (IOException ie) {
-            logger.catching(ie);
+        for (String IPAddress : jargs.getIPaddresses()) {
+            String[] parts = IPAddress.split("@");
+
+            switch(parts[0]) {
+                case "TCP": new TCP(parts).start(); break;
+                case "UDP": new UDP(parts).start(); break;
+                case "MC": new MC(parts).start(); break;
+            }
         }
     }
 
     private static void setLogLevel() {
-        Level level = Level.OFF;
+        Level level = Level.ERROR;
 
         switch (jargs.getLogLevel()) {
             case FATAL: level = Level.FATAL; break;

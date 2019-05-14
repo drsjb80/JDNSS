@@ -16,29 +16,15 @@ class UDP extends Thread
     DatagramSocket dsocket;
     final Logger logger = JDNSS.logger;
 
-    // public UDP() {} // don't do anything, let MC() do all the work.
+    public UDP() {} // needed for MC subclass
 
-    public UDP() throws SocketException, UnknownHostException
-    {
-        try
-        {
-            jdnssArgs JdnssArgs = JDNSS.jargs;
-            String ipaddress = JdnssArgs.getIPaddress();
-            int port = JdnssArgs.getPort();
-            if (ipaddress != null)
-            {
-                dsocket = new DatagramSocket(port,
-                    InetAddress.getByName(ipaddress));
-            }
-            else
-            {
-                dsocket = new DatagramSocket(port);
-            }
-        }
-        catch (UnknownHostException | SocketException uhe)
-        {
-            logger.catching(uhe);
-            throw uhe;
+    public UDP(String[] parts) {
+        try {
+            String address = parts[1];
+            int port = Integer.parseInt(parts[2]);
+            dsocket = new DatagramSocket(port, InetAddress.getByName(address));
+        } catch (IOException ioe) {
+            logger.catching(ioe);
         }
     }
 

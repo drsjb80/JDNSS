@@ -15,44 +15,18 @@ import java.util.concurrent.Future;
 class TCP extends Thread {
     private ServerSocket serverSocket;
     private final Logger logger = JDNSS.logger;
-    private final int defaultDNSPort = 53;
-    private final int defaultDNSOverTLSPort = 853;
 
-    public TCP() throws IOException {
+    public TCP(String[] parts) {
         try {
-            String ipAddress = JDNSS.jargs.getIPaddress();
             int backlog = JDNSS.jargs.getBacklog();
-            int port = JDNSS.jargs.getPort();
-            if (ipAddress != null && backlog != 0 && port != 0) {
-                if (port == defaultDNSOverTLSPort) {
-                    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-                    serverSocket = ssf.createServerSocket(port, backlog, InetAddress.getByName(ipAddress));
-                } else {
-                    serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(ipAddress));
-                }
-            } else if (backlog != 0 && port != 0) {
-                if (port == defaultDNSOverTLSPort) {
-                    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-                    serverSocket = ssf.createServerSocket(port, backlog);
-                } else {
-                    serverSocket = new ServerSocket(port, backlog);
-                }
-            } else if (port != 0) {
-                if (port == defaultDNSOverTLSPort) {
-                    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-                    serverSocket = ssf.createServerSocket(port);
-                } else {
-                    serverSocket = new ServerSocket(port);
-                }
-            } else {
-                serverSocket = new ServerSocket(defaultDNSPort);
-            }
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-            throw ioe;
-        }
+            String address = parts[1];
+            int port = Integer.parseInt(parts[2]);
 
-        logger.traceExit();
+            serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(address));
+        } catch (IOException ioe) {
+            System.out.println(ioe);
+            logger.catching(ioe);
+        }
     }
 
     public void run() {

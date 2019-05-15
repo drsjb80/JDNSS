@@ -96,7 +96,7 @@
         </module>
         <module name="JavaNCSS"/>
         <module name="LeftCurly"/>
-        <module name="LineLength"/>
+        <!-- <module name="LineLength"/> -->
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
         <module name="MagicNumber"/>
@@ -115,9 +115,7 @@
         <module name="MultipleStringLiterals"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="MutableException"/>
-        <module name="NeedBraces">
-            <property name="allowSingleLineStatement" value="true"/>
-        </module>
+        <module name="NeedBraces"/>
         <module name="NestedForDepth"/>
         <module name="NestedIfDepth"/>
         <module name="NestedTryDepth"/>

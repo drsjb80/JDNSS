@@ -1,6 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
-class Assertion {
+class Assertion extends Throwable {
     /**
      * an Assert that is independent of version and always executes...
      *

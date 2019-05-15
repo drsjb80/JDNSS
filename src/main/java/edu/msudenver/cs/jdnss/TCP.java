@@ -16,13 +16,14 @@ class TCP extends Thread {
     private ServerSocket serverSocket;
     private final Logger logger = JDNSS.logger;
 
-    public TCP(String[] parts) {
+    TCP(final String[] parts) {
         try {
             int backlog = JDNSS.jargs.getBacklog();
             String address = parts[1];
             int port = Integer.parseInt(parts[2]);
 
-            serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(address));
+            serverSocket = new ServerSocket(port, backlog,
+                    InetAddress.getByName(address));
         } catch (IOException ioe) {
             logger.catching(ioe);
         }

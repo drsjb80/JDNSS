@@ -12,7 +12,7 @@ git push origin dev
 open https://travis-ci.org/drsjb80/JDNSS
 ----
 sudo java -jar target/jdnss-2.0.jar --logLevel=ALL test.com
-sudo java -jar target/jdnss-2.0.jar test.com
+sudo java -jar target/jdnss-2.1.jar --IPaddresses="UDP@0.0.0.0@53" test.com
 nslookup www.test.com localhost
 dig @localhost www.test.com
 dig @localhost www.test.com +dnssec 

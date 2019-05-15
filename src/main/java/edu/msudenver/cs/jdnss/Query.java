@@ -8,8 +8,7 @@ import java.util.Map;
 
 class Queries {
     @Getter private String name;
-    @Getter
-    private RRCode type;
+    @Getter private RRCode type;
     @Getter private int qclass;
     @Getter private boolean QU;
 

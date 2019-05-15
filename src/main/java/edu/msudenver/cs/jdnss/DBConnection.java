@@ -47,7 +47,7 @@ class DBConnection {
         }
     }
 
-    public DBZone getZone(final String name) {
+    DBZone getZone(final String name) {
         logger.traceEntry(new ObjectMessage(name));
 
         Set<String> v = new HashSet<>();
@@ -113,7 +113,7 @@ class DBConnection {
         try {
             String stype = type.name();
             logger.trace(stype);
-            Vector<RR> ret = new Vector<RR>();
+            Vector<RR> ret = new Vector<>();
             ResultSet rs = stmt.executeQuery(
                     "SELECT * FROM records where domain_id = " + domainId +
                             " AND name = \"" + name + "\"" +

@@ -1,10 +1,5 @@
 package edu.msudenver.cs.jdnss;
 
-/**
- * @author Steve Beaty
- * @version $Id: DBZone.java,v 1.3 2011/03/14 19:07:22 drb80 Exp $
- */
-
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 

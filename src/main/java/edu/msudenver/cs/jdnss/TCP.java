@@ -24,7 +24,6 @@ class TCP extends Thread {
 
             serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(address));
         } catch (IOException ioe) {
-            System.out.println(ioe);
             logger.catching(ioe);
         }
     }

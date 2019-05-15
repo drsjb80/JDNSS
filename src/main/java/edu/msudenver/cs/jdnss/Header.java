@@ -20,14 +20,14 @@ class Header
     @Getter @Setter(AccessLevel.PACKAGE) private int numAuthorities;
     @Getter @Setter(AccessLevel.PACKAGE) private int numAdditionals;
     @Setter(AccessLevel.PACKAGE) private int rcode;
-    @Setter(AccessLevel.PACKAGE) private boolean TC = false; // truncation
-    @Setter(AccessLevel.PACKAGE) private boolean QR = false; // query
-    @Setter(AccessLevel.PACKAGE) private boolean AA = true;  // authoritative answer
-    @Setter(AccessLevel.PACKAGE) private boolean RA = false; // recursion available
+    @Setter(AccessLevel.PACKAGE) private boolean TC; // truncation
+    @Setter(AccessLevel.PACKAGE) private boolean QR; // query
+    @Setter(AccessLevel.PACKAGE) private boolean AA;  // authoritative answer
+    @Setter(AccessLevel.PACKAGE) private boolean RA; // recursion available
 
-    private boolean RD = false; // recursion desired
-    private boolean AD = false; // authenticated data
-    private boolean CD = false; // checking disabled
+    private boolean RD; // recursion desired
+    private boolean AD; // authenticated data
+    private boolean CD; // checking disabled
 
 
     void build()

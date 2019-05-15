@@ -20,7 +20,7 @@ class Parser {
     private static final int SECONDSINMINUTE = 60;
 
     private int intValue;
-    private String origin = "";
+    private String origin;
     private String stringValue;
 
     private String currentName;

@@ -120,8 +120,10 @@ class Header {
         RD =      (flags & RD_BIT) != 0;
         RA =      (flags & RA_BIT) != 0;
         Assertion.aver(! RA);
-        AD =      (flags & AD_BIT) == 0;
+        AD =      (flags & AD_BIT) != 0;
         // can't assert because nslookup doesn't set this but dig does
+        // so, we have to unset it
+        AD = false;
         // TODO: find out why DNSSEC doesn't set AD
         CD =      (flags & CD_BIT) != 0;
         rcode =   flags & RCODE_BITS;

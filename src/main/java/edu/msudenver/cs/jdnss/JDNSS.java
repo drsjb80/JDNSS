@@ -66,6 +66,7 @@ public class JDNSS {
                 case "TCP": new TCP(parts).start(); break;
                 case "UDP": new UDP(parts).start(); break;
                 case "MC": new MC(parts).start(); break;
+                case "TLS": new TCP_TLS(parts).start(); break;
             }
         }
     }

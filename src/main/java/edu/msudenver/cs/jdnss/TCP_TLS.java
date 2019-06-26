@@ -36,6 +36,11 @@ class TCP_TLS extends Thread {
     public void run() {
         logger.traceEntry();
 
+        System.setProperty("javax.net.ssl.keyStore", "/Users/home/summer_2019/Crypto/JDNSS/keystore.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "TestPass");
+
+        System.setProperty("javax.net.debug", "all");
+
         SSLSocket sslSocket;
         int threadPoolSize = JDNSS.jargs.getThreads();
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
@@ -43,6 +48,7 @@ class TCP_TLS extends Thread {
         while (true) {
             try {
                 sslSocket = (SSLSocket) sslServerSocket.accept();
+                //sslSocket.setEnabledProtocols(new String[] {"TLSv1.2"});
             } catch (IOException ioe) {
                 logger.catching(ioe);
                 return;

@@ -18,28 +18,28 @@ class TCP_TLS extends Thread {
     private final Logger logger = JDNSS.logger;
     int intSSLport = 853;
 
-    SSLServerSocketFactory sslServerSocketfactory = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
-    SSLServerSocket sslServerSocket;
-
     TCP_TLS(final String[] parts){
-        try {
-            int backlog = JDNSS.jargs.getBacklog();
-            String address = parts[1];
-            int port = Integer.parseInt(parts[2]);
-            // Not sure if we need this or if we want to force the port here
-            sslServerSocket = (SSLServerSocket) sslServerSocketfactory.createServerSocket(intSSLport,
-                    backlog, InetAddress.getByName(address));
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-        }
+        int backlog = JDNSS.jargs.getBacklog();
+        String address = parts[1];
+        int port = Integer.parseInt(parts[2]);
     }
     public void run() {
         logger.traceEntry();
 
-        System.setProperty("javax.net.ssl.keyStore", "/Users/home/summer_2019/Crypto/JDNSS/keystore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "TestPass");
-
+        System.setProperty("javax.net.ssl.keyStore", "/tmp/testkeystore.ks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "testpwd");
         System.setProperty("javax.net.debug", "all");
+
+        SSLServerSocket sslServerSocket;
+        try {
+            SSLServerSocketFactory sslServerSocketfactory =
+                (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+            sslServerSocket =
+                (SSLServerSocket) sslServerSocketfactory.createServerSocket(853);
+        } catch (IOException ioe) {
+            logger.catching(ioe);
+            return;
+        }
 
         SSLSocket sslSocket;
         int threadPoolSize = JDNSS.jargs.getThreads();
@@ -47,8 +47,8 @@ class TCP_TLS extends Thread {
 
         while (true) {
             try {
+                // sslServerSocket.setEnabledProtocols(new String[] {"TLSv1.2"});
                 sslSocket = (SSLSocket) sslServerSocket.accept();
-                //sslSocket.setEnabledProtocols(new String[] {"TLSv1.2"});
             } catch (IOException ioe) {
                 logger.catching(ioe);
                 return;

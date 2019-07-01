@@ -63,12 +63,6 @@ class TCPTLSThread implements Runnable {
 
     public void run() {
         logger.traceEntry();
-        System.setProperty("javax.net.ssl.keyStore", "/Users/home/summer_2019/Crypto/JDNSS/keystore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "TestPass");
-
-        System.setProperty("javax.net.debug", "all");
-
-
         try {
             openStreams();
             sendResponse(getQuery());

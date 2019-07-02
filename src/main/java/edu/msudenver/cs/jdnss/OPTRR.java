@@ -6,13 +6,12 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 
 class OPTRR {
-    @Getter
-    private boolean DNSSEC = false;
+    @Getter private boolean DNSSEC;
     final static Logger logger = JDNSS.logger;
     @Getter private int payloadSize;
     private int type;
     @Getter private int rdLength;
-    private byte extendedrcode = 0; // extended RCODE of 0 indicates use of a regular RCODE
+    private byte extendedrcode; // extended RCODE of 0 indicates use of a regular RCODE
     private byte version;
     private int flags;
     private int optionCode;
@@ -21,6 +20,13 @@ class OPTRR {
     @Getter private byte[] serverCookie;
 
     /*
+    If a query message with more than one
+   OPT RR is received, a FORMERR (RCODE=1) MUST be returned.
+
+   If an OPT record is present in a received request, compliant
+   responders MUST include an OPT record in their respective responses.
+
+
         constructs a new OPTRR from a query
      */
     OPTRR(byte[] bytes) {
@@ -49,24 +55,33 @@ class OPTRR {
         rdLength = Utils.addThem(bytes[location++], bytes[location++]);
         logger.trace(rdLength);
 
-        if (rdLength >= 5) { //data length needs to be minimum of 5 bytes
-
+        int total_length = location + rdLength;
+        while (location < total_length) {
             optionCode = Utils.addThem(bytes[location++], bytes[location++]);
-            Assertion.aver(optionCode == 10);
+            logger.trace(optionCode);
 
             optionLength = Utils.addThem(bytes[location++], bytes[location++]);
             logger.trace(optionLength);
 
-            clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
-            location += 8;
+            // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-11
 
-           if (optionLength > 8) { // server cookie returned
-                // OPTION-LENGTH >= 16, <= 40 [rfc7873]
-                Assertion.aver(optionLength == 16
-                    || optionLength == 24
-                    || optionLength == 32
-                    || optionLength == 40);
-                serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
+            switch (optionCode) {
+                case 10:
+                    clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
+                    location += 8;
+
+                    if (optionLength > 8) { // server cookie returned
+                        // OPTION-LENGTH >= 16, <= 40 [rfc7873]
+                        Assertion.aver(optionLength == 16
+                                || optionLength == 24
+                                || optionLength == 32
+                                || optionLength == 40);
+                        serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
+                    }
+                    break;
+                case 12:
+                    location += optionLength;
+                    break;
             }
         }
     }

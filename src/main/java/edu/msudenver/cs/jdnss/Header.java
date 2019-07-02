@@ -37,9 +37,9 @@ class Header {
     @Getter @Setter(AccessLevel.PACKAGE) private boolean AA; // authoritative answer
     @Getter @Setter(AccessLevel.PACKAGE) private boolean RA; // recursion available
 
-    @Getter private boolean RD; // recursion desired
+    @Getter private final boolean RD; // recursion desired
     @Getter private boolean AD; // authenticated data
-    @Getter private boolean CD; // checking disabled
+    @Getter private final boolean CD; // checking disabled
 
     void incrementNumAnswers() {
         numAnswers++;
@@ -86,7 +86,6 @@ class Header {
         }
         Assertion.aver(good);
 
-        Assertion.aver(opcode >=0 && opcode <= 1);
         Assertion.aver(numAnswers >= 0 && numAnswers <= MAXIMUM_VALUE_FOR_TWO_BYTES);
         Assertion.aver(numAuthorities >= 0 && numAuthorities <= MAXIMUM_VALUE_FOR_TWO_BYTES);
         Assertion.aver(numAdditionals >= 0 && numAdditionals <= MAXIMUM_VALUE_FOR_TWO_BYTES);

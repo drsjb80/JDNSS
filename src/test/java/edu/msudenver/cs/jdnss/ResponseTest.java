@@ -1,6 +1,5 @@
 package edu.msudenver.cs.jdnss;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

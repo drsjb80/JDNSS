@@ -33,12 +33,12 @@ import java.util.Set;
 
 @ToString
 @EqualsAndHashCode
-public abstract class RR {
+abstract class RR {
     final static Logger logger = JDNSS.logger;
-    @Getter private String name;
-    @Getter private RRCode type;
-    @Getter private int rrclass = 1;
-    @Getter private int ttl;
+    @Getter private final String name;
+    @Getter private final RRCode type;
+    @Getter private final int rrclass = 1;
+    @Getter private final int ttl;
 
     RR(final String name, final RRCode type, final int ttl) {
         this.name = name;

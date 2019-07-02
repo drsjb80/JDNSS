@@ -5,21 +5,19 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.util.Assert;
 import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class JDNSS {
+class JDNSS {
     // a few AOP singletons
-    static jdnssArgs jargs = new jdnssArgs();
+    static final jdnssArgs jargs = new jdnssArgs();
     static final Logger logger = LogManager.getLogger("JDNSS");
     private static DBConnection DBConnection;
 
@@ -73,7 +71,7 @@ public class JDNSS {
     }
 
     private static void setLogLevel() {
-        Level level = Level.ERROR;
+        Level level = Level.OFF;
 
         switch (jargs.getLogLevel()) {
             case FATAL: level = Level.FATAL; break;

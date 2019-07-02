@@ -2,10 +2,10 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 
-public class ServerCookie {
-    final static Logger logger = JDNSS.logger;
+class ServerCookie {
+    private final static Logger logger = JDNSS.logger;
     final private String serverSecret = JDNSS.jargs.getServerSecret();
-    private long hash;
+    private final long hash;
 
     ServerCookie(byte[] clientCookie, String clientIP) {
         FNV1a64 fnv = new FNV1a64();

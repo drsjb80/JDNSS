@@ -7,7 +7,7 @@ import java.net.InetAddress;
 
 import org.apache.logging.log4j.Logger;
 
-public class UDPThread implements Runnable
+class UDPThread implements Runnable
 {
     private final Logger logger = JDNSS.logger;
 

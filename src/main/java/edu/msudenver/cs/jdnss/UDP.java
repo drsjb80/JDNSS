@@ -16,7 +16,7 @@ class UDP extends Thread
     DatagramSocket dsocket;
     final Logger logger = JDNSS.logger;
 
-    public UDP() {} // needed for MC subclass
+    UDP() {} // needed for MC subclass
 
     public UDP(String[] parts) {
         try {

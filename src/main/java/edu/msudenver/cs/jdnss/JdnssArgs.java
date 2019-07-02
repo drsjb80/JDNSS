@@ -12,7 +12,7 @@ class jdnssArgs {
     @Getter private boolean version;
     @Getter private String[] IPaddresses = {"TLS@0.0.0.0@853", "TCP@0.0.0.0@53", "UDP@0.0.0.0@53"}; // "MC@224.0.0.251@5353"
     @Getter private int backlog = 4;
-    @Getter private JDNSSLogLevels logLevel = JDNSSLogLevels.ERROR;
+    @Getter private JDNSSLogLevels logLevel = JDNSSLogLevels.OFF;
     @Getter private boolean PID = false;
 
     @Getter private boolean help;

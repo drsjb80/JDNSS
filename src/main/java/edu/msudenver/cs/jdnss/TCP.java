@@ -2,7 +2,6 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 
-import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;

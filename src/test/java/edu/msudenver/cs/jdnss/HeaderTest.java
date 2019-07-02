@@ -110,10 +110,6 @@ public class HeaderTest {
     }
 
     @Test
-    public void build() {
-    }
-
-    @Test
     public void getHeader() {
     }
 }

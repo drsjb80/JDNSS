@@ -90,7 +90,7 @@ class Utils {
      * @param which which byte(1 = lowest, 8 = highest)
      * @return the requested byte
      */
-    static byte getByte(long from, int which) {
+    private static byte getByte(long from, int which) {
         Assertion.aver(which >= 1 && which <= 8);
 
         int shift = (which - 1) * 8;
@@ -463,7 +463,7 @@ class Utils {
         return s;
     }
 
-    static String toString(DatagramSocket dgs) {
+    private static String toString(DatagramSocket dgs) {
         String s = "";
 
         try {

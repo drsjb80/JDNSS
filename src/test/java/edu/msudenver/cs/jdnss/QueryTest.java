@@ -1,6 +1,5 @@
 package edu.msudenver.cs.jdnss;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +8,7 @@ import java.util.Arrays;
 
 public class QueryTest
 {
-    private byte[] buffer = {(byte) 0xaa, (byte) 0xd8, (byte) 0x01, (byte) 0x00,
+    private final byte[] buffer = {(byte) 0xaa, (byte) 0xd8, (byte) 0x01, (byte) 0x00,
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
             (byte) 0x03, (byte) 0x77, (byte) 0x77, (byte) 0x77,
@@ -21,7 +20,7 @@ public class QueryTest
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
             };
-    private byte[] digBuffer = {
+    private final byte[] digBuffer = {
             (byte) 0x6b, (byte) 0xcd, (byte) 0x01, (byte) 0x20,
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,
@@ -36,7 +35,7 @@ public class QueryTest
             (byte) 0x08, (byte) 0xc2, (byte) 0x0f, (byte) 0xef,
             (byte) 0xfa, (byte) 0xb4, (byte) 0xa5, (byte) 0xdf,
             (byte) 0x5e};
-    private byte[] digBufferDNSSEC = {
+    private final byte[] digBufferDNSSEC = {
             (byte) 0xdd, (byte) 0xfc, (byte) 0x01, (byte) 0x20,
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x01,
@@ -52,19 +51,15 @@ public class QueryTest
             (byte) 0x9f, (byte) 0x2a, (byte) 0x20, (byte) 0xf7,
             (byte) 0x68};
 
-    private Query query = new Query(buffer);
-    private Query digQuery = new Query(digBuffer);
-    private Query digQueryDNSSEC = new Query(digBufferDNSSEC);
+    private final Query query = new Query(buffer);
+    private final Query digQuery = new Query(digBuffer);
+    private final Query digQueryDNSSEC = new Query(digBufferDNSSEC);
 
     @Before
     public void setUp() {
         query.parseQueries("");
         digQuery.parseQueries("");
         digQueryDNSSEC.parseQueries("");
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -91,14 +86,14 @@ public class QueryTest
     public void getQueries() {
         Queries[] queries = query.getQueries();
         Assert.assertEquals(1, queries.length);
-        Assert.assertTrue(queries[0].getName().equals("www.test.com"));
+        Assert.assertEquals("www.test.com", queries[0].getName());
         Assert.assertEquals(RRCode.A, queries[0].getType());
         Assert.assertEquals(1, queries[0].getQclass());
 
         Queries[] bindQueries = digQuery.getQueries();
         Assert.assertEquals(1, bindQueries.length);
         Assert.assertEquals(1, digQuery.getHeader().getNumAdditionals());
-        Assert.assertTrue(bindQueries[0].getName().equals("www.test.com"));
+        Assert.assertEquals("www.test.com", bindQueries[0].getName());
         Assert.assertEquals(RRCode.A, bindQueries[0].getType());
         Assert.assertEquals(1, bindQueries[0].getQclass());
         // Assert.assertEquals(Utils.OPT, bindQueries[1].getType());
@@ -120,6 +115,6 @@ public class QueryTest
     }
 
     @Test
-    public void getZone() throws Exception {
+    public void getZone() {
     }
 }

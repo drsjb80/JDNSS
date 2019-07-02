@@ -9,8 +9,6 @@ class DBZone implements Zone
 {
     private static final Logger logger = JDNSS.logger;
     private final String zoneName;
-    private final int domainId;
-    private final DBConnection dbConnection;
 
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS
@@ -18,8 +16,8 @@ class DBZone implements Zone
         final DBConnection dbConnection)
     {
         this.zoneName = zoneName;
-        this.domainId = domainId;
-        this.dbConnection = dbConnection;
+        int domainId1 = domainId;
+        DBConnection dbConnection1 = dbConnection;
     }
 
     public String getName() { return zoneName; }

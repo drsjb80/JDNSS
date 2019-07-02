@@ -7,12 +7,12 @@ import org.junit.Test;
 
 public class ServerCookieTest {
 
-    ServerCookie serverCookie;
-    String clientIPaddress = "/0:0:0:0:0:0:0:1";
-    byte[] cookie = {(byte) 0x33,
+    private ServerCookie serverCookie;
+    private final String clientIPaddress = "/0:0:0:0:0:0:0:1";
+    private final byte[] cookie = {(byte) 0x33,
             (byte) 0x9c, (byte) 0xd1, (byte) 0xf3, (byte) 0xaf,
             (byte) 0x36, (byte) 0x46, (byte) 0x21};
-    byte[] differentCookie = {(byte)0x21,
+    private final byte[] differentCookie = {(byte)0x21,
             (byte) 0x46, (byte) 0x36, (byte) 0xaf, (byte) 0xf3,
             (byte) 0xd1, (byte) 0x9c, (byte) 0x33};
 

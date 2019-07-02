@@ -24,7 +24,7 @@ class Response {
     private byte[] responses = new byte[0];
     private int maximumPayload = 512;
     private SOARR SOA;
-    private boolean UDP;
+    private final boolean UDP;
     private final Query query;
 
     Response(final Query query, final boolean UDP) {
@@ -378,7 +378,7 @@ class Response {
         throw new AssertionError("lookup other failed");
     }
 
-    protected byte[] getBytes() {
+    byte[] getBytes() {
         logger.traceEntry();
         byte[] abc = new byte[0];
         abc = Utils.combine(abc, header.getHeader());

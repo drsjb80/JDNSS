@@ -12,6 +12,7 @@ enum ErrorCodes {
     YXRRSET(7);
 
     @Getter
+    final
     int code;
 
     ErrorCodes(int code) {

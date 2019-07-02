@@ -6,8 +6,6 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
-import java.net.InetAddress;
-import java.security.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,12 +21,13 @@ class TCP_TLS extends Thread {
         String address = parts[1];
         int port = Integer.parseInt(parts[2]);
     }
+
     public void run() {
         logger.traceEntry();
 
         System.setProperty("javax.net.ssl.keyStore", "/tmp/testkeystore.ks");
         System.setProperty("javax.net.ssl.keyStorePassword", "testpwd");
-        System.setProperty("javax.net.debug", "all");
+        // System.setProperty("javax.net.debug", "all");
 
         SSLServerSocket sslServerSocket;
         try {

@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 
 class OPTRR {
-    final static Logger logger = JDNSS.logger;
+    private final static Logger logger = JDNSS.logger;
     @Getter private boolean DNSSEC;
     @Getter private boolean cookie;
     @Getter private int payloadSize;

@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import javax.net.ssl.SSLSocket;
 
 import static edu.msudenver.cs.jdnss.Assertion.aver;

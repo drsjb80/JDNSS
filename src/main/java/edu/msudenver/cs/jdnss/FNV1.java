@@ -45,16 +45,16 @@ package edu.msudenver.cs.jdnss;
  *
  * @author Andrzej Bialecki &lt;ab@getopt.org&gt;
  */
-public abstract class FNV1 {
+abstract class FNV1 {
   /** Initial seed for 32-bit hashes. */
   public static final long FNV1_32_INIT  = 0x811c9dc5L;
   /** Initial seed for 64-bit hashes. */
-  public static final long FNV1_64_INIT  = 0xcbf29ce484222325L;
+  static final long FNV1_64_INIT  = 0xcbf29ce484222325L;
 
   /** Current initial seed. */
-  protected long INIT = 0L;
+  long INIT = 0L;
   /** Current hash value. */
-  protected long hash = 0L;
+  private long hash = 0L;
 
   /**
    * Initialize this hash instance. Any previous state is reset, and the new
@@ -81,7 +81,7 @@ public abstract class FNV1 {
    * @param offset starting position in the buffer
    * @param len number of bytes after the starting position
    */
-  public void init(byte[] buf, int offset, int len) {
+  private void init(byte[] buf, int offset, int len) {
     hash = fnv(buf, offset, len, INIT);
   }
 
@@ -110,7 +110,7 @@ public abstract class FNV1 {
    * @param offset starting position in the buffer
    * @param len number of bytes after the starting position
    */
-  public void update(byte[] buf, int offset, int len) {
+  private void update(byte[] buf, int offset, int len) {
     hash = fnv(buf, offset, len, hash);
   }
 

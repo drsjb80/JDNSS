@@ -238,18 +238,14 @@ public class UtilsTest
         Set<String> v = new HashSet<>();
 
         v.add ("b.c.d.e");
-        Assert.assertTrue (
-            Utils.findLongest (v, "a.b.c.d.e").equals("b.c.d.e"));
+        Assert.assertEquals("b.c.d.e", Utils.findLongest(v, "a.b.c.d.e"));
 
         v = new HashSet<>();
         v.add ("d.e");
         v.add ("b.c.d.e");
-        Assert.assertTrue (
-            Utils.findLongest (v, "z.d.e").equals("d.e"));
-        Assert.assertTrue (
-            Utils.findLongest (v, "z.c.d.e").equals("d.e"));
-        Assert.assertTrue (
-            Utils.findLongest (v, "a.b.c.d.e").equals("b.c.d.e"));
+        Assert.assertEquals("d.e", Utils.findLongest(v, "z.d.e"));
+        Assert.assertEquals("d.e", Utils.findLongest(v, "z.c.d.e"));
+        Assert.assertEquals("b.c.d.e", Utils.findLongest(v, "a.b.c.d.e"));
 
         exception.expect (AssertionError.class);
 

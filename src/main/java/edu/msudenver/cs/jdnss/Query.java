@@ -9,10 +9,10 @@ import java.util.Map;
 
 @ToString
 class Queries {
-    @Getter private String name;
-    @Getter private RRCode type;
-    @Getter private int qclass;
-    @Getter private boolean QU;
+    @Getter private final String name;
+    @Getter private final RRCode type;
+    @Getter private final int qclass;
+    @Getter private final boolean QU;
 
     Queries(final String name, final RRCode type, final int qclass, final boolean QU) {
         this.name = name;
@@ -26,8 +26,8 @@ class Queries {
 class Query {
     private final Logger logger = JDNSS.logger;
 
-    @Getter private Header header;
-    @Getter private byte[] buffer;
+    @Getter private final Header header;
+    @Getter private final byte[] buffer;
     @Getter private Queries[] queries;
     @Getter private OPTRR optrr;
 

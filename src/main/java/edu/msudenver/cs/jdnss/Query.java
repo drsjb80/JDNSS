@@ -1,11 +1,13 @@
 package edu.msudenver.cs.jdnss;
 
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Map;
 
+@ToString
 class Queries {
     @Getter private String name;
     @Getter private RRCode type;
@@ -20,6 +22,7 @@ class Queries {
     }
 }
 
+@ToString
 class Query {
     private final Logger logger = JDNSS.logger;
 
@@ -109,10 +112,11 @@ class Query {
 
             //process and transform? optrr for a resonse
             // need to set the RCODE in header for the response needs to be FORMERR
-            if(!optrr.hasCookie() || optrr.hasFormErr()){
+            if(optrr.hasFormErr()){
                 header.setRcode( ErrorCodes.FORMERROR.getCode() );
             }
-            else {
+
+            if(optrr.isCookie()) {
                 optrr.createServerCookie(clientIPaddress, header);
             }
         }
@@ -126,16 +130,5 @@ class Query {
             questions = Utils.combine(questions, Utils.getTwoBytes(query.getQclass(), 2));
         }
         return questions;
-    }
-
-    public String toString() {
-        String s = header.toString();
-
-        for (Queries q : queries) {
-            s += "\nName: " + q.getName() +
-                    " Type: " + q.getType() +
-                    " Class: " + q.getQclass();
-        }
-        return s;
     }
 }

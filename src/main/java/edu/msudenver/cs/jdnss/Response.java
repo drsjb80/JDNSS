@@ -385,6 +385,11 @@ class Response {
         abc = Utils.combine(abc, query.buildResponseQueries());
         abc = Utils.combine(abc, responses);
 
+        /*
+        If an OPT record is present in a received request, compliant
+        responders MUST include an OPT record in their respective responses.
+         */
+
         if (query.getOptrr() != null) {
             abc = Utils.combine(abc, query.getOptrr().getBytes());
         }

@@ -40,15 +40,13 @@ class TCP_TLS extends Thread {
             return;
         }
 
-        SSLSocket sslSocket;
+        SSLSocket socket;
         int threadPoolSize = JDNSS.jargs.getThreads();
         ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 
         while (true) {
             try {
-                // sslServerSocket.setEnabledProtocols(new String[] {"TLSv1.2"});
-                sslSocket = (SSLSocket) sslServerSocket.accept();
-                sslSocket.setNeedClientAuth(false);
+                socket = (SSLSocket) sslServerSocket.accept();
             } catch (IOException ioe) {
                 logger.catching(ioe);
                 return;
@@ -56,7 +54,7 @@ class TCP_TLS extends Thread {
 
             logger.trace("Received TCP packet");
 
-            Future f = pool.submit(new TCPTLSThread(sslSocket));
+            Future f = pool.submit(new TCPThread(socket));
 
             if (JDNSS.jargs.isOnce()) {
                 try {

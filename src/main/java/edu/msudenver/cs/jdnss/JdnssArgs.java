@@ -24,5 +24,9 @@ class jdnssArgs {
 
     @Getter @Setter private String serverSecret;
 
+    @Getter private String keystoreFile;
+    @Getter private String keystorePassword;
+    @Getter private boolean debugSSL;
+
     @Getter private String additional[];
 }

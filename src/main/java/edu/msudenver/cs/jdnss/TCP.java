@@ -1,42 +1,77 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.Assert;
 
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 class TCP extends Thread {
-
-    private ServerSocket serverSocket;
     private final Logger logger = JDNSS.logger;
+    private String type;
+    private int backlog;
+    private String address;
+    private int port;
 
     TCP(final String[] parts) {
-        try {
-            int backlog = JDNSS.jargs.getBacklog();
-            String address = parts[1];
-            int port = Integer.parseInt(parts[2]);
-
-            serverSocket = new ServerSocket(port, backlog,
-                    InetAddress.getByName(address));
-        } catch (IOException ioe) {
-            logger.catching(ioe);
-        }
+        type = parts[0];
+        backlog = JDNSS.jargs.getBacklog();
+        address = parts[1];
+        port = Integer.parseInt(parts[2]);
     }
 
     public void run() {
         logger.traceEntry();
 
-        Socket socket;
-        int threadPoolSize = JDNSS.jargs.getThreads();
-        ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
+        ServerSocket serverSocket = null;
+
+        switch(type) {
+            case "TLS":
+                Assertion.aver(JDNSS.jargs.getKeystoreFile() != null);
+                Assertion.aver(JDNSS.jargs.getKeystorePassword()!= null);
+                System.setProperty("javax.net.ssl.keyStore", JDNSS.jargs.getKeystoreFile());
+                System.setProperty("javax.net.ssl.keyStorePassword", JDNSS.jargs.getKeystorePassword());
+                if (JDNSS.jargs.isDebugSSL()) {
+                    System.setProperty("javax.net.debug", "all");
+                }
+
+                try {
+                    SSLServerSocketFactory sslServerSocketfactory =
+                            (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+                    serverSocket = sslServerSocketfactory.createServerSocket(port, backlog, InetAddress.getByName(address));
+                } catch (IOException ioe) {
+                    logger.catching(ioe);
+                    return;
+                }
+                break;
+            case "TCP":
+                try {
+                    serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(address));
+                } catch (IOException E) {
+                    logger.throwing(E);
+                    return;
+                }
+                break;
+            default:
+                Assertion.fail("Invalid type: " + type);
+                return;
+        }
+
+        ExecutorService pool = Executors.newFixedThreadPool(JDNSS.jargs.getThreads());
 
         while (true) {
+            Socket socket = null;
+
             try {
                 socket = serverSocket.accept();
             } catch (IOException ioe) {
@@ -53,8 +88,8 @@ class TCP extends Thread {
             if (JDNSS.jargs.isOnce()) {
                 try {
                     f.get();
-                } catch (InterruptedException | ExecutionException ie) {
-                    logger.catching(ie);
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.catching(e);
                 }
 
                 System.exit(0);

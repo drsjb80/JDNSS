@@ -65,7 +65,11 @@ class JDNSS {
                 case "TCP": new TCP(parts).start(); break;
                 case "UDP": new UDP(parts).start(); break;
                 case "MC": new MC(parts).start(); break;
-                case "TLS": new TCP_TLS(parts).start(); break;
+                case "TLS": new TCP(parts).start(); break;
+                default:
+                    Assertion.fail("Invalid IP address specification");
+                    System.exit(-1);
+                    break;
             }
         }
     }
@@ -74,6 +78,7 @@ class JDNSS {
         Level level = Level.OFF;
 
         switch (jargs.getLogLevel()) {
+            case OFF: level = Level.OFF; break;
             case FATAL: level = Level.FATAL; break;
             case ERROR: level = Level.ERROR; break;
             case WARN: level = Level.WARN; break;
@@ -81,6 +86,10 @@ class JDNSS {
             case DEBUG: level = Level.DEBUG; break;
             case TRACE: level = Level.TRACE; break;
             case ALL: level = Level.ALL; break;
+            default:
+                Assertion.fail("Invalid log level");
+                System.exit(-1);
+                break;
         }
 
         Configurator.setLevel("JDNSS", level);
@@ -104,14 +113,12 @@ class JDNSS {
 
 
         if (jargs.getServerSecret() == null){
-            jargs.setServerSecret(String.valueOf( ThreadLocalRandom.current().nextLong() ));
+            jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
         }
-        else if (jargs.getServerSecret() != null) {
-            if (jargs.getServerSecret().length() < 16) {
-                logger.warn("Secret too short, generating random secret instead.");
-                jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
 
-            }
+        if (jargs.getServerSecret() != null && jargs.getServerSecret().length() < 16) {
+            logger.warn("Secret too short, generating random secret instead.");
+            jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
         }
 
         String additional[] = jargs.getAdditional();
@@ -119,7 +126,7 @@ class JDNSS {
             return;
         }
 
-        for (String anAdditional : additional) {
+        for (String anAdditional: additional) {
             try {
                 String name = new File(anAdditional).getName();
 

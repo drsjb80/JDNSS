@@ -261,7 +261,7 @@ class PTRRR extends STRINGRR {
     }
 }
 
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 abstract class ADDRRR extends RR {
     protected String address;

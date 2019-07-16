@@ -25,7 +25,7 @@ class TCP extends Thread {
 
     TCP(final String[] parts) {
         type = parts[0];
-        backlog = JDNSS.jargs.getBacklog();
+        backlog = JDNSS.jargs.backlog;
         address = parts[1];
         port = Integer.parseInt(parts[2]);
     }
@@ -37,11 +37,11 @@ class TCP extends Thread {
 
         switch(type) {
             case "TLS":
-                Assertion.aver(JDNSS.jargs.getKeystoreFile() != null);
-                Assertion.aver(JDNSS.jargs.getKeystorePassword()!= null);
-                System.setProperty("javax.net.ssl.keyStore", JDNSS.jargs.getKeystoreFile());
-                System.setProperty("javax.net.ssl.keyStorePassword", JDNSS.jargs.getKeystorePassword());
-                if (JDNSS.jargs.isDebugSSL()) {
+                Assertion.aver(JDNSS.jargs.keystoreFile != null);
+                Assertion.aver(JDNSS.jargs.keystorePassword!= null);
+                System.setProperty("javax.net.ssl.keyStore", JDNSS.jargs.keystoreFile);
+                System.setProperty("javax.net.ssl.keyStorePassword", JDNSS.jargs.keystorePassword);
+                if (JDNSS.jargs.debugSSL) {
                     System.setProperty("javax.net.debug", "all");
                 }
 

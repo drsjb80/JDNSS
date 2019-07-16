@@ -1,76 +1,39 @@
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.lang.*;
-import java.net.URL;
-
-import com.sun.net.httpserver.HttpsServer;
-
-import java.security.KeyStore;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
+package edu.msudenver.cs.jdnss;
 
 import com.sun.net.httpserver.*;
 
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLParameters;
-
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URLConnection;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
-
+import javax.net.ssl.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
-
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.HttpsExchange;
+import java.net.InetSocketAddress;
+import java.security.KeyStore;
 
 // Source: https://stackoverflow.com/a/34483734
 
 public class HTTPS {
-    public static class MyHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-            String response = "This is the response";
-            HttpsExchange httpsExchange = (HttpsExchange) t;
-            t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            t.sendResponseHeaders(200, response.getBytes().length);
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
+    public HTTPS(final String[] parts) {
+        int port = Integer.parseInt(parts[2]);
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
+            InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(parts[1]), port);
 
-            HttpsServer httpsServer = HttpsServer.create(address, 0);
-            SSLContext sslContext = getSslContext();
-            setSSLParameters(httpsServer, sslContext);
+            HttpsServer httpsServer = HttpsServer.create(address, JDNSS.jargs.backlog);
+            setSSLParameters(httpsServer);
             httpsServer.createContext("/test", new MyHandler());
             httpsServer.setExecutor(null);
             httpsServer.start();
         } catch (Exception exception) {
-            System.out.println("Failed to create HTTPS server on port " + 8000 + " of localhost");
+            System.out.println("Failed to create HTTPS server on port " + port + " of localhost");
             exception.printStackTrace();
-
         }
     }
 
-    private static void setSSLParameters(HttpsServer httpsServer, SSLContext sslContext) {
-        httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+    private void setSSLParameters(final HttpsServer httpsServer) throws Exception {
+        SSLContext context = getSslContext();
+        httpsServer.setHttpsConfigurator(new HttpsConfigurator(context) {
             public void configure(HttpsParameters params) {
                 try {
-                    SSLContext context = getSSLContext();
                     SSLEngine engine = context.createSSLEngine();
                     params.setNeedClientAuth(false);
                     params.setCipherSuites(engine.getEnabledCipherSuites());
@@ -80,20 +43,36 @@ public class HTTPS {
                     params.setSSLParameters(sslParameters);
 
                 } catch (Exception ex) {
-                    System.out.println("Failed to create HTTPS port");
+                    System.out.println("Failed to create SSL parameters");
                 }
             }
 
         });
     }
 
-    private static SSLContext getSslContext() throws Exception {
+    private class MyHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) throws IOException {
+            String response = "This is the response";
+            HttpsExchange httpsExchange = (HttpsExchange) t;
+            t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            t.sendResponseHeaders(200, response.getBytes().length);
+
+            try (OutputStream os = t.getResponseBody()) {
+                os.write(response.getBytes());
+            }
+        }
+    }
+
+    private SSLContext getSslContext() throws Exception {
         SSLContext sslContext = SSLContext.getInstance("TLS");
 
-        char[] password = "password".toCharArray();
+        char[] password = JDNSS.jargs.keystorePassword.toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
-        FileInputStream fis = new FileInputStream("testkey.jks");
-        ks.load(fis, password);
+
+        try (FileInputStream fis = new FileInputStream(JDNSS.jargs.keystoreFile)) {
+            ks.load(fis, password);
+        }
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(ks, password);

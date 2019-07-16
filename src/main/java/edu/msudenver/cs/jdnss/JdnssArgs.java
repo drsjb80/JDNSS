@@ -10,10 +10,9 @@ class jdnssArgs {
     @Getter private int threads = 10;
 
     @Getter private boolean version;
-    @Getter private String[] IPaddresses = {"TLS@0.0.0.0@853", "TCP@0.0.0.0@53", "UDP@0.0.0.0@53"}; // "MC@224.0.0.251@5353"
-    @Getter private int backlog = 4;
-    @Getter private JDNSSLogLevels logLevel = JDNSSLogLevels.OFF;
-    @Getter private boolean PID = false;
+    String[] IPaddresses = {"TLS@0.0.0.0@853", "TCP@0.0.0.0@53", "UDP@0.0.0.0@53"}; // "MC@224.0.0.251@5353"
+    int backlog = 4;
+    JDNSSLogLevels logLevel = JDNSSLogLevels.ERROR;
 
     @Getter private boolean help;
 
@@ -22,11 +21,13 @@ class jdnssArgs {
     @Getter private String DBUser;
     @Getter private String DBPass;
 
-    @Getter @Setter private String serverSecret;
+    String serverSecret;
 
-    @Getter private String keystoreFile;
-    @Getter private String keystorePassword;
-    @Getter private boolean debugSSL;
+    String keystoreFile;
+    String keystorePassword;
+    boolean debugSSL;
+
+    String prefsFile;
 
     @Getter private String additional[];
 }

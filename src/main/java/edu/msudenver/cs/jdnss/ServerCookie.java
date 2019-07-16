@@ -4,7 +4,7 @@ import org.apache.logging.log4j.Logger;
 
 class ServerCookie {
     private final static Logger logger = JDNSS.logger;
-    final private String serverSecret = JDNSS.jargs.getServerSecret();
+    final private String serverSecret = JDNSS.jargs.serverSecret;
     private final long hash;
 
     ServerCookie(byte[] clientCookie, String clientIP) {

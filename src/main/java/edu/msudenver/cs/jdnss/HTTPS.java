@@ -1,6 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
 import com.sun.net.httpserver.*;
+import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
@@ -13,6 +14,8 @@ import java.security.KeyStore;
 // Source: https://stackoverflow.com/a/34483734
 
 public class HTTPS {
+    private final Logger logger = JDNSS.logger;
+
     public HTTPS(final String[] parts) {
         int port = Integer.parseInt(parts[2]);
         try {
@@ -53,8 +56,11 @@ public class HTTPS {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
+            logger.debug(t.getRequestMethod());
+            logger.debug(t.getRequestHeaders());
+            logger.debug(t.getResponseBody());
+
             String response = "This is the response";
-            HttpsExchange httpsExchange = (HttpsExchange) t;
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             t.sendResponseHeaders(200, response.getBytes().length);
 

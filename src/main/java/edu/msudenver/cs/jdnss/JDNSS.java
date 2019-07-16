@@ -7,13 +7,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.message.ObjectMessage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.InvalidPreferencesFormatException;
+import java.util.prefs.Preferences;
 
 class JDNSS {
     // a few AOP singletons
@@ -58,7 +59,7 @@ class JDNSS {
     }
 
     private static void start() {
-        for (String IPAddress : jargs.getIPaddresses()) {
+        for (String IPAddress : jargs.IPaddresses) {
             String[] parts = IPAddress.split("@");
 
             switch(parts[0]) {
@@ -77,7 +78,7 @@ class JDNSS {
     private static void setLogLevel() {
         Level level = Level.OFF;
 
-        switch (jargs.getLogLevel()) {
+        switch (jargs.logLevel) {
             case OFF: level = Level.OFF; break;
             case FATAL: level = Level.FATAL; break;
             case ERROR: level = Level.ERROR; break;
@@ -112,13 +113,13 @@ class JDNSS {
         }
 
 
-        if (jargs.getServerSecret() == null){
-            jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
+        if (jargs.serverSecret == null){
+            jargs.serverSecret = String.valueOf(ThreadLocalRandom.current().nextLong());
         }
 
-        if (jargs.getServerSecret() != null && jargs.getServerSecret().length() < 16) {
+        if (jargs.serverSecret != null && jargs.serverSecret.length() < 16) {
             logger.warn("Secret too short, generating random secret instead.");
-            jargs.setServerSecret(String.valueOf(ThreadLocalRandom.current().nextLong()));
+            jargs.serverSecret = String.valueOf(ThreadLocalRandom.current().nextLong());
         }
 
         String additional[] = jargs.getAdditional();
@@ -153,10 +154,71 @@ class JDNSS {
         }
     }
 
+    private void readPrefs() {
+        try {
+            InputStream is = new BufferedInputStream(new FileInputStream(jargs.prefsFile));
+            Preferences.importPreferences(is);
+        } catch (IOException | InvalidPreferencesFormatException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        Preferences prefs = Preferences.userRoot().node("edu/msudenver/cs/jdnss");
+        try {
+            for (String s: prefs.keys()) {
+                switch(s) {
+                    case "IPaddresses":
+                        String addresses = prefs.get("IPaddresses", "");
+                        jargs.IPaddresses = addresses.split("\\s*,\\s*");
+                        break;
+                    case "serverSecret":
+                        jargs.serverSecret = prefs.get("serverSecret", "");
+                        break;
+                    case "keystoreFile":
+                        jargs.serverSecret = prefs.get("keystoreFile", "");
+                        break;
+                    case "keystorePassword":
+                        jargs.serverSecret = prefs.get("keystorePassword", "");
+                        break;
+                    case "debugSSL":
+                        jargs.debugSSL = prefs.getBoolean("debugSSL", false);
+                        break;
+                    case "backlog":
+                        jargs.backlog = prefs.getInt("backlog", 4);
+                        break;
+                    case "logLevel":
+                        String level = prefs.get("logLevel", "ERROR");
+                        switch (level.toUpperCase()) {
+                            case "FATAL": jargs.logLevel = JDNSSLogLevels.FATAL; break;
+                            case "ERROR": jargs.logLevel = JDNSSLogLevels.ERROR; break;
+                            case "WARN": jargs.logLevel = JDNSSLogLevels.WARN; break;
+                            case "INFO": jargs.logLevel = JDNSSLogLevels.INFO; break;
+                            case "DEBUG": jargs.logLevel = JDNSSLogLevels.DEBUG; break;
+                            case "TRACE": jargs.logLevel = JDNSSLogLevels.TRACE; break;
+                            case "ALL": jargs.logLevel = JDNSSLogLevels.ALL; break;
+                            case "OFF": jargs.logLevel = JDNSSLogLevels.OFF; break;
+                        }
+                        break;
+                }
+            }
+        } catch (BackingStoreException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     /**
      * The main driver for the server; creates threads for TCP and UDP.
      */
     public static void main(String[] args) {
+        // i'm not sure of a better way to do this. i want command-line options to overwrite
+        // the defaults.
+        for (String arg: args) {
+            if (arg.startsWith("-IPAddresses") || arg.startsWith("--IPAddresses")) {
+                jargs.IPaddresses = null;
+            }
+        }
+
         JCLO jclo = new JCLO(jargs);
         jclo.parse(args);
 

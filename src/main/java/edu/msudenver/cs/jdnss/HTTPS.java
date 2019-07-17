@@ -23,7 +23,7 @@ public class HTTPS {
 
             HttpsServer httpsServer = HttpsServer.create(address, JDNSS.jargs.backlog);
             setSSLParameters(httpsServer);
-            httpsServer.createContext("/test", new MyHandler());
+            httpsServer.createContext("/dns-query", new MyHandler());
             httpsServer.setExecutor(null);
             httpsServer.start();
         } catch (Exception exception) {
@@ -53,6 +53,17 @@ public class HTTPS {
         });
     }
 
+    /*
+    When the HTTP method is GET,
+    the single variable "dns" is defined as the content of the DNS
+    request (as described in Section 6), encoded with base64url
+    [RFC4648].
+
+    When using the POST method, the DNS query is included as the message
+    body of the HTTP request, and the Content-Type request header field
+    indicates the media type of the message.
+    */
+
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
@@ -71,6 +82,9 @@ public class HTTPS {
     }
 
     private SSLContext getSslContext() throws Exception {
+        Assertion.aver(JDNSS.jargs.keystoreFile != null);
+        Assertion.aver(JDNSS.jargs.keystorePassword!= null);
+
         SSLContext sslContext = SSLContext.getInstance("TLS");
 
         char[] password = JDNSS.jargs.keystorePassword.toCharArray();

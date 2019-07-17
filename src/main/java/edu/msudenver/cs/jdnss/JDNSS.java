@@ -67,6 +67,7 @@ class JDNSS {
                 case "UDP": new UDP(parts).start(); break;
                 case "MC": new MC(parts).start(); break;
                 case "TLS": new TCP(parts).start(); break;
+                case "HTTPS": new HTTPS(parts); break;
                 default:
                     Assertion.fail("Invalid IP address specification");
                     System.exit(-1);
@@ -154,59 +155,6 @@ class JDNSS {
         }
     }
 
-    private void readPrefs() {
-        try {
-            InputStream is = new BufferedInputStream(new FileInputStream(jargs.prefsFile));
-            Preferences.importPreferences(is);
-        } catch (IOException | InvalidPreferencesFormatException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        Preferences prefs = Preferences.userRoot().node("edu/msudenver/cs/jdnss");
-        try {
-            for (String s: prefs.keys()) {
-                switch(s) {
-                    case "IPaddresses":
-                        String addresses = prefs.get("IPaddresses", "");
-                        jargs.IPaddresses = addresses.split("\\s*,\\s*");
-                        break;
-                    case "serverSecret":
-                        jargs.serverSecret = prefs.get("serverSecret", "");
-                        break;
-                    case "keystoreFile":
-                        jargs.serverSecret = prefs.get("keystoreFile", "");
-                        break;
-                    case "keystorePassword":
-                        jargs.serverSecret = prefs.get("keystorePassword", "");
-                        break;
-                    case "debugSSL":
-                        jargs.debugSSL = prefs.getBoolean("debugSSL", false);
-                        break;
-                    case "backlog":
-                        jargs.backlog = prefs.getInt("backlog", 4);
-                        break;
-                    case "logLevel":
-                        String level = prefs.get("logLevel", "ERROR");
-                        switch (level.toUpperCase()) {
-                            case "FATAL": jargs.logLevel = JDNSSLogLevels.FATAL; break;
-                            case "ERROR": jargs.logLevel = JDNSSLogLevels.ERROR; break;
-                            case "WARN": jargs.logLevel = JDNSSLogLevels.WARN; break;
-                            case "INFO": jargs.logLevel = JDNSSLogLevels.INFO; break;
-                            case "DEBUG": jargs.logLevel = JDNSSLogLevels.DEBUG; break;
-                            case "TRACE": jargs.logLevel = JDNSSLogLevels.TRACE; break;
-                            case "ALL": jargs.logLevel = JDNSSLogLevels.ALL; break;
-                            case "OFF": jargs.logLevel = JDNSSLogLevels.OFF; break;
-                        }
-                        break;
-                }
-            }
-        } catch (BackingStoreException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     /**
      * The main driver for the server; creates threads for TCP and UDP.
      */
@@ -214,7 +162,7 @@ class JDNSS {
         // i'm not sure of a better way to do this. i want command-line options to overwrite
         // the defaults.
         for (String arg: args) {
-            if (arg.startsWith("-IPAddresses") || arg.startsWith("--IPAddresses")) {
+            if (arg.startsWith("-IPaddresses") || arg.startsWith("--IPaddresses")) {
                 jargs.IPaddresses = null;
             }
         }

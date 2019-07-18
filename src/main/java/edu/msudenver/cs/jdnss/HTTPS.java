@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
+import java.util.Base64;
 
 // Source: https://stackoverflow.com/a/34483734
 
@@ -67,9 +68,19 @@ public class HTTPS {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            logger.debug(t.getRequestMethod());
-            logger.debug(t.getRequestHeaders());
-            logger.debug(t.getResponseBody());
+            System.out.println(t.getRequestMethod());
+            String query = t.getRequestURI().getQuery();
+            System.out.println(query);
+
+            String both[] = query.split("=");
+            Base64.getDecoder().decode(both[1]);
+
+            // getRequestBody()
+
+            for (String key: t.getRequestHeaders().keySet()) {
+                System.out.println(key);
+                System.out.println(t.getRequestHeaders().get(key));
+            }
 
             String response = "This is the response";
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");

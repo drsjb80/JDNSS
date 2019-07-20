@@ -19,6 +19,8 @@ public class HTTPS {
 
     public HTTPS(final String[] parts) {
         int port = Integer.parseInt(parts[2]);
+        Assertion.aver(false);
+
         try {
             InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(parts[1]), port);
 
@@ -73,7 +75,16 @@ public class HTTPS {
             System.out.println(query);
 
             String both[] = query.split("=");
-            Base64.getDecoder().decode(both[1]);
+            byte decoded[] = Base64.getDecoder().decode(both[1]);
+            System.out.println(Utils.toString(decoded));
+
+            Query q = new Query(decoded);
+            q.parseQueries(t.getRemoteAddress().toString());
+            System.out.println(q);
+
+            System.out.println("BEFORE CREATING QUERY");
+            Response r = new Response(q, false);
+            System.out.println(r);
 
             // getRequestBody()
 

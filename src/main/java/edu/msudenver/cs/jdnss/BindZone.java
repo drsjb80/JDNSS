@@ -128,13 +128,14 @@ class BindZone implements Zone {
      */
     public ArrayList<RR> get(final RRCode type, final String name) {
         final Map<String, ArrayList<RR>> h = getTable(type);
-        Assertion.aver(h != null);
         logger.trace(h);
+        Assertion.aver(h != null);
 
         ArrayList<RR> v = h.get(name);
         logger.traceExit(v);
-
+        logger.trace("Before assertion");
         Assertion.aver(v != null);
+        logger.trace("After assertion");
         return v;
     }
 }

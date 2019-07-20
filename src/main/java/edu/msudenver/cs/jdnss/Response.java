@@ -1,5 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
+import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
@@ -10,6 +11,7 @@ enum ResponseSection {
     ANSWER, ADDITIONAL, AUTHORITY
 }
 
+@ToString
 class Response {
     private final Logger logger = JDNSS.logger;
 
@@ -79,6 +81,7 @@ class Response {
     }
 
     private void noResourceRecord() {
+        logger.traceEntry();
         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
         numAuthorities = 1;
         if (DNSSEC) {
@@ -87,10 +90,13 @@ class Response {
             addNSECRecords(zone.getName());
             addRRSignature(RRCode.NSEC, zone.getName(), authority, ResponseSection.AUTHORITY);
         }
+        logger.traceExit();
     }
 
     private void doOneRR(final String name, final RRCode type,
             final ArrayList<RR> v, final boolean firstTime, final RR rr) {
+        logger.traceEntry();
+
         final byte[] add = rr.getBytes(name, minimum);
 
         if (UDP && (responses != null)
@@ -109,7 +115,9 @@ class Response {
         }
 
         if (firstTime && type != RRCode.NS && type != RRCode.DNSKEY) {
+            logger.trace("Before calling createAuthorities");
             createAuthorities(name);
+            logger.trace("After calling createAuthorities");
         }
 
         if (type == RRCode.MX) {
@@ -123,6 +131,8 @@ class Response {
             final ArrayList<RR> dnsKeyArrayList = zone.get(RRCode.DNSKEY, name);
             createAdditionals(dnsKeyArrayList, name);
         }
+
+        logger.traceExit();
     }
 
     private void setZone(final String name) {
@@ -220,6 +230,9 @@ class Response {
     private void createAuthorities(final String name) {
         logger.traceEntry(name);
         final ArrayList<RR> v = zone.get(RRCode.NS, zone.getName());
+        logger.trace("FUCK");
+        Assertion.aver(! v.isEmpty());
+        logger.trace("FUCK");
         logger.trace(v);
 
         for (RR nsrr : v) {
@@ -292,7 +305,9 @@ class Response {
     private Map.Entry<String, ArrayList<RR>> findRR(final RRCode type, final String name) {
         logger.traceEntry();
         try {
-            return Map.entry(name, zone.get(type, name));
+            Map.Entry ret =  Map.entry(name, zone.get(type, name));
+            logger.traceExit(ret);
+            return ret;
         } catch (AssertionError AE) {
             logger.debug("Didn't find: " + name);
 

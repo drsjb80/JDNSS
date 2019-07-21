@@ -19,7 +19,6 @@ public class HTTPS {
 
     public HTTPS(final String[] parts) {
         int port = Integer.parseInt(parts[2]);
-        Assertion.aver(false);
 
         try {
             InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(parts[1]), port);

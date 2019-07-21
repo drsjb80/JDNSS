@@ -6,6 +6,8 @@
 			86400 ; minimum
 			)
 
+    IN	A	192.168.1.1
+    IN  NS  example.com.
+
 www	IN	A	192.168.1.1
 
-    IN  NS  www.example.com.

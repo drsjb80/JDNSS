@@ -7,7 +7,9 @@ class Assertion extends Throwable {
      * @param assertion what to test
      */
     public static void aver(final boolean assertion) {
-        if (!(assertion)) throw new AssertionError("Assertion failed");
+        if (!(assertion)) {
+            throw new AssertionError("Assertion failed");
+        }
     }
 
     public static void aver(final boolean assertion, final String message) {

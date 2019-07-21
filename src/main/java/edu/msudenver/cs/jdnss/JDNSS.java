@@ -175,6 +175,16 @@ class JDNSS {
             System.exit(0);
         }
 
+        Thread.setDefaultUncaughtExceptionHandler(
+                new Thread.UncaughtExceptionHandler() {
+                    @Override public void uncaughtException(Thread t, Throwable e) {
+                        System.err.print("Exception in thread \"" + t.getName());
+                        System.err.println(e.getLocalizedMessage());
+                        System.err.println(e.fillInStackTrace().toString());
+                    }
+                }
+            )
+        ;
         setLogLevel();
         doargs();
 

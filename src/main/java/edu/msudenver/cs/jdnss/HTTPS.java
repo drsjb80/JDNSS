@@ -94,7 +94,12 @@ public class HTTPS {
 
             String response = "This is the response";
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            t.sendResponseHeaders(200, response.getBytes().length);
+
+            String encoded_response = Base64.getEncoder().encodeToString(response.getBytes());
+            System.out.println(encoded_response);
+            t.sendResponseHeaders(200, encoded_response.getBytes().length);
+            //t.sendResponseHeaders(200, response.getBytes().length);
+            //System.out.println(response);
 
             try (OutputStream os = t.getResponseBody()) {
                 os.write(response.getBytes());

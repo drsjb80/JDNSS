@@ -81,28 +81,22 @@ public class HTTPS {
             q.parseQueries(t.getRemoteAddress().toString());
             System.out.println(q);
 
-            System.out.println("BEFORE CREATING QUERY");
             Response r = new Response(q, false);
             System.out.println(r);
-
-            // getRequestBody()
 
             for (String key: t.getRequestHeaders().keySet()) {
                 System.out.println(key);
                 System.out.println(t.getRequestHeaders().get(key));
             }
 
-            String response = "This is the response";
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-            String encoded_response = Base64.getEncoder().encodeToString(response.getBytes());
+            String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
             System.out.println(encoded_response);
             t.sendResponseHeaders(200, encoded_response.getBytes().length);
-            //t.sendResponseHeaders(200, response.getBytes().length);
-            //System.out.println(response);
 
             try (OutputStream os = t.getResponseBody()) {
-                os.write(response.getBytes());
+                os.write(encoded_response.getBytes());
             }
         }
     }

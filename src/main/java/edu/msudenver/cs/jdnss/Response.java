@@ -305,7 +305,7 @@ class Response {
     private Map.Entry<String, ArrayList<RR>> findRR(final RRCode type, final String name) {
         logger.traceEntry();
         try {
-            Map.Entry ret =  Map.entry(name, zone.get(type, name));
+            Map.Entry<java.lang.String, ArrayList<edu.msudenver.cs.jdnss.RR>> ret =  Map.entry(name, zone.get(type, name));
             logger.traceExit(ret);
             return ret;
         } catch (AssertionError AE) {

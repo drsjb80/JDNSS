@@ -3,7 +3,6 @@ package edu.msudenver.cs.jdnss;
 import com.sun.net.httpserver.*;
 import org.apache.logging.log4j.Logger;
 
-
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
-
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -76,40 +74,14 @@ public class HTTPS {
         @Override
         public void handle(HttpExchange t) throws IOException {
             Response r = null;
-            Query q;
-            System.out.println(t.getRequestMethod());
-            String query = t.getRequestURI().getQuery();
-//            System.out.println(query);
 
-            if (t.getRequestMethod().equals("GET")){
-                String both[] = query.split("=");
-                byte decoded[] = Base64.getDecoder().decode(both[1]);
-                System.out.println(Utils.toString(decoded));
-                q = new Query(decoded);
-                q.parseQueries(t.getRemoteAddress().toString());
-                System.out.println(q);
-                System.out.println("GET request ");
-                r = new Response(q, false);
-                System.out.println(r);
-            }
-            if (t.getRequestMethod().equals("POST")) {
-                List<Byte> ar = new ArrayList<Byte>();
-                InputStream is = t.getRequestBody();
-                int c;
-                while ((c = is.read()) != -1) {
-                    ar.add((byte) c);
-                }
-                byte[] post_query = new byte[ar.size()];
-                int count = 0;
-                for (Byte b: ar) {
-                    post_query[count++] = b;
-
-                }
-                System.out.println(Utils.toString(post_query));
-                q = new Query(post_query);
-                q.parseQueries(t.getRemoteAddress().toString());
-                r = new Response(q, false);
-                System.out.println(r);
+            switch (t.getRequestMethod()) {
+                case "GET":
+                    r = getResponse(t);
+                    break;
+                case "POST":
+                    r = postResponse(t);
+                    break;
             }
             for (String key : t.getRequestHeaders().keySet()) {
                 System.out.println(key);
@@ -125,6 +97,42 @@ public class HTTPS {
             try (OutputStream os = t.getResponseBody()) {
                 os.write(encoded_response.getBytes());
            }
+        }
+
+        private Response postResponse(HttpExchange t) throws IOException {
+            Query q;
+            Response r;
+            List<Byte> ar = new ArrayList<>();
+
+            try (InputStream is = t.getRequestBody()) {
+                int c;
+                while ((c = is.read()) != -1) {
+                    ar.add((byte) c);
+                }
+            }
+
+            byte[] post_query = new byte[ar.size()];
+            int count = 0;
+            for (Byte b : ar) {
+                post_query[count++] = b;
+            }
+
+            q = new Query(post_query);
+            q.parseQueries(t.getRemoteAddress().toString());
+            r = new Response(q, false);
+            return r;
+        }
+
+        private Response getResponse(HttpExchange t) {
+            Query q;
+            Response r;
+            String[] both = t.getRequestURI().getQuery().split("=");
+            byte[] decoded = Base64.getDecoder().decode(both[1]);
+
+            q = new Query(decoded);
+            q.parseQueries(t.getRemoteAddress().toString());
+            r = new Response(q, false);
+            return r;
         }
     }
 

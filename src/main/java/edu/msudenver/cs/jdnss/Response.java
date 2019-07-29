@@ -230,9 +230,7 @@ class Response {
     private void createAuthorities(final String name) {
         logger.traceEntry(name);
         final ArrayList<RR> v = zone.get(RRCode.NS, zone.getName());
-        logger.trace("FUCK");
         Assertion.aver(! v.isEmpty());
-        logger.trace("FUCK");
         logger.trace(v);
 
         for (RR nsrr : v) {

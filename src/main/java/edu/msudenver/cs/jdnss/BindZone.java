@@ -7,11 +7,9 @@ package edu.msudenver.cs.jdnss;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-class BindZone implements Zone {
+class BindZone extends Zone {
     @Getter private String name;
 
     /*
@@ -20,9 +18,14 @@ class BindZone implements Zone {
     ** in the single table...
     */
 
-    private final Map<RRCode, Map<String, ArrayList<RR>>> tableOfTables = new HashMap<>();
+    private final Map<RRCode, Map<String, List<RR>>> tableOfTables = new HashMap<>();
 
     private final Logger logger = JDNSS.logger;
+
+    BindZone() { this.name = null; }
+
+    @Override
+    boolean isEmpty() { return this.name == null; }
 
     BindZone(final String name) {
         this.name = name;
@@ -43,13 +46,14 @@ class BindZone implements Zone {
         tableOfTables.put(RRCode.NSEC3PARAM, new HashMap<>());
     }
 
+
     /**
      * Create a printable String.
      *
      * @param h a HashMap
      * @return the contents in String form
      */
-    private String dumphash(final Map<String, ArrayList<RR>> h) {
+    private String dumphash(final Map<String, List<RR>> h) {
         String s = "";
 
         for (String foo : h.keySet()) {
@@ -76,11 +80,11 @@ class BindZone implements Zone {
         return s;
     }
 
-    private Map<String, ArrayList<RR>> getTable(final RRCode type) {
-
-        final Map<String, ArrayList<RR>> ret = tableOfTables.get(type);
-
-        Assertion.aver(ret != null);
+    private Map<String, List<RR>> getTable(final RRCode type) {
+        final Map<String, List<RR>> ret = tableOfTables.get(type);
+        if (ret == null) {
+            return Collections.emptyMap();
+        }
 
         return ret;
     }
@@ -99,11 +103,11 @@ class BindZone implements Zone {
             this.name = name;
         }
 
-        Map<String, ArrayList<RR>> h = getTable(rr.getType());
+        Map<String, List<RR>> h = getTable(rr.getType());
 
         logger.trace(h.get(name));
 
-        ArrayList<RR> value = h.get(name);
+        List<RR> value = h.get(name);
 
         /*
         ** if there isn't already a entry
@@ -120,23 +124,27 @@ class BindZone implements Zone {
     }
 
     /**
-     * Get the ArrayList for a particular name.
+     * Get the List for a particular name.
      *
      * @param type the query type
      * @param name the name
      * @return a ArrayList with the appropriate addresses for the given name
      */
-    public ArrayList<RR> get(final RRCode type, final String name) {
+    public List<RR> get(final RRCode type, final String name) {
         logger.traceEntry(type.toString());
         logger.traceEntry(name);
 
-        final Map<String, ArrayList<RR>> h = getTable(type);
+        final Map<String, List<RR>> h = getTable(type);
         logger.trace(h);
-        Assertion.aver(h != null);
+        if (h.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        ArrayList<RR> v = h.get(name);
+        List<RR> v = h.get(name);
         logger.trace(v);
-        Assertion.aver(v != null);
+        if (v == null) {
+            return Collections.emptyList();
+        }
         return v;
     }
 }

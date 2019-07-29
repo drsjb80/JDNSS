@@ -36,7 +36,6 @@ class Utils {
             }
         }
 
-        Assertion.aver(longest != null);
         logger.traceExit(longest);
         return longest;
     }

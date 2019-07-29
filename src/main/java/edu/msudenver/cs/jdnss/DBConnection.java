@@ -4,9 +4,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 class DBConnection {
     private Connection conn;
@@ -66,11 +64,13 @@ class DBConnection {
                 conn.close();
             } catch (SQLException sqle2) {
                 logger.catching(sqle);
-                Assertion.fail();
+                return new DBZone();
             }
         }
 
-        Assertion.aver(v.size() != 0);
+        if (v.size() == 0) {
+            return new DBZone();
+        }
 
         // then, find the longest that matches
         String s = Utils.findLongest(v, name);
@@ -78,8 +78,7 @@ class DBConnection {
 
         // then, populate a DBZone with what we found.
         try {
-            rs = stmt.executeQuery
-                    ("SELECT * FROM domains WHERE name = '" + s + "'");
+            rs = stmt.executeQuery ("SELECT * FROM domains WHERE name = '" + s + "'");
 
             rs.next();
             final int domainId = rs.getInt("id");
@@ -91,21 +90,19 @@ class DBConnection {
             return new DBZone(s, domainId, this);
         } catch (SQLException sqle) {
             try {
-                Assertion.aver(rs != null);
                 rs.close();
                 stmt.close();
                 conn.close();
             } catch (SQLException sqle2) {
                 logger.catching(sqle);
-                Assertion.fail();
+                return new DBZone();
             }
         }
 
-        Assertion.fail("DBConnection failed");
-        return null;    // have to have this or javac complains
+        return new DBZone();
     }
 
-    public Vector<RR> get(final RRCode type, final String name, final int domainId) {
+    public List<RR> get(final RRCode type, final String name, final int domainId) {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(domainId));
@@ -113,76 +110,60 @@ class DBConnection {
         try {
             String stype = type.name();
             logger.trace(stype);
-            Vector<RR> ret = new Vector<>();
+            List<RR> ret = new ArrayList<>();
             ResultSet rs = stmt.executeQuery(
                     "SELECT * FROM records where domain_id = " + domainId +
                             " AND name = \"" + name + "\"" +
                             " AND type = \"" + stype + "\"");
 
             while (rs.next()) {
-                String dbname = rs.getString("name");
-                String dbcontent = rs.getString("content");
-                int dbttl = rs.getInt("ttl");
-                int dbprio = rs.getInt("prio");
-
-                switch (type) {
-                    case SOA: {
-                        String s[] = dbcontent.split("\\s+");
-                        ret.add(new SOARR(dbname, s[0], s[1],
-                                Integer.parseInt(s[2]), Integer.parseInt(s[3]),
-                                Integer.parseInt(s[4]), Integer.parseInt(s[5]),
-                                Integer.parseInt(s[6]), dbttl));
-                        break;
-                    }
-                    case NS: {
-                        ret.add(new NSRR(dbname, dbttl, dbcontent));
-                        break;
-                    }
-                    case A: {
-                        ret.add(new ARR(dbname, dbttl, dbcontent));
-                        break;
-                    }
-                    case AAAA: {
-                        ret.add(new AAAARR(dbname, dbttl, dbcontent));
-                        break;
-                    }
-                    case MX: {
-                        ret.add(new MXRR(dbname, dbttl, dbcontent, dbprio));
-                        break;
-                    }
-                    case TXT: {
-                        ret.add(new TXTRR(dbname, dbttl, dbcontent));
-                        break;
-                    }
-                    case CNAME: {
-                        ret.add(new CNAMERR(dbname, dbttl, dbcontent));
-                        break;
-                    }
-                    case PTR: {
-                        ret.add(new PTRRR(dbname, dbttl, dbcontent));
-                        break;
-                    }
-                    case HINFO: {
-                        final String s[] = dbcontent.split("\\s+");
-                        ret.add(new HINFORR(dbname, dbttl, s[0], s[1]));
-                        break;
-                    }
-                    default: {
-                        logger.warn("requested type " + type +
-                                " for " + name + " not found");
-                        Assertion.fail();
-                    }
-                }
+                addRR(type, name, rs);
             }
 
-            Assertion.aver(ret.size() != 0);
             return ret;
         } catch (SQLException sqle) {
             logger.catching(sqle);
-            Assertion.fail();
         }
 
-        Assertion.aver(false);
-        return null;    // have to have this or javac complains
+        return Collections.emptyList();
+    }
+
+    private RR addRR(final RRCode type, final String name, final ResultSet rs) throws SQLException {
+        final String dbname = rs.getString("name");
+        final String dbcontent = rs.getString("content");
+        final int dbttl = rs.getInt("ttl");
+        final int dbprio = rs.getInt("prio");
+        final RR emptyRR = new EmptyRR();
+
+        switch (type) {
+            case SOA: {
+                String[] s = dbcontent.split("\\s+");
+                return new SOARR(dbname, s[0], s[1],
+                        Integer.parseInt(s[2]), Integer.parseInt(s[3]),
+                        Integer.parseInt(s[4]), Integer.parseInt(s[5]),
+                        Integer.parseInt(s[6]), dbttl);
+            }
+            case NS: { return new NSRR(dbname, dbttl, dbcontent); }
+            case A: { return new ARR(dbname, dbttl, dbcontent); }
+            case AAAA: { return new AAAARR(dbname, dbttl, dbcontent); }
+            case MX: { return new MXRR(dbname, dbttl, dbcontent, dbprio); }
+            case TXT: { return new TXTRR(dbname, dbttl, dbcontent); }
+            case CNAME: { return new CNAMERR(dbname, dbttl, dbcontent); }
+            case PTR: { return new PTRRR(dbname, dbttl, dbcontent); }
+            case HINFO: {
+                final String[] s = dbcontent.split("\\s+");
+                return new HINFORR(dbname, dbttl, s[0], s[1]);
+            }
+            case RRSIG:
+            case NSEC:
+            case DNSKEY:
+            case NSEC3:
+            case NSEC3PARAM: { return emptyRR; }
+            default: {
+                logger.warn("requested type " + type + " for " + name + " not found");
+                break;
+            }
+        }
+        return emptyRR;
     }
 }

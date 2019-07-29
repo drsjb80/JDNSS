@@ -5,15 +5,18 @@ import org.apache.logging.log4j.message.ObjectMessage;
 
 import java.util.ArrayList;
 
-class DBZone implements Zone
-{
+class DBZone extends Zone {
     private static final Logger logger = JDNSS.logger;
     private final String zoneName;
 
+    DBZone() { zoneName = null; }
+
+    @Override
+    boolean isEmpty() { return zoneName == null; }
+
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS
-    DBZone(final String zoneName, final int domainId,
-        final DBConnection dbConnection)
+    DBZone(final String zoneName, final int domainId, final DBConnection dbConnection)
     {
         this.zoneName = zoneName;
         int domainId1 = domainId;

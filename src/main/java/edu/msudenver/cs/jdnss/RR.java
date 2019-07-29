@@ -40,6 +40,8 @@ abstract class RR {
     @Getter private final int rrclass = 1;
     @Getter private final int ttl;
 
+    boolean isEmpty() { return false; };
+
     RR(final String name, final RRCode type, final int ttl) {
         this.name = name;
         this.type = type;
@@ -90,6 +92,22 @@ abstract class RR {
     protected abstract byte[] getBytes();
 }
 
+class EmptyRR extends RR {
+    EmptyRR() {
+        super(null, null, -1);
+    }
+
+    @Override
+    boolean isEmpty() {
+        return true;
+    }
+
+    @Override
+    protected byte[] getBytes() {
+        assert false;
+        return new byte[0];
+    }
+}
 /**
  * Just a simple class for queries.
  */

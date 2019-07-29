@@ -1,11 +1,10 @@
 package edu.msudenver.cs.jdnss;
 
+import lombok.NonNull;
 import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 enum ResponseSection {
     ANSWER, ADDITIONAL, AUTHORITY
@@ -40,13 +39,13 @@ class Response {
         for (Queries q : query.getQueries()) {
             String name = q.getName();
             final RRCode type = q.getType();
-            ArrayList<RR> v = new ArrayList<>();
+            List<RR> v = new ArrayList<>();
 
-            try {
-                setZone(name);
-                setMinimum();
-            } catch (AssertionError AE) {
-                logger.catching(AE);
+            if (! setZone(name)) {
+                break;
+            }
+
+            if (! setMinimum()) {
                 break;
             }
 
@@ -55,14 +54,15 @@ class Response {
                 maximumPayload = query.getOptrr().getPayloadSize();
             }
 
-            try {
-                final Map.Entry<String, ArrayList<RR>> stringAndArrayList = findRR(type, name);
+
+            final Map.Entry<String, List<RR>> stringAndArrayList = findRR(type, name);
+            if (stringAndArrayList.getValue().isEmpty()) {
+                noResourceRecord();
+            } else {
                 name = stringAndArrayList.getKey();
                 v = stringAndArrayList.getValue();
-            } catch (AssertionError AE2) {
-                logger.catching(AE2);
-                noResourceRecord();
             }
+
 
             boolean firstTime = true;
             for (RR rr : v) {
@@ -94,7 +94,7 @@ class Response {
     }
 
     private void doOneRR(final String name, final RRCode type,
-            final ArrayList<RR> v, final boolean firstTime, final RR rr) {
+                         final List<RR> v, final boolean firstTime, final RR rr) {
         logger.traceEntry();
 
         final byte[] add = rr.getBytes(name, minimum);
@@ -128,35 +128,38 @@ class Response {
             createAorAAAA(rr.getString(), name);
         }
         if (DNSSEC && type == RRCode.SOA) {
-            final ArrayList<RR> dnsKeyArrayList = zone.get(RRCode.DNSKEY, name);
+            final List<RR> dnsKeyArrayList = zone.get(RRCode.DNSKEY, name);
             createAdditionals(dnsKeyArrayList, name);
         }
 
         logger.traceExit();
     }
 
-    private void setZone(final String name) {
-        try {
-            zone = JDNSS.getZone(name);
-        } catch (AssertionError AE) {
+    private boolean setZone(@NonNull final String name) {
+        zone = JDNSS.getZone(name);
+        if (zone.isEmpty()) {
             logger.debug("Zone lookup of " + name + " failed");
             header.setRcode(ErrorCodes.REFUSED.getCode());
             header.setAA(false);
-            throw AE;
+            return false;
         }
+        return true;
     }
 
-    private void setMinimum() {
-        final ArrayList<RR> w;
-        try {
-            w = zone.get(RRCode.SOA, zone.getName());
-            SOA = (SOARR) w.get(0);
-            minimum = SOA.getMinimum();
-        } catch (AssertionError AE) {
-            logger.debug("SOA lookup in " + zone.getName() + " failed");
-            header.setRcode(ErrorCodes.SERVFAIL.getCode());
-            throw AE;
+    private boolean setMinimum() {
+        String name = zone.getName();
+        assert name != null;
+
+        final List<RR> w = zone.get(RRCode.SOA, name);
+        if (w.isEmpty()) {
+            logger.debug("SOA lookup of " + name + " failed");
+            header.setAA(false);
+            header.setRcode(ErrorCodes.REFUSED.getCode());
+            return false;
         }
+        SOA = (SOARR) w.get(0);
+        minimum = SOA.getMinimum();
+        return true;
     }
 
     private void addAuthorities() {
@@ -189,29 +192,19 @@ class Response {
      * Given a zone and an MX or NS hostname, see if there is an A or AAAA
      * record we can also send back...
      */
-    private void createAorAAAA(final String host, final String name) {
+    private void createAorAAAA(@NonNull final String host, @NonNull final String name) {
         logger.traceEntry();
-        Assertion.aver(host != null);
-        Assertion.aver(name != null);
 
         for (RRCode rrCode: Arrays.asList(RRCode.A, RRCode.AAAA)) {
-            try {
-                final ArrayList<RR> v = zone.get(rrCode, host);
+            final List<RR> v = zone.get(rrCode, host);
+            if (! v.isEmpty()) {
                 createAdditionals(v, host);
-
-            /*
-            if (DNSSEC) {
-                addRRSignature(RRCode.A, name, additional, ResponseSection.ADDITIONAL);
-            }
-            */
-            } catch (AssertionError AE) {
-                // if the first one isn't found, try the second
             }
         }
     }
 
     // put the possible additionals in, but don't add to response until we know there is room for them.
-    private void createAdditionals(final ArrayList<RR> v, final String host) {
+    private void createAdditionals(final List<RR> v, final String host) {
         logger.traceEntry();
         final RRCode type = v.get(0).getType();
 
@@ -229,11 +222,7 @@ class Response {
     // there is room for them.
     private void createAuthorities(final String name) {
         logger.traceEntry(name);
-        final ArrayList<RR> v = zone.get(RRCode.NS, zone.getName());
-        logger.trace("FUCK");
-        Assertion.aver(! v.isEmpty());
-        logger.trace("FUCK");
-        logger.trace(v);
+        final List<RR> v = zone.get(RRCode.NS, zone.getName());
 
         for (RR nsrr : v) {
             authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(), minimum));
@@ -250,7 +239,7 @@ class Response {
     private void addRRSignature(final RRCode type, final String name, final byte[] destination,
                                 final ResponseSection section) {
         logger.traceEntry(name);
-        final ArrayList<RR> rrsigv = zone.get(RRCode.RRSIG, name);
+        final List<RR> rrsigv = zone.get(RRCode.RRSIG, name);
         for (RR foo : rrsigv) {
             final RRSIG rrsig = (RRSIG) foo;
             if (rrsig.getTypeCovered() == type) {
@@ -294,7 +283,7 @@ class Response {
 
     private void addNSECRecords(final String name) {
         logger.traceEntry();
-        final ArrayList<RR> nsecv = zone.get(RRCode.NSEC, zone.getName());
+        final List<RR> nsecv = zone.get(RRCode.NSEC, zone.getName());
 
         final NSECRR nsec = (NSECRR) nsecv.get(0);
         final byte[] add = nsec.getBytes(name, minimum);
@@ -302,22 +291,22 @@ class Response {
         numAuthorities++;
     }
 
-    private Map.Entry<String, ArrayList<RR>> findRR(final RRCode type, final String name) {
+    private Map.Entry<String, List<RR>> findRR(final RRCode type, final String name) {
         logger.traceEntry();
-        try {
-            Map.Entry<java.lang.String, ArrayList<edu.msudenver.cs.jdnss.RR>> ret =  Map.entry(name, zone.get(type, name));
-            logger.traceExit(ret);
-            return ret;
-        } catch (AssertionError AE) {
+        List<RR> list = zone.get(type, name);
+        if (list.isEmpty()) {
             logger.debug("Didn't find: " + name);
-
             if (type != RRCode.AAAA && type != RRCode.A) {
                 nameNotFound(type, name);
-                throw AE;
+                return Map.entry("", Collections.emptyList());
             } else {
                 return lookForCNAME(type, name);
             }
         }
+        Map.Entry<java.lang.String, List<edu.msudenver.cs.jdnss.RR>> ret =
+                Map.entry(name, list);
+        logger.traceExit(ret);
+        return ret;
     }
 
     private void nameNotFound(final RRCode type, final String name) {
@@ -326,39 +315,35 @@ class Response {
             throw new AssertionError();
         }
 
-        switch (type) {
-            case MX:
-                logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
-                header.setRcode(ErrorCodes.NOERROR.getCode());
-                break;
-            default:logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
-                header.setRcode(ErrorCodes.NAMEERROR.getCode());
-                break;
+        if (type == RRCode.MX) {
+            logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
+            header.setRcode(ErrorCodes.NOERROR.getCode());
+        } else {
+            logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
+            header.setRcode(ErrorCodes.NAMEERROR.getCode());
         }
     }
 
-    private Map.Entry<String, ArrayList<RR>> lookForCNAME(final RRCode type, final String name) {
+    private Map.Entry<String, List<RR>> lookForCNAME(final RRCode type, final String name) {
         logger.traceEntry();
         logger.debug("Looking for a CNAME for " + name);
 
-        try {
-            final ArrayList<RR> u = zone.get(RRCode.CNAME, name);
-            final String s = u.get(0).getString();
-            Assertion.aver(s != null);
+        final Map.Entry<String, List<RR>> empty = Map.entry("", Collections.emptyList());
 
-            final ArrayList<RR> v = zone.get(type, s);
+        final List<RR> u = zone.get(RRCode.CNAME, name);
+        if (u.isEmpty()) {
+            dealWithOther(type, name);
+            return empty;
+        }
+
+        final String s = u.get(0).getString();
+        final List<RR> v = zone.get(type, s);
+        if (! v.isEmpty()) {
             responses = Utils.combine(responses, u.get(0).getBytes(name, minimum));
             header.incrementNumAnswers();
-
-            Assertion.aver(v != null);
             return Map.entry(s, v);
-        } catch (AssertionError AE) {
-            logger.debug("Didn't find a CNAME for " + name);
-
-            dealWithOther(type, name);
         }
-        //Should have already returned or errored by this point
-        return null;
+        return empty;
     }
 
     /*
@@ -377,20 +362,17 @@ class Response {
     private void dealWithOther(final RRCode type, final String name) {
         logger.traceEntry();
         final RRCode other = type == RRCode.A ? RRCode.AAAA : RRCode.A;
-        try {
-            // only doing this to see if get throws an AssertionError
-            final ArrayList<RR> v = zone.get(other, name);
-        } catch (AssertionError AE) {
+
+        final List<RR> v = zone.get(other, name);
+        if (v.isEmpty()) {
             logger.debug(type.toString() + " lookup of " + name + " failed");
-            //TODO I think we should be adding NSEC RR to prove that the record does not exist
             header.setRcode(ErrorCodes.NAMEERROR.getCode());
-            throw AE;
+            return;
         }
 
         if (DNSSEC) {
             addNSECRecords(name);
         }
-        throw new AssertionError("lookup other failed");
     }
 
     byte[] getBytes() {

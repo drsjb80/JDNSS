@@ -12,9 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.Preferences;
 
 class JDNSS {
     // a few AOP singletons
@@ -31,31 +28,28 @@ class JDNSS {
      * @return the associated Zone
      * @see Zone
      */
-     static Zone getZone(String name) {
+    static Zone getZone(String name) {
         logger.traceEntry(new ObjectMessage(name));
 
-        String longest = null;
+        String longest = Utils.findLongest(bindZones.keySet(), name);
 
-        // first, see if it's in the files
-        try {
-            longest = Utils.findLongest(bindZones.keySet(), name);
-        } catch (AssertionError AE) {
-            // see if we have a DB connection and try there
+        if (longest == null) {
             if (DBConnection != null) {
-                DBZone d;
-                try {
-                    d = DBConnection.getZone(name);
-                    return d;
-                } catch (AssertionError AE2) {
-                    Assertion.fail();
+                DBZone d = DBConnection.getZone(name);
+                if (d.isEmpty()) {
+                    return new BindZone();
                 }
+                return d;
             }
-
-            // it's not
-            Assertion.fail();
+            return new BindZone();
         }
 
-        return bindZones.get(longest);
+        Zone z = bindZones.getOrDefault(longest, null);
+        if (z == null) {
+            return new BindZone();
+        }
+
+        return z;
     }
 
     private static void start() {
@@ -63,10 +57,9 @@ class JDNSS {
             String[] parts = IPAddress.split("@");
 
             switch(parts[0]) {
-                case "TCP": new TCP(parts).start(); break;
+                case "TCP": case "TLS": new TCP(parts).start(); break;
                 case "UDP": new UDP(parts).start(); break;
                 case "MC": new MC(parts).start(); break;
-                case "TLS": new TCP(parts).start(); break;
                 case "HTTPS": new HTTPS(parts); break;
                 default:
                     Assertion.fail("Invalid IP address specification");
@@ -80,7 +73,6 @@ class JDNSS {
         Level level = Level.OFF;
 
         switch (jargs.logLevel) {
-            case OFF: level = Level.OFF; break;
             case FATAL: level = Level.FATAL; break;
             case ERROR: level = Level.ERROR; break;
             case WARN: level = Level.WARN; break;
@@ -89,8 +81,7 @@ class JDNSS {
             case TRACE: level = Level.TRACE; break;
             case ALL: level = Level.ALL; break;
             default:
-                Assertion.fail("Invalid log level");
-                System.exit(-1);
+                logger.warn("Invalid log level");
                 break;
         }
 

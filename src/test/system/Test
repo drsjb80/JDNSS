@@ -4,6 +4,7 @@
 
 #	name		file		query	type
 # tests=( 'subdomain	subdomain.com  	www.subdomain.com' )
+# tests=('Nohost	SOA.com		www.SOA.com')
 
 # 5353 used by Bonjour?
 PORT=5354
@@ -42,8 +43,11 @@ do
         ;;
     esac
 
+    # LOGLEVEL=""
+    LOGLEVEL="--logLevel=ALL"
+
     JAR='../../../target/jdnss-2.1.jar'
-    JDNSS="java $DEBUG -jar $JAR $JDNSSARGS --logLevel=OFF --once=true --serverSecret=0123456789abcdef0123456789abcdef"
+    JDNSS="java $DEBUG -jar $JAR $JDNSSARGS $LOGLEVEL --once=true --serverSecret=0123456789abcdef0123456789abcdef"
 
     $JDNSS zone_files/$file &
     if [[ $name == 'TCP' ]]

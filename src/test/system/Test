@@ -43,8 +43,8 @@ do
         ;;
     esac
 
-    # LOGLEVEL=""
-    LOGLEVEL="--logLevel=ALL"
+    LOGLEVEL=""
+    # LOGLEVEL="--logLevel=ALL"
 
     JAR='../../../target/jdnss-2.1.jar'
     JDNSS="java $DEBUG -jar $JAR $JDNSSARGS $LOGLEVEL --once=true --serverSecret=0123456789abcdef0123456789abcdef"

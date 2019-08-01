@@ -40,7 +40,7 @@ abstract class RR {
     @Getter private final int rrclass = 1;
     @Getter private final int ttl;
 
-    boolean isEmpty() { return false; };
+    boolean isEmpty() { return false; }
 
     RR(final String name, final RRCode type, final int ttl) {
         this.name = name;
@@ -65,11 +65,11 @@ abstract class RR {
      */
     public byte[] getBytes(final String question, final int TTLminimum) {
         final int minttl = ttl == 0 ? TTLminimum : ttl;
-        final byte name[] = Utils.convertString(question);
-        final byte rdata[] = getBytes();
+        final byte[] name = Utils.convertString(question);
+        final byte[] rdata = getBytes();
         final int rdatalen = rdata.length;
         final int count = name.length + 2 + 2 + 4 + 2 + rdatalen;
-        final byte a[] = new byte[count];
+        final byte[] a = new byte[count];
         System.arraycopy(name, 0, a, 0, name.length);
 
         int where = name.length;
@@ -172,7 +172,7 @@ class SOARR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte a[] = Utils.convertString(server);
+        byte[] a = Utils.convertString(server);
         a = Utils.combine(a, Utils.convertString(contact));
         a = Utils.combine(a, Utils.getBytes(serial));
         a = Utils.combine(a, Utils.getBytes(refresh));
@@ -217,7 +217,7 @@ class MXRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte c[] = new byte[2];
+        byte[] c = new byte[2];
         c[0] = Utils.getByte(preference, 2);
         c[1] = Utils.getByte(preference, 1);
 
@@ -333,7 +333,7 @@ class DNSKEYRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte a[] = new byte[0];
+        byte[] a = new byte[0];
         a = Utils.combine(a, Utils.getTwoBytes(flags, 2));
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
@@ -371,7 +371,7 @@ class NSEC3RR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte a[] = new byte[0];
+        byte[] a = new byte[0];
         a = Utils.combine(a, Utils.getByte(hashAlgorithm, 1));
         a = Utils.combine(a, Utils.getByte(flags, 2));
         a = Utils.combine(a, Utils.getTwoBytes(iterations, 1));
@@ -444,7 +444,7 @@ class RRSIG extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte a[] = new byte[0];
+        byte[] a = new byte[0];
         a = Utils.combine(a, Utils.getTwoBytes(typeCovered.getCode(), 2));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         a = Utils.combine(a, Utils.getByte(labels, 1));
@@ -494,8 +494,8 @@ class NSECRR extends RR {
             }
         }
         int length = (largestRcode + 8)/8;
-        byte bitMap[] = new byte[length];
-        byte a[] = {0x00};
+        byte[] bitMap = new byte[length];
+        byte[] a = {0x00};
         a = Utils.combine(a ,(byte) length);
         a = Utils.combine(a, setBits(bitMap));
         return a;

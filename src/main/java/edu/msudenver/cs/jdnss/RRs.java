@@ -63,7 +63,7 @@ class RRs {
                 StringAndNumber = Utils.parseName(location, buffer);
             } catch (AssertionError ae) {
                 questions[i] = null;
-                Assertion.fail();
+                assert false;
             }
 
             location = StringAndNumber.getValue();

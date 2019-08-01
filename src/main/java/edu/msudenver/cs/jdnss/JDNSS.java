@@ -66,7 +66,7 @@ class JDNSS {
                 case "MC": new MC(parts).start(); break;
                 case "HTTPS": new HTTPS(parts); break;
                 default:
-                    Assertion.fail("Invalid IP address specification");
+                    logger.error("Invalid IP address specification");
                     System.exit(-1);
                     break;
             }

@@ -221,7 +221,7 @@ public class RRsTest
             epoch = fdt.getTime();
             secondValue = (int) (epoch / 1000);
         } catch(ParseException e){
-            Assertion.fail();
+            assert false;
         }
         RRSIG rr = new RRSIG("test.com", 86400, RRCode.SOA,
         10, 2, 86400, firstValue, secondValue, 12023,

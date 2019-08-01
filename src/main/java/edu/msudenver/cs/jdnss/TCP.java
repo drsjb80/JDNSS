@@ -1,7 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.util.Assert;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -37,8 +36,8 @@ class TCP extends Thread {
 
         switch(type) {
             case "TLS":
-                Assertion.aver(JDNSS.jargs.keystoreFile != null);
-                Assertion.aver(JDNSS.jargs.keystorePassword!= null);
+                assert JDNSS.jargs.keystoreFile != null;
+                assert JDNSS.jargs.keystorePassword!= null;
                 System.setProperty("javax.net.ssl.keyStore", JDNSS.jargs.keystoreFile);
                 System.setProperty("javax.net.ssl.keyStorePassword", JDNSS.jargs.keystorePassword);
                 if (JDNSS.jargs.debugSSL) {
@@ -63,7 +62,7 @@ class TCP extends Thread {
                 }
                 break;
             default:
-                Assertion.fail("Invalid type: " + type);
+                assert false;
                 return;
         }
 

@@ -50,12 +50,12 @@ abstract class RR {
 
     // to enhance polymorphism and decrease casting for derived classes
     String getString() {
-        Assertion.fail();
+        assert false;
         return null;
     }
 
     String getHost() {
-        Assertion.fail();
+        assert false;
         return null;
     }
 
@@ -340,7 +340,7 @@ class DNSKEYRR extends RR {
         try {
             a = Utils.combine(a, Base64.getDecoder().decode(publicKey.getBytes()));
         } catch (Exception e ){
-            Assertion.fail();
+            assert false;
         }
         return a;
     }
@@ -375,16 +375,14 @@ class NSEC3RR extends RR {
         a = Utils.combine(a, Utils.getByte(hashAlgorithm, 1));
         a = Utils.combine(a, Utils.getByte(flags, 2));
         a = Utils.combine(a, Utils.getTwoBytes(iterations, 1));
-        // Assertion.aver(Utils.getByte(salt.length() == 24);
         a = Utils.combine(a, Utils.getByte(salt.length(), 1));
         a = Utils.combine(a, Utils.convertString(salt));
-        // Assertion.aver(Utils.getByte(salt.length() == 24);
         a = Utils.combine(a,
                 Utils.getByte(this.nextHashedOwnerName.length(), 1));
         a = Utils.combine(a,
                 Utils.convertString(nextHashedOwnerName));
 
-        Assertion.aver(false, "This needs to be checked and fixed.");
+        assert false;
         return a;
     }
 }
@@ -408,7 +406,7 @@ class NSEC3PARAMRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        Assertion.fail("This needs to be checked and fixed.");
+        assert false;
         return null;
     }
 }
@@ -460,7 +458,7 @@ class RRSIG extends RR {
         try {
             a = Utils.combine(a, Base64.getDecoder().decode(signature.getBytes()));
         } catch (Exception e ){
-            Assertion.fail();
+            assert false;
         }
         return a;
     }

@@ -19,6 +19,10 @@ class JDNSS {
     static final Logger logger = LogManager.getLogger("JDNSS");
     private static DBConnection DBConnection;
 
+    static {
+        ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+	}
+
     private static final Map<String, Zone> bindZones = new HashMap<>();
 
     /**

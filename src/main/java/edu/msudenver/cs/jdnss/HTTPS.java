@@ -137,8 +137,8 @@ public class HTTPS {
     }
 
     private SSLContext getSslContext() throws Exception {
-        Assertion.aver(JDNSS.jargs.keystoreFile != null);
-        Assertion.aver(JDNSS.jargs.keystorePassword!= null);
+        assert JDNSS.jargs.keystoreFile != null;
+        assert JDNSS.jargs.keystorePassword!= null;
 
         SSLContext sslContext = SSLContext.getInstance("TLS");
 

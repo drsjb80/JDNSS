@@ -18,9 +18,9 @@ class Utils {
      * matches the end of s, and is the longest that does so.
      */
     static String findLongest(final Set<String> e, final String s) {
-        Assertion.aver(e != null);
-        Assertion.aver(s != null);
-        Assertion.aver(!s.equals(""));
+        assert e != null;
+        assert s != null;
+        assert !s.equals("");
 
         logger.traceEntry(s);
 
@@ -76,7 +76,7 @@ class Utils {
      * @return the requested byte
      */
     static byte getByte(int from, int which) {
-        Assertion.aver(which >= 1 && which <= 4);
+        assert which >= 1 && which <= 4;
 
         int shift = (which - 1) * 8;
         return (byte) ((from >>> shift) & 0xff);
@@ -90,7 +90,7 @@ class Utils {
      * @return the requested byte
      */
     private static byte getByte(long from, int which) {
-        Assertion.aver(which >= 1 && which <= 8);
+        assert which >= 1 && which <= 8;
 
         int shift = (which - 1) * 8;
         return (byte) ((from >>> shift) & 0xff);
@@ -104,7 +104,7 @@ class Utils {
      * @return the requested byte array
      */
     static byte[] getTwoBytes(int from, int which) {
-        Assertion.aver(which > 1 && which <= 4);
+        assert which > 1 && which <= 4;
 
         byte ret[] = new byte[2];
         ret[0] = getByte(from, which);
@@ -154,7 +154,7 @@ class Utils {
      * @return the requested nybble
      */
     static byte getNybble(int from, int which) {
-        Assertion.aver(which >= 1 && which <= 8);
+        assert which >= 1 && which <= 8;
 
         int shift = (which - 1) * 4;
         return (byte) ((from >>> shift) & 0x0f);
@@ -222,7 +222,7 @@ class Utils {
      * @return the converted form in bytes
      */
     static byte[] toCS(String s) {
-        Assertion.aver(s != null && !s.equals(""));
+        assert s != null && !s.equals("");
 
         byte a[] = new byte[1];
         a[0] = getByte(s.length(), 1);
@@ -237,7 +237,7 @@ class Utils {
      * @return the converted form in bytes
      */
     static byte[] convertString(String s) {
-        Assertion.aver(s != null && !s.equals(""));
+        assert s != null && !s.equals("");
 
         // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
@@ -270,7 +270,7 @@ class Utils {
      * @return byte array made from one and two
      */
     static byte[] combine(byte one[], byte two[]) {
-        Assertion.aver(one != null || two != null);
+        assert one != null || two != null;
 
         if (one == null) {
             return two;
@@ -300,9 +300,9 @@ class Utils {
     }
 
     static byte[] trimByteArray(byte[] old, int length) {
-        Assertion.aver(old != null, "Byte array is null");
-        Assertion.aver(length > 0, length + " is invalid");
-        Assertion.aver(length <= old.length, length + " is invalid");
+        assert old != null: "Byte array is null";
+        assert length > 0: length + " is invalid";
+        assert length <= old.length: length + " is invalid";
 
         byte ret[] = new byte[length];
         System.arraycopy(old, 0, ret, 0, length);
@@ -313,7 +313,7 @@ class Utils {
      * split the sting using the dots and reassemble backwards.
      */
     static String reverseIP(String s) {
-        Assertion.aver(s != null);
+        assert s != null;
 
         String a[] = s.split("\\.");
 
@@ -332,7 +332,7 @@ class Utils {
      * @return The reversed string
      */
     public static String reverse(String s) {
-        Assertion.aver(s != null);
+        assert s != null;
 
         return new StringBuilder(s).reverse().toString();
     }
@@ -345,8 +345,8 @@ class Utils {
      * @return the number of matches
      */
     static int count(String s, String c) {
-        Assertion.aver(s != null);
-        Assertion.aver(c != null);
+        assert s != null;
+        assert c != null;
 
         if (s.equals("")) return 0;
         if (c.equals("")) return 0;
@@ -510,7 +510,7 @@ class Utils {
 
         if (start >= buffer.length) {
             logger.warn("Illegal name");
-            Assertion.fail();
+            assert false;
         }
 
         int current = start;
@@ -523,7 +523,7 @@ class Utils {
 
             if (tmp >= start) {
                 logger.warn("Illegal name");
-                Assertion.fail();
+                assert false;
             }
 
             name.append(parseName(tmp, buffer).getKey());
@@ -554,7 +554,7 @@ class Utils {
 
                 if (tmp >= start) {
                     logger.warn("Illegal name");
-                    Assertion.fail();
+                    assert false;
                 }
 
                 name.append(parseName(tmp, buffer).getKey());

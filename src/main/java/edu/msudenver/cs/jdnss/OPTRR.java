@@ -33,7 +33,7 @@ class OPTRR {
      */
     OPTRR(byte[] bytes) {
         logger.traceEntry();
-        Assertion.aver(bytes[0] == 0);
+        assert bytes[0] == 0;
 
         int location = 1;
 
@@ -57,10 +57,7 @@ class OPTRR {
 
                     if (optionLength > 8) { // server cookie returned
                         // OPTION-LENGTH >= 16, <= 40 [rfc7873]
-                        Assertion.aver(optionLength == 16
-                                || optionLength == 24
-                                || optionLength == 32
-                                || optionLength == 40);
+                        assert optionLength == 16 || optionLength == 24 || optionLength == 32 || optionLength == 40;
                         serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
                     }
                     break;
@@ -74,7 +71,7 @@ class OPTRR {
 
     private int parseHeader(byte[] bytes, int location) {
         type = Utils.addThem(bytes[location++], bytes[location++]);
-        Assertion.aver(type == 41);
+        assert type == 41;
 
         payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
         logger.trace(payloadSize);
@@ -83,7 +80,7 @@ class OPTRR {
         logger.trace(extendedrcode);
 
         version = bytes[location++];
-        Assertion.aver(version == 0);
+        assert version == 0;
 
         flags = Utils.addThem(bytes[location++], bytes[location++]);
 

@@ -75,7 +75,7 @@ class Header {
     }
 
     private void checkValidity() {
-        Assertion.aver(opcode == 0);
+        assert opcode == 0;
 
         boolean good = false;
         for (ErrorCodes errorCode : ErrorCodes.values()) {
@@ -84,12 +84,12 @@ class Header {
                 break;
             }
         }
-        Assertion.aver(good);
+        assert good;
 
-        Assertion.aver(numAnswers >= 0 && numAnswers <= MAXIMUM_VALUE_FOR_TWO_BYTES);
-        Assertion.aver(numAuthorities >= 0 && numAuthorities <= MAXIMUM_VALUE_FOR_TWO_BYTES);
-        Assertion.aver(numAdditionals >= 0 && numAdditionals <= MAXIMUM_VALUE_FOR_TWO_BYTES);
-        Assertion.aver(numAdditionals >= 0 && numAdditionals <= MAXIMUM_VALUE_FOR_TWO_BYTES);
+        assert numAnswers >= 0 && numAnswers <= MAXIMUM_VALUE_FOR_TWO_BYTES;
+        assert numAuthorities >= 0 && numAuthorities <= MAXIMUM_VALUE_FOR_TWO_BYTES;
+        assert numAdditionals >= 0 && numAdditionals <= MAXIMUM_VALUE_FOR_TWO_BYTES;
+        assert numAdditionals >= 0 && numAdditionals <= MAXIMUM_VALUE_FOR_TWO_BYTES;
     }
 
     Header(byte buffer[]) {
@@ -103,22 +103,22 @@ class Header {
         numAuthorities = Utils.addThem(buffer[8], buffer[9]);
         numAdditionals = Utils.addThem(buffer[10], buffer[11]);
 
-        Assertion.aver(numQuestions > 0);
-        Assertion.aver(numAnswers == 0);
-        Assertion.aver(numAuthorities == 0);
+        assert numQuestions > 0;
+        assert numAnswers == 0;
+        assert numAuthorities == 0;
 
         int flags = Utils.addThem(buffer[2], buffer[3]);
 
         QR =      (flags & QR_BIT) != 0;
-        Assertion.aver(!QR);
+        assert ! QR;
         opcode =  (flags & OPCODE_BITS) >> 11;
         AA =      (flags & AA_BIT) != 0;
-        Assertion.aver(! AA);
+        assert ! AA;
         TC =      (flags & TC_BIT) != 0;
-        Assertion.aver(! TC);
+        assert ! TC;
         RD =      (flags & RD_BIT) != 0;
         RA =      (flags & RA_BIT) != 0;
-        Assertion.aver(! RA);
+        assert ! RA;
         AD =      (flags & AD_BIT) != 0;
         // can't assert because nslookup doesn't set this but dig does
         // so, we have to unset it

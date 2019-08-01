@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import static edu.msudenver.cs.jdnss.Assertion.aver;
-
 class TCPThread implements Runnable {
     private final Socket socket;
     private final Logger logger = JDNSS.logger;
@@ -34,14 +32,14 @@ class TCPThread implements Runnable {
         // in TCP, the first two bytes signify the length of the request
         byte buffer[] = new byte[2];
 
-        aver(is.read(buffer, 0, 2) == 2);
+        assert is.read(buffer, 0, 2) == 2;
 
         return Utils.addThem(buffer[0], buffer[1]);
     }
 
     private Query getQuery() throws IOException{
         byte query[] = new byte[getLength()];
-        aver(is.read(query) == query.length);
+        assert is.read(query) == query.length;
 
         Query q = new Query(query);
         q.parseQueries(socket.getInetAddress().toString());

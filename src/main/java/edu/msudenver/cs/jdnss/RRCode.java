@@ -50,7 +50,7 @@ enum RRCode {
     }
 
     int getCode() {
-        Assertion.aver(code != 0);
+        assert code != 0;
         return code;
     }
 

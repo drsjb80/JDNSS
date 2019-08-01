@@ -224,7 +224,7 @@ class Parser {
             logger.trace(Integer.toHexString(intValue));
         }
         catch(ParseException e){
-            Assertion.fail();
+            assert false;
         }
     }
 
@@ -311,7 +311,7 @@ class Parser {
         // up.
 
         final int t = getOneWord();
-        Assertion.aver(t == StreamTokenizer.TT_WORD);
+        assert t == StreamTokenizer.TT_WORD;
 
         // save the old one so we can get back to it.  if we're called
         // recursively, we're still good to go...
@@ -423,7 +423,7 @@ class Parser {
 
         final int flags = getInt("flags");
         final int protocol = getInt("protocol");
-        Assertion.aver(protocol == 3);
+        assert protocol == 3;
         final int algorithm = getInt("algorithm");
         getLeftParen();
 
@@ -435,7 +435,7 @@ class Parser {
         }
         inBase64 = false;
 
-        Assertion.aver(tok == RRCode.RPAREN);
+        assert tok == RRCode.RPAREN;
 
         zone.add(currentName,
                 new DNSKEYRR(currentName, currentTTL, flags, protocol,
@@ -493,8 +493,7 @@ class Parser {
         logger.traceEntry();
 
         final RRCode typeCovered = getNextToken();
-        Assertion.aver(isARR(typeCovered),
-                typeCovered + " not covered with RRSIG on line " + st.lineno());
+        assert isARR(typeCovered): typeCovered + " not covered with RRSIG on line " + st.lineno();
 
         final int algorithm = getInt("algorithm");
         final int labels = getInt("labels");
@@ -517,7 +516,7 @@ class Parser {
             signature += stringValue;
         }
         inBase64 = false;
-        Assertion.aver(tok == RRCode.RPAREN);
+        assert tok == RRCode.RPAREN;
 
         final RRSIG d = new RRSIG(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,
@@ -739,54 +738,54 @@ class Parser {
     }
 
     private int getInt(final String message) {
-        Assertion.aver(getNextToken() == RRCode.INT,
-                "Expecting " + message + " at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.INT: "Expecting " + message + " at line " + st.lineno();
         return intValue;
     }
 
     private void getLeftParen() {
-        Assertion.aver(getNextToken() == RRCode.LPAREN,
-                "Expecting left paren at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.LPAREN: "Expecting left paren at line " + st.lineno();
     }
 
     private void getRightParen() {
-        Assertion.aver(getNextToken() == RRCode.RPAREN,
-                "Expecting right paren at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.RPAREN: "Expecting right paren at line " + st.lineno();
     }
 
     private String getString() {
-        Assertion.aver(getNextToken() == RRCode.STRING,
-                "Expecting string at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.STRING: "Expecting string at line " + st.lineno();
         return stringValue;
     }
 
     private String getDomain() {
-        Assertion.aver(getNextToken() == RRCode.DN,
-                "Expecting domain at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.DN: "Expecting domain at line " + st.lineno();
         return stringValue;
     }
 
     private String getHex() {
-        Assertion.aver(getNextToken() == RRCode.HEX,
-                "Expecting hexadecimal at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.HEX: "Expecting hexadecimal at line " + st.lineno();
         return stringValue;
     }
 
     private int getDate() {
-        Assertion.aver(getNextToken() == RRCode.DATE,
-                "Expecting date at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.DATE: "Expecting date at line " + st.lineno();
         return intValue;
     }
 
     private String getIPV4ADDR() {
-        Assertion.aver(getNextToken() == RRCode.IPV4ADDR,
-                "Expecting IPV4ADDR at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.IPV4ADDR: "Expecting IPV4ADDR at line " + st.lineno();
         return stringValue;
     }
 
     private String getIPV6ADDR() {
-        Assertion.aver(getNextToken() == RRCode.IPV6ADDR,
-                "Expecting IPV6ADDR at line " + st.lineno());
+        RRCode token = getNextToken();
+        assert token == RRCode.IPV6ADDR: "Expecting IPV6ADDR at line " + st.lineno();
         return stringValue;
     }
 }

@@ -29,7 +29,7 @@ class DBConnection {
             conn = DriverManager.getConnection(dbURL, user, pass);
         } catch (SQLException sqle) {
             logger.catching(sqle);
-            Assertion.fail();
+            assert false;
         }
 
         try {
@@ -40,7 +40,7 @@ class DBConnection {
                 conn.close();
             } catch (SQLException sqle2) {
                 logger.catching(sqle);
-                Assertion.fail();
+                assert false;
             }
         }
     }
@@ -84,7 +84,7 @@ class DBConnection {
             final int domainId = rs.getInt("id");
             logger.trace(domainId);
 
-            Assertion.aver(!rs.next());
+            assert !rs.next();
 
             logger.traceExit(s);
             return new DBZone(s, domainId, this);

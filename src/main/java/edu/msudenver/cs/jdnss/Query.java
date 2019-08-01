@@ -106,8 +106,10 @@ class Query {
         for (int i = 0; i < header.getNumAdditionals(); i++) {
             logger.traceEntry();
 
-            // When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message.
-            Assertion.aver(header.getNumAdditionals() == 1);
+            // When an OPT RR is included within any DNS message, it
+            // MUST be the only OPT RR in that message.
+
+            assert header.getNumAdditionals() == 1;
             this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
             //process and transform? optrr for a resonse

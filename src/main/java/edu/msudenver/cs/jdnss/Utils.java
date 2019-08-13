@@ -1,5 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
+import lombok.NonNull;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
 
@@ -17,9 +18,8 @@ class Utils {
      * Ignoring case, find the String in the Set that
      * matches the end of s, and is the longest that does so.
      */
-    static String findLongest(final Set<String> e, final String s) {
-        assert e != null;
-        assert s != null;
+    static String findLongest(@NonNull final Set<String> e, @NonNull final String s) {
+        assert !e.isEmpty();
         assert !s.equals("");
 
         logger.traceEntry(s);
@@ -48,7 +48,7 @@ class Utils {
      * character(or dot if not a character) followed by
      * the an integer representation.
      */
-    static String toString(byte buffer[]) {
+    static String toString(byte[] buffer) {
         String s = "";
         DecimalFormat df = new DecimalFormat("000");
 
@@ -106,7 +106,7 @@ class Utils {
     static byte[] getTwoBytes(int from, int which) {
         assert which > 1 && which <= 4;
 
-        byte ret[] = new byte[2];
+        byte[] ret = new byte[2];
         ret[0] = getByte(from, which);
         ret[1] = getByte(from, which - 1);
         return ret;
@@ -119,7 +119,7 @@ class Utils {
      * @return the requested byte array
      */
     static byte[] getBytes(int from) {
-        byte ret[] = new byte[4];
+        byte[] ret = new byte[4];
         ret[0] = getByte(from, 4);
         ret[1] = getByte(from, 3);
         ret[2] = getByte(from, 2);
@@ -134,7 +134,7 @@ class Utils {
      * @return the requested byte array
      */
     static byte[] getBytes(long from) {
-        byte ret[] = new byte[8];
+        byte[] ret = new byte[8];
         ret[0] = getByte(from, 8);
         ret[1] = getByte(from, 7);
         ret[2] = getByte(from, 6);
@@ -205,8 +205,8 @@ class Utils {
      * @return 4 byte array of the address
      */
     static byte[] IPV4(String s) {
-        String a[] = s.split("\\.");
-        byte r[] = new byte[4];
+        String[] a = s.split("\\.");
+        byte[] r = new byte[4];
 
         for (int i = 0; i < a.length; i++) {
             r[i] = (byte) Integer.parseInt(a[i]);
@@ -221,10 +221,10 @@ class Utils {
      * @param s the original String
      * @return the converted form in bytes
      */
-    static byte[] toCS(String s) {
-        assert s != null && !s.equals("");
+    static byte[] toCS(@NonNull final String s) {
+        assert !s.equals("");
 
-        byte a[] = new byte[1];
+        byte[] a = new byte[1];
         a[0] = getByte(s.length(), 1);
         return combine(a, s.getBytes(StandardCharsets.US_ASCII));
     }
@@ -236,14 +236,14 @@ class Utils {
      * @param s the original String
      * @return the converted form in bytes
      */
-    static byte[] convertString(String s) {
-        assert s != null && !s.equals("");
+    static byte[] convertString(@NonNull final String s) {
+        assert !s.equals("");
 
         // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
         int pointer = 0;
 
-        String b[] = s.split("\\.");
+        String[] b = s.split("\\.");
 
         // for (int i = 0; i < b.length; i++) {
         for (String foo: b) {
@@ -252,7 +252,7 @@ class Utils {
             a[pointer++] = (byte) l;
 
             // what characters?
-            byte c[] = foo.getBytes(StandardCharsets.US_ASCII);
+            byte[] c = foo.getBytes(StandardCharsets.US_ASCII);
             System.arraycopy(c, 0, a, pointer, l);
 
             pointer += l;
@@ -269,7 +269,7 @@ class Utils {
      * @param two the other one
      * @return byte array made from one and two
      */
-    static byte[] combine(byte one[], byte two[]) {
+    static byte[] combine(final byte[] one, final byte[] two) {
         assert one != null || two != null;
 
         if (one == null) {
@@ -285,7 +285,7 @@ class Utils {
         return temp;
     }
 
-    static byte[] combine(byte one[], byte two) {
+    static byte[] combine(final byte[] one, final byte two) {
         byte[] a = new byte[1];
         a[0] = two;
 
@@ -299,12 +299,11 @@ class Utils {
         return temp;
     }
 
-    static byte[] trimByteArray(byte[] old, int length) {
-        assert old != null: "Byte array is null";
+    static byte[] trimByteArray(@NonNull final byte[] old, final int length) {
         assert length > 0: length + " is invalid";
         assert length <= old.length: length + " is invalid";
 
-        byte ret[] = new byte[length];
+        byte[] ret = new byte[length];
         System.arraycopy(old, 0, ret, 0, length);
         return ret;
     }
@@ -312,10 +311,8 @@ class Utils {
     /**
      * split the sting using the dots and reassemble backwards.
      */
-    static String reverseIP(String s) {
-        assert s != null;
-
-        String a[] = s.split("\\.");
+    static String reverseIP(@NonNull final String s) {
+        String[] a = s.split("\\.");
 
         // all dots
         if (a.length == 0) return s;
@@ -331,9 +328,7 @@ class Utils {
      * @param s String to reverse
      * @return The reversed string
      */
-    public static String reverse(String s) {
-        assert s != null;
-
+    public static String reverse(@NonNull final String s) {
         return new StringBuilder(s).reverse().toString();
     }
 
@@ -344,10 +339,7 @@ class Utils {
      * @param c what to search for
      * @return the number of matches
      */
-    static int count(String s, String c) {
-        assert s != null;
-        assert c != null;
-
+    static int count(@NonNull final String s, @NonNull final String c) {
         if (s.equals("")) return 0;
         if (c.equals("")) return 0;
 
@@ -367,7 +359,7 @@ class Utils {
      *
      * @return the final answer
      */
-    private static byte[] dodots(String s) {
+    private static byte[] dodots(final String s) {
         // split at the v6/v4 boundary
         int splitat = s.lastIndexOf(":");
         String colons = s.substring(0, splitat);
@@ -387,10 +379,8 @@ class Utils {
      * @param length how long the String is(16 for v6, 12 for v6/v4)
      * @return the conversoin
      */
-    private static byte[] docolons(String s, int length) {
-        int numColons = count(s, ":");
-        // System.out.println("numColons = " + numColons);
-        byte ret[] = new byte[length];
+    private static byte[] docolons(final String s, final int length) {
+        byte[] ret = new byte[length];
 
         // nothing but colons, IPv6 unspecified
         if (s.equals("::")) {
@@ -401,8 +391,7 @@ class Utils {
             return ret;
         }
 
-        String split[] = s.split(":");
-        // System.out.println("split.length = " + split.length);
+        String[] split = s.split(":");
 
         /*
         ** so, there should be eight total two-byte strings(six for v6 ->
@@ -416,8 +405,11 @@ class Utils {
             i = 1;
         }
 
-        // System.out.println("len = " + len);
+        completeIPv6(split, ret,  i, len, count(s, ":"));
+        return ret;
+    }
 
+    private static void completeIPv6(final String[] split, byte[] ret, int i, final int len, final int numColons) {
         int where = 0;
         for (; i <= numColons; i++) {
             // if this is where things are missing, fill in zeros
@@ -431,7 +423,6 @@ class Utils {
                 ret[where++] = getByte(conv, 1);
             }
         }
-        return ret;
     }
 
     /**
@@ -505,7 +496,7 @@ class Utils {
         return s;
     }
 
-    static Map.Entry<String, Integer> parseName(int start, byte buffer[]) {
+    static Map.Entry<String, Integer> parseName(int start, byte[] buffer) {
         logger.traceEntry(new ObjectMessage(start));
 
         if (start >= buffer.length) {
@@ -518,16 +509,7 @@ class Utils {
 
         // if the first thing is a compression
         if ((buffer[current] & 0xc0) == 0xc0) {
-            int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
-            logger.trace(tmp);
-
-            if (tmp >= start) {
-                logger.warn("Illegal name");
-                assert false;
-            }
-
-            name.append(parseName(tmp, buffer).getKey());
-            current += 2;
+            current = getCurrent(start, buffer, current, name);
         }
 
         int length = buffer[current++] & 0x3f;
@@ -549,16 +531,7 @@ class Utils {
             if ((buffer[current] & 0xc0) == 0xc0) {
                 name.append(".");
 
-                int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
-                logger.trace(tmp);
-
-                if (tmp >= start) {
-                    logger.warn("Illegal name");
-                    assert false;
-                }
-
-                name.append(parseName(tmp, buffer).getKey());
-                current += 2;
+                current = getCurrent(start, buffer, current, name);
             }
 
             // if there's more, put in the separator
@@ -569,5 +542,19 @@ class Utils {
         }
 
         return Map.entry(name.toString(), current);
+    }
+
+    private static int getCurrent(int start, byte[] buffer, int current, StringBuilder name) {
+        int tmp = addThem(buffer[current] & 0x3f, buffer[current + 1]);
+        logger.trace(tmp);
+
+        if (tmp >= start) {
+            logger.warn("Illegal name");
+            assert false;
+        }
+
+        name.append(parseName(tmp, buffer).getKey());
+        current += 2;
+        return current;
     }
 }

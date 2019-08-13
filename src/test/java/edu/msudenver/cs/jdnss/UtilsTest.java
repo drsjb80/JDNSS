@@ -28,7 +28,7 @@ public class UtilsTest
         Assert.assertEquals (Utils.count ("foo", "foo"), 1);
         Assert.assertEquals (Utils.count ("foofoofoo", "foo"), 3);
 
-        exception.expect (AssertionError.class);
+        exception.expect (NullPointerException.class);
         Utils.count (null, "bar");
         Utils.count ("foo", null);
     }
@@ -39,7 +39,7 @@ public class UtilsTest
         Assert.assertEquals (Utils.reverse (""), "");
         Assert.assertEquals (Utils.reverse ("foo"), "oof");
 
-        exception.expect (AssertionError.class);
+        exception.expect (NullPointerException.class);
         Utils.reverse (null);
     }
 
@@ -52,7 +52,7 @@ public class UtilsTest
         Assert.assertEquals (Utils.reverseIP ("."), ".");
         Assert.assertEquals (Utils.reverseIP ("..."), "...");
 
-        exception.expect (AssertionError.class);
+        exception.expect (NullPointerException.class);
         Utils.reverseIP (null);
     }
 
@@ -214,15 +214,13 @@ public class UtilsTest
     {
         byte initial[] = {0x001, 0x002, 0x003, 0x004};
 
-        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 1),
-            new byte[]{0x001}));
-        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 2),
-            new byte[]{0x001, 0x002}));
-        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 4),
-            initial));
+        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 1), new byte[]{0x001}));
+        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 2), new byte[]{0x001, 0x002}));
+        Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 4), initial));
 
-        exception.expect (AssertionError.class);
+        exception.expect (NullPointerException.class);
         Utils.trimByteArray (null, 2);
+        exception.expect (AssertionError.class);
         Utils.trimByteArray (initial, 0);
         Utils.trimByteArray (initial, 5);
     }
@@ -247,18 +245,21 @@ public class UtilsTest
         Assert.assertEquals("d.e", Utils.findLongest(v, "z.c.d.e"));
         Assert.assertEquals("b.c.d.e", Utils.findLongest(v, "a.b.c.d.e"));
 
-        exception.expect (AssertionError.class);
 
         v = new HashSet<>();
         v.add ("");
+        exception.expect (NullPointerException.class);
         Utils.findLongest (null, "string");
+        exception.expect (AssertionError.class);
         Utils.findLongest (v, "string");
 
         v = new HashSet<>();
         v.add ("foo");
         Utils.findLongest (v, "bar");
-        Utils.findLongest (v, null);
         Utils.findLongest (v, "");
+        exception.expect (NullPointerException.class);
+        Utils.findLongest (v, null);
+
     }
 
     @Test

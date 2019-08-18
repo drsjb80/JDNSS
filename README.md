@@ -18,12 +18,11 @@
 An authoritative-only, DNSSEC/TLS/DoH capable, leaf DNS server in Java. See the
 issues for the known problems with DNSSEC.
 
-JDNSS is a small DNS server written in Java.  It was written to be both
-more portable and more secure due to its implementation in Java.  It is
-currently intended for use as a "leaf" server as it does not do iterative
-or recursive lookups for clients, nor does it do any cacheing.  It reads
-zone files listed on the command line.  The other command line arguments
-are as follows:
+It was written to be both more portable and more secure.  It is
+currently intended for use as a "leaf" server as it does not do
+iterative or recursive lookups for clients, nor does it do any caching.
+It reads zone files listed on the command line.  The other command line
+arguments are as follows:
 
 Argument            | Use
 --------            | ---
@@ -34,11 +33,16 @@ Argument            | Use
 --version           | Display the JDNSS version number and exit.
 --serverSecret      | Define Server Cookie Secret used. 
 
-"mvn install" should build it for you.  You can then run it via "java -jar target/jdnss-2.1.jar [options,,,] zone1..." where zone1... are zone files you want to serve.
+> mvn install
+should build it for you.
 
-For a quick test, download and save the https://github.com/drsjb80/JDNSS/blob/master/test.com file and run JDNSS with the following options:
+You can then run it via;
+> java -jar target/jdnss-2.1.jar [options...] zone..."
+where zone... are zone files you want to serve.
 
-> --IPaddresses="UDP@127.0.0.1@5300" test.com
+For a quick test, run JDNSS with:
+
+> java -jar target/jdnss-2.1.jar --IPaddresses="UDP@127.0.0.1@5300" test.com
 
 You should be able to run the following queries (from a different window):
 

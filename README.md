@@ -25,29 +25,20 @@ or recursive lookups for clients, nor does it do any cacheing.  It reads
 zone files listed on the command line.  The other command line arguments
 are as follows:
 
-Argument     | Use
------------- | -------------
---port=#            | Listen to UDP and TCP at port number instead of 53.
+Argument            | Use
+--------            | ---
+--IPaddresses       | Where to listen in the form of "protocol@address@port" where protocol can be TLS, TCP, UDP, MC, and HTTPS.
 --threads=#         | The maximum number of threads to allow (default: 10).
---IPaddress=#       | Listen to IP address number instead of the default for the machine.
---TCP=(true\|false) | Listen to the TCP port (default: true).
---UDP=(true\|false) | Listen to the UDP port (default: true).
---MC=(true\|false)  | Listen to the multicast port (default: false).
---MCPort=#          | Multicast port number (default: 5353).
---MCAddress=#       | Multicast address (default: 224.0.0.251).
---DBClass=(string)  | The Java driver class for the database (e.g.: com.mysql.jdbc.Driver).
---DBURL=(string)    | The URL of the database (e.g.: jdbc:mysql://localhost/JDNSS).
---DBUser=(string)   | The database user name
---DBPass=(string)   | The database user password
---version           | display the JDNSS version number and exit.
---serverSecret=(String)      | Define Server Cookie Secret used. 
+--keystoreFile      | The path to the file with the TLS or HTTPS keystore.
+--keystorePassword  | The password for the keystore.
+--version           | Display the JDNSS version number and exit.
+--serverSecret      | Define Server Cookie Secret used. 
 
-You can run it via "java -jar target/jdnss-2.0.jar zone1..." where zone1...
-are zone files you want to serve.
+"mvn install" should build it for you.  You can then run it via "java -jar target/jdnss-2.1.jar [options,,,] zone1..." where zone1... are zone files you want to serve.
 
 For a quick test, download and save the https://github.com/drsjb80/JDNSS/blob/master/test.com file and run JDNSS with the following options:
 
-> --port=5300 test.com
+> --IPaddresses="UDP@127.0.0.1@5300" test.com
 
 You should be able to run the following queries (from a different window):
 

@@ -37,11 +37,10 @@ Argument            | Use
 
 should build it for you.
 
-You can then run it via;
+You can then run it via:
 > java -jar target/jdnss-2.1.jar [options...] zone..."
 
 where zone... are zone files you want to serve.
-
 For a quick test, run JDNSS with:
 > java -jar target/jdnss-2.1.jar --IPaddresses="UDP@127.0.0.1@5300" test.com
 

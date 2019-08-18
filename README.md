@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=dev)](https://travis-ci.org/drsjb80/JDNSS)
 
-![Now with DNSSEC](https://github.com/drsjb80/JDNSS/raw/master/NowWithDNSSEC.png)
-![Now with TLS](https://github.com/drsjb80/JDNSS/raw/master/NowWithTLS.png)
-![DOH](https://github.com/drsjb80/JDNSS/raw/master/DOH.jpg)
+<img src="https://github.com/drsjb80/JDNSS/raw/master/NowWithDNSSEC.png" width="200">
+<img src="https://github.com/drsjb80/JDNSS/raw/master/NowWithTLS.png" width="200">
+<img src="ttps://github.com/drsjb80/JDNSS/raw/master/DOH.jpg" width="200">
 
 # JDNSS
 An authoritative-only, DNSSEC/TLS/DoH capable, leaf DNS server in Java. See the

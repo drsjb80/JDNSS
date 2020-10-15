@@ -2,6 +2,7 @@ package edu.msudenver.cs.jdnss;
 
 import com.sun.net.httpserver.*;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
@@ -15,13 +16,12 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-
 // Source: https://stackoverflow.com/a/34483734
 
 public class HTTPS {
     private final Logger logger = JDNSS.logger;
 
-    public HTTPS(final String[] parts) {
+    public HTTPS(@NotNull final String[] parts) {
         int port = Integer.parseInt(parts[2]);
 
         try {
@@ -73,7 +73,7 @@ public class HTTPS {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            Response r = null;
+            Response r;
 
             switch (t.getRequestMethod()) {
                 case "GET":
@@ -82,6 +82,9 @@ public class HTTPS {
                 case "POST":
                     r = postResponse(t);
                     break;
+                default:
+                    logger.error("Shouldn't get here");
+                    return;
             }
             for (String key : t.getRequestHeaders().keySet()) {
                 System.out.println(key);
@@ -92,10 +95,10 @@ public class HTTPS {
 
             String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
             System.out.println(encoded_response);
-            t.sendResponseHeaders(200, encoded_response.getBytes().length);
+            t.sendResponseHeaders(200, encoded_response.getBytes("UTF-8").length);
 
             try (OutputStream os = t.getResponseBody()) {
-                os.write(encoded_response.getBytes());
+                os.write(encoded_response.getBytes("UTF-8"));
            }
         }
 
@@ -136,7 +139,7 @@ public class HTTPS {
         }
     }
 
-    private SSLContext getSslContext() throws Exception {
+    public SSLContext getSslContext() throws Exception {
         assert JDNSS.jargs.keystoreFile != null;
         assert JDNSS.jargs.keystorePassword!= null;
 

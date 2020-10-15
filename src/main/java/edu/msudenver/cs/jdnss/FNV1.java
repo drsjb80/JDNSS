@@ -16,6 +16,8 @@ package edu.msudenver.cs.jdnss;
  * limitations under the License.
  */
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * A family of fast hash functions, originally created by Glenn Fowler, Phong Vo,
  * and improved by Landon Curt Noll.
@@ -63,12 +65,12 @@ abstract class FNV1 {
    * this argument, with the UTF-8 encoding (or with the default encoding if that
    * fails), and the hash is computed from the resulting byte array; cannot be null.
    */
-  public void init(String s) {
+  public void init(String s) throws UnsupportedEncodingException {
     byte[] buf = null;
     try {
       buf = s.getBytes("UTF-8");
     } catch (Exception e) {
-      buf = s.getBytes();
+      buf = s.getBytes("UTF-8");
     }
     init(buf, 0, buf.length);
   }
@@ -91,12 +93,12 @@ abstract class FNV1 {
    * method once with a concatenated value of all parameters.
    * @param s see (@link #init(String)}
    */
-  public void update(String s) {
+  public void update(String s) throws UnsupportedEncodingException {
     byte[] buf = null;
     try {
       buf = s.getBytes("UTF-8");
     } catch (Exception e) {
-      buf = s.getBytes();
+      buf = s.getBytes("UTF-8");
     }
     update(buf, 0, buf.length);
   }

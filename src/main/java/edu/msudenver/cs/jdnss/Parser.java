@@ -41,13 +41,13 @@ class Parser {
      *
      * @param in where the information is coming from
      */
-    Parser(final InputStream in, final BindZone zone) {
+    Parser(final InputStream in, final BindZone zone) throws UnsupportedEncodingException {
         this.zone = zone;
 
         /*
         ** set up the tokenizer
         */
-        st = new StreamTokenizer(new InputStreamReader(in));
+        st = new StreamTokenizer(new InputStreamReader(in, "UTF-8"));
 
         initTokenizer(st);
 
@@ -197,6 +197,7 @@ class Parser {
         return RRCode.NOTOK;
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("SF_SWITCH_FALLTHROUGH")
     private void calculateMDWM(final String a) {
         intValue = Integer.parseInt(a.substring(0, a.length() - 1));
 
@@ -211,6 +212,9 @@ class Parser {
                 intValue *= MINUTESINHOUR;   // fall through
             case 'M':
                 intValue *= SECONDSINMINUTE;
+                break;
+            default:
+                logger.error("Shouldn't get here");
         }
     }
 
@@ -304,7 +308,7 @@ class Parser {
         }
     }
 
-    private void doInclude() {
+    private void doInclude() throws UnsupportedEncodingException {
         logger.traceEntry();
 
         // do this at a low level so that the rest of parsing isn't messed
@@ -326,7 +330,7 @@ class Parser {
             return;
         }
 
-        st = new StreamTokenizer(new InputStreamReader(in));
+        st = new StreamTokenizer(new InputStreamReader(in, "UTF-8"));
         initTokenizer(st);
 
         RRs();
@@ -593,11 +597,7 @@ class Parser {
 
     private int CalcTTL() {
         if (currentTTL != -1) {
-            if (SOATTL > currentTTL) {
-                return SOATTL;
-            } else {
-                return currentTTL;
-            }
+            return Math.max(SOATTL, currentTTL);
         } else if (globalTTL != -1) {
             return globalTTL;
         } else if (SOATTL != -1) {
@@ -607,7 +607,7 @@ class Parser {
         }
     }
 
-    void RRs() {
+    void RRs() throws UnsupportedEncodingException {
         currentName = origin;
 
         RRCode t = getNextToken();

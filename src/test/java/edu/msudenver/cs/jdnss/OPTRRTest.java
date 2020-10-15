@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 public class OPTRRTest {
@@ -54,7 +55,7 @@ public class OPTRRTest {
     }
 
     @Test
-    public void createServerCookieTest() {
+    public void createServerCookieTest() throws UnsupportedEncodingException {
         Query copyQuery = new Query(buffer);
         copyQuery.parseQueries("/0:0:0:0:0:");
         optrr = query.getOptrr();

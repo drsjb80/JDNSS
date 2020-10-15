@@ -20,7 +20,7 @@ class DBZone extends Zone {
     {
         this.zoneName = zoneName;
         int domainId1 = domainId;
-        DBConnection dbConnection1 = dbConnection;
+        // DBConnection dbConnection1 = dbConnection;
     }
 
     public String getName() { return zoneName; }

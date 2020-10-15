@@ -3,6 +3,7 @@ package edu.msudenver.cs.jdnss;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 class OPTRR {
@@ -65,6 +66,9 @@ class OPTRR {
                     location += optionLength;
                     original = Arrays.copyOfRange(bytes, 0, bytes.length);
                     break;
+                default:
+                    logger.error("Shouldn't get here");
+                    return;
             }
         }
     }
@@ -136,7 +140,7 @@ class OPTRR {
      from a valid client cookie
      adds this serverCookie to this OPTRR
      */
-    void createServerCookie(String clientIPaddress, Header header) {
+    void createServerCookie(String clientIPaddress, Header header) throws UnsupportedEncodingException {
         ServerCookie sCookie = new ServerCookie(clientCookie, clientIPaddress);
 
         if (!Arrays.equals(sCookie.getBytes(), serverCookie)

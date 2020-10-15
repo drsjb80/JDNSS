@@ -31,3 +31,34 @@ class jdnssArgs {
 
     @Getter private String additional[];
 }
+
+/*
+
+Reciprocity
+Consistency
+Social Proof
+Authority
+Scarcity
+
+Robert B. Cialdini in his book Influence: The Psychology of Persuasion identifies principles of persuasion we can use to understand why we're easy to manipulate.
+*/
+
+/*
+docker run --rm --interactive --tty debian:latest /bin/bash
+
+client.containers.run(image='debian:latest', command='/bin/bash', auto_remove=True, tty=True)
+
+client=docker.APIClient()
+
+# make sure it's been pulled
+
+container = client.create_container(
+    image='debian:latest',
+    stdin_open=True,
+    tty=True,
+    command='/bin/bash',
+)
+
+dockerpty.start(client, container)
+
+*/

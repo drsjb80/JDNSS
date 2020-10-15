@@ -2,14 +2,11 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 
-import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,10 +14,10 @@ import java.util.concurrent.Future;
 
 class TCP extends Thread {
     private final Logger logger = JDNSS.logger;
-    private String type;
-    private int backlog;
-    private String address;
-    private int port;
+    private final String type;
+    private final int backlog;
+    private final String address;
+    private final int port;
 
     TCP(final String[] parts) {
         type = parts[0];
@@ -32,7 +29,7 @@ class TCP extends Thread {
     public void run() {
         logger.traceEntry();
 
-        ServerSocket serverSocket = null;
+        ServerSocket serverSocket;
 
         switch(type) {
             case "TLS":
@@ -69,7 +66,7 @@ class TCP extends Thread {
         ExecutorService pool = Executors.newFixedThreadPool(JDNSS.jargs.getThreads());
 
         while (true) {
-            Socket socket = null;
+            Socket socket;
 
             try {
                 socket = serverSocket.accept();
@@ -80,7 +77,7 @@ class TCP extends Thread {
 
             logger.trace("Received TCP packet");
 
-            Future f = pool.submit(new TCPThread(socket));
+            Future<?> f = pool.submit(new TCPThread(socket));
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.

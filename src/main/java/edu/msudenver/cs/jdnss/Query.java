@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -108,7 +109,6 @@ class Query {
 
             // When an OPT RR is included within any DNS message, it
             // MUST be the only OPT RR in that message.
-
             assert header.getNumAdditionals() == 1;
             this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
 
@@ -119,7 +119,11 @@ class Query {
             }
 
             if(optrr.isCookie()) {
-                optrr.createServerCookie(clientIPaddress, header);
+                try {
+                    optrr.createServerCookie(clientIPaddress, header);
+                } catch (UnsupportedEncodingException e) {
+                    logger.error(e);
+                }
             }
         }
     }

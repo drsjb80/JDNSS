@@ -128,42 +128,56 @@ class DBConnection {
         return Collections.emptyList();
     }
 
-    private RR addRR(final RRCode type, final String name, final ResultSet rs) throws SQLException {
+    private void addRR(final RRCode type, final String name, final ResultSet rs) throws SQLException {
         final String dbname = rs.getString("name");
         final String dbcontent = rs.getString("content");
         final int dbttl = rs.getInt("ttl");
         final int dbprio = rs.getInt("prio");
-        final RR emptyRR = new EmptyRR();
 
         switch (type) {
             case SOA: {
                 String[] s = dbcontent.split("\\s+");
-                return new SOARR(dbname, s[0], s[1],
+                new SOARR(dbname, s[0], s[1],
                         Integer.parseInt(s[2]), Integer.parseInt(s[3]),
                         Integer.parseInt(s[4]), Integer.parseInt(s[5]),
                         Integer.parseInt(s[6]), dbttl);
+                return;
             }
-            case NS: { return new NSRR(dbname, dbttl, dbcontent); }
-            case A: { return new ARR(dbname, dbttl, dbcontent); }
-            case AAAA: { return new AAAARR(dbname, dbttl, dbcontent); }
-            case MX: { return new MXRR(dbname, dbttl, dbcontent, dbprio); }
-            case TXT: { return new TXTRR(dbname, dbttl, dbcontent); }
-            case CNAME: { return new CNAMERR(dbname, dbttl, dbcontent); }
-            case PTR: { return new PTRRR(dbname, dbttl, dbcontent); }
+            case NS: {
+                new NSRR(dbname, dbttl, dbcontent);
+                return; }
+            case A: {
+                new ARR(dbname, dbttl, dbcontent);
+                return; }
+            case AAAA: {
+                new AAAARR(dbname, dbttl, dbcontent);
+                return; }
+            case MX: {
+                new MXRR(dbname, dbttl, dbcontent, dbprio);
+                return; }
+            case TXT: {
+                new TXTRR(dbname, dbttl, dbcontent);
+                return; }
+            case CNAME: {
+                new CNAMERR(dbname, dbttl, dbcontent);
+                return; }
+            case PTR: {
+                new PTRRR(dbname, dbttl, dbcontent);
+                return; }
             case HINFO: {
                 final String[] s = dbcontent.split("\\s+");
-                return new HINFORR(dbname, dbttl, s[0], s[1]);
+                new HINFORR(dbname, dbttl, s[0], s[1]);
+                return;
             }
             case RRSIG:
             case NSEC:
             case DNSKEY:
             case NSEC3:
-            case NSEC3PARAM: { return emptyRR; }
+            case NSEC3PARAM: { return; }
             default: {
                 logger.warn("requested type " + type + " for " + name + " not found");
                 break;
             }
         }
-        return emptyRR;
     }
 }

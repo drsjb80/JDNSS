@@ -375,6 +375,7 @@ class Response {
         }
     }
 
+
     byte[] getBytes() {
         logger.traceEntry();
         byte[] abc = new byte[0];

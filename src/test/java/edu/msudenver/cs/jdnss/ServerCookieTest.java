@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
+
 public class ServerCookieTest {
 
     private ServerCookie serverCookie;
@@ -17,12 +19,12 @@ public class ServerCookieTest {
             (byte) 0xd1, (byte) 0x9c, (byte) 0x33};
 
     @Before
-    public void setup() {
+    public void setup() throws UnsupportedEncodingException {
         serverCookie = new ServerCookie(cookie, clientIPaddress);
     }
 
     @Test
-    public void isValidTest() {
+    public void isValidTest() throws UnsupportedEncodingException {
         Assert.assertTrue(serverCookie.isValid(cookie, clientIPaddress));
         Assert.assertFalse(serverCookie.isValid(cookie, "not a good ip"));
         Assert.assertFalse(serverCookie.isValid(differentCookie, clientIPaddress));

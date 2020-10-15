@@ -92,7 +92,7 @@ class JDNSS {
         Configurator.setLevel("JDNSS", level);
     }
 
-    private static void doargs() {
+    private static void doargs() throws UnsupportedEncodingException {
         logger.traceEntry();
         logger.trace(jargs.toString());
 
@@ -153,7 +153,7 @@ class JDNSS {
     /**
      * The main driver for the server; creates threads for TCP and UDP.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
         // i'm not sure of a better way to do this. i want command-line options to overwrite
         // the defaults.
         for (String arg: args) {

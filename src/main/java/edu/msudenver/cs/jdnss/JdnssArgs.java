@@ -1,7 +1,6 @@
 package edu.msudenver.cs.jdnss;
 
 import lombok.Getter;
-import lombok.Setter;
 
 enum JDNSSLogLevels {OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL}
 
@@ -26,8 +25,6 @@ class jdnssArgs {
     String keystoreFile;
     String keystorePassword;
     boolean debugSSL;
-
-    String prefsFile;
 
     @Getter private String additional[];
 }

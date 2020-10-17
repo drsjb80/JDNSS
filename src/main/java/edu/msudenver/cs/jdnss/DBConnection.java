@@ -10,76 +10,36 @@ class DBConnection {
     private Connection conn;
     private Statement stmt;
     private static final Logger logger = JDNSS.logger;
+    private final String dbUser;
+    private final String dbPass;
+    private final String dbURL;
 
     // com.mysql.jdbc.Driver
     // jdbc:mysql://localhost/JDNSS
     DBConnection(final String dbClass, final String dbURL, final String dbUser,
-                 final String dbPass) {
-        String user = dbUser == null ? "" : dbUser;
-        String pass = dbPass == null ? "" : dbPass;
+                 final String dbPass) throws ClassNotFoundException {
+        this.dbUser = dbUser == null ? "" : dbUser;
+        this.dbPass = dbPass == null ? "" : dbPass;
+        this.dbURL = dbURL;
 
-        // load up the class
-        try {
-            Class.forName(dbClass);
-        } catch (ClassNotFoundException cnfe) {
-            logger.catching(cnfe);
-        }
-
-        try {
-            conn = DriverManager.getConnection(dbURL, user, pass);
-        } catch (SQLException sqle) {
-            logger.catching(sqle);
-            assert false;
-        }
-
-        try {
-            stmt = conn.createStatement();
-        } catch (SQLException sqle) {
-            try {
-                stmt.close();
-                conn.close();
-            } catch (SQLException sqle2) {
-                logger.catching(sqle);
-                assert false;
-            }
-        }
+        Class.forName(dbClass);
     }
 
-    DBZone getZone(final String name) {
-        logger.traceEntry(new ObjectMessage(name));
-
+    private Set<String> getDomains(Statement stmt) {
         Set<String> v = new HashSet<>();
 
-        // first, get them all
-        ResultSet rs = null;
-        try {
-            rs = stmt.executeQuery("SELECT * FROM domains");
-
+        try (ResultSet rs = stmt.executeQuery("SELECT * FROM domains")) {
             while (rs.next()) {
                 v.add(rs.getString("name"));
             }
-        } catch (SQLException sqle) {
-            try {
-                stmt.close();
-                conn.close();
-            } catch (SQLException sqle2) {
-                logger.catching(sqle);
-                return new DBZone();
-            }
+        } catch (SQLException e) {
+            logger.throwing(e);
         }
+        return v;
+    }
 
-        if (v.size() == 0) {
-            return new DBZone();
-        }
-
-        // then, find the longest that matches
-        String s = Utils.findLongest(v, name);
-        logger.trace(s);
-
-        // then, populate a DBZone with what we found.
-        try {
-            rs = stmt.executeQuery ("SELECT * FROM domains WHERE name = '" + s + "'");
-
+    private DBZone getZone(Statement stmt, String s) {
+        try (ResultSet rs = stmt.executeQuery("SELECT * FROM domains WHERE name = '" + s + "'")) {
             rs.next();
             final int domainId = rs.getInt("id");
             logger.trace(domainId);
@@ -89,16 +49,29 @@ class DBConnection {
             logger.traceExit(s);
             return new DBZone(s, domainId, this);
         } catch (SQLException sqle) {
-            try {
-                rs.close();
-                stmt.close();
-                conn.close();
-            } catch (SQLException sqle2) {
-                logger.catching(sqle);
+            logger.catching(sqle);
+        }
+        return new DBZone();
+    }
+
+    DBZone getZone(final String name) {
+        logger.traceEntry(name);
+
+        try (Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass);
+             Statement stmt = conn.createStatement()) {
+
+            Set<String> v = getDomains(stmt);
+            if (v.isEmpty()) {
                 return new DBZone();
             }
-        }
 
+            String s = Utils.findLongest(v, name);
+            logger.trace(s);
+
+            return getZone(stmt, s);
+        } catch (SQLException sqle) {
+            logger.catching(sqle);
+        }
         return new DBZone();
     }
 
@@ -107,14 +80,14 @@ class DBConnection {
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(domainId));
 
-        try {
-            String stype = type.name();
-            logger.trace(stype);
+        try (Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(
+             "SELECT * FROM records where domain_id = " + domainId +
+                     " AND name = \"" + name + "\"" +
+                     " AND type = \"" + type.name() + "\"")) {
+
             List<RR> ret = new ArrayList<>();
-            ResultSet rs = stmt.executeQuery(
-                    "SELECT * FROM records where domain_id = " + domainId +
-                            " AND name = \"" + name + "\"" +
-                            " AND type = \"" + stype + "\"");
 
             while (rs.next()) {
                 addRR(type, name, rs);

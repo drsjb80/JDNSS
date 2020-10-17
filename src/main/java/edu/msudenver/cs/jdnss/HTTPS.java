@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -73,7 +74,8 @@ public class HTTPS {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            Response r;
+            boolean finished = false;
+            Response r = null;
 
             switch (t.getRequestMethod()) {
                 case "GET":
@@ -84,22 +86,25 @@ public class HTTPS {
                     break;
                 default:
                     logger.error("Shouldn't get here");
-                    return;
+                    finished = true;
+                    break;
             }
-            for (String key : t.getRequestHeaders().keySet()) {
-                System.out.println(key);
-                System.out.println(t.getRequestHeaders().get(key));
+            if (!finished) {
+                for (String key : t.getRequestHeaders().keySet()) {
+                    System.out.println(key);
+                    System.out.println(t.getRequestHeaders().get(key));
+                }
+
+                t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+                String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
+                System.out.println(encoded_response);
+                t.sendResponseHeaders(200, encoded_response.getBytes(StandardCharsets.UTF_8).length);
+
+                try (OutputStream os = t.getResponseBody()) {
+                    os.write(encoded_response.getBytes(StandardCharsets.UTF_8));
+                }
             }
-
-            t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-
-            String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
-            System.out.println(encoded_response);
-            t.sendResponseHeaders(200, encoded_response.getBytes("UTF-8").length);
-
-            try (OutputStream os = t.getResponseBody()) {
-                os.write(encoded_response.getBytes("UTF-8"));
-           }
         }
 
         private Response postResponse(HttpExchange t) throws IOException {

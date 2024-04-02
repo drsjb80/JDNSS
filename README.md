@@ -3,13 +3,13 @@
 <table>
 <tr>
 <td>
-<img src="https://github.com/drsjb80/JDNSS/raw/master/NowWithDNSSEC.png" width="200">
+<img src="https://github.com/drsjb80/JDNSS/blob/ae7f76240c07cbab1f9f39fe8957207f2f866598/NowWithDNSSEC.png" width="200">
 </td>
 <td>
-<img src="https://github.com/drsjb80/JDNSS/raw/master/NowWithTLS.png" width="200">
+<img src="https://github.com/drsjb80/JDNSS/blob/ae7f76240c07cbab1f9f39fe8957207f2f866598/NowWithTLS.png" width="200">
 </td>
 <td>
-<img src="https://github.com/drsjb80/JDNSS/raw/master/DOH.jpg" width="200">
+<img src="https://github.com/drsjb80/JDNSS/blob/ae7f76240c07cbab1f9f39fe8957207f2f866598/DOH.jpg" width="200">
 </td>
 </tr>
 </table>

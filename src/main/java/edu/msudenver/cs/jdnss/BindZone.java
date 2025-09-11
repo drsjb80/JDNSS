@@ -24,8 +24,7 @@ class BindZone extends Zone {
 
     BindZone() { this.name = null; }
 
-    @Override
-    boolean isEmpty() { return this.name == null; }
+    @Override boolean isEmpty() { return this.name == null; }
 
     BindZone(final String name) {
         this.name = name;

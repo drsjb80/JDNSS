@@ -35,10 +35,11 @@ import java.util.Set;
 @EqualsAndHashCode
 abstract class RR {
     final static Logger logger = JDNSS.logger;
+
     @Getter private final String name;
     @Getter private final RRCode type;
-    @Getter private final int rrclass = 1;
-    @Getter private final int ttl;
+    @Getter final int rrclass = 1;
+    @Getter final int ttl;
 
     boolean isEmpty() { return false; }
 

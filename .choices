@@ -1,3 +1,5 @@
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+----
 mvn package -Dwith-database=true
 mvn checkstyle:checkstyle
 mvn findbugs:findbugs

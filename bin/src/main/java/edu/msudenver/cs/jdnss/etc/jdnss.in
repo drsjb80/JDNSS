@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# chkconfig: - 11 89
+# description: jdnss is a Domain Name Server (DNS) \
+# that is used to resolve host names to IP addresses.
+#
+# Redhat/Fedora:
+# chkconfig named off
+# chkconfig --add jdnss
+# chkconfig --level 5 jdnss on
+
+# Debian/Ubuntu:
+# update-rc.d jdnss defaults
+
+### BEGIN INIT INFO
+# Provides:          jdnss
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+start() {
+	echo "Starting JDNSS"
+	COMMAND /var/named/*.{org,com,net,arpa,db} &
+	echo $! > /var/run/jdnss.pid
+}
+
+stop() {
+	kill `cat /var/run/jdnss.pid`
+	rm -rf /var/run/jdnss.pid
+}
+
+restart() {
+	stop
+	sleep 2
+	start
+}	
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		restart
+		;;
+	*)
+        	echo "Usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac
+
+exit $?

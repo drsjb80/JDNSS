@@ -1,0 +1,11 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: REFUSED
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;192.168.1.28.			IN	A
+

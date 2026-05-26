@@ -1,0 +1,27 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 6, AUTHORITY: 2, ADDITIONAL: 3
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;www.AAAA.com.			IN	AAAA
+
+;; ANSWER SECTION:
+www.AAAA.com.		86400	IN	AAAA	fedc:ba98:7654:3210:fedc:ba98:7654:3210
+www.AAAA.com.		86400	IN	AAAA	1080::8:800:200c:417a
+www.AAAA.com.		86400	IN	AAAA	ff01::43
+www.AAAA.com.		86400	IN	AAAA	::1
+www.AAAA.com.		86400	IN	AAAA	::13.1.68.3
+www.AAAA.com.		86400	IN	AAAA	::ffff:129.144.52.38
+
+;; AUTHORITY SECTION:
+AAAA.com.		86400	IN	NS	ns1.AAAA.com.
+AAAA.com.		86400	IN	NS	ns2.AAAA.com.
+
+;; ADDITIONAL SECTION:
+ns1.AAAA.com.		86400	IN	A	192.168.0.1
+ns2.AAAA.com.		86400	IN	A	192.168.0.2
+

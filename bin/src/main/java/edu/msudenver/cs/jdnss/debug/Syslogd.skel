@@ -1,0 +1,8 @@
+# -Djava.util.logging.config.file=debug/Syslogd/WHICH.finest
+
+WHICH.level = FINEST
+
+handlers = edu.msudenver.cs.javaln.syslog.SyslogdHandler
+edu.msudenver.cs.javaln.syslog.SyslogdHandler.level = FINEST
+edu.msudenver.cs.javaln.syslog.SyslogdHandler.formatter = \
+    edu.msudenver.cs.javaln.syslog.SyslogdFormatter

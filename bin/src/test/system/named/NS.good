@@ -1,0 +1,15 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;NS.com.				IN	NS
+
+;; ANSWER SECTION:
+NS.com.			86400	IN	NS	one.test.com.
+NS.com.			86400	IN	NS	two.test.com.
+

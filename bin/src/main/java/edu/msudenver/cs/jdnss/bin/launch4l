@@ -1,0 +1,48 @@
+#! /bin/bash
+
+path=$1
+jarname=${path##.*/}
+basename=${jarname%%.jar}
+
+cat - << ONE > $basename
+#! /bin/sh
+
+trap 'rm -f /tmp/$jarname' ERR
+rm -f /tmp/$jarname
+ONE
+
+cat - << "TWO" >> $basename
+UUDECODE=`which uudecode 2> /dev/null`
+if [ "$UUDECODE" = "" ]
+then
+    UUDECODE=`which gmime-uudecode 2> /dev/null`
+    if [ "$UUDECODE" = "" ]
+    then
+    	echo "No uudecode command found in $PATH, exiting"
+	exit 1
+    fi
+fi
+TWO
+
+echo '$UUDECODE -o /tmp/'$jarname' << "ENDOFJAR"' >> $basename
+
+UUENCODE=`which uuencode 2> /dev/null`
+
+if [ "$UUENCODE" = "" ]
+then
+    UUENCODE=`which gmime-uuencode 2> /dev/null`
+    if [ "$UUENCODE" = "" ]
+    then
+    	echo "No uuencode command found in $PATH, exiting"
+	exit 1
+    fi
+fi
+
+$UUENCODE $path /tmp/$jarname >> $basename
+
+cat - << TWO >> $basename
+ENDOFJAR
+
+java -jar /tmp/$jarname \$*
+rm -f /tmp/$jarname
+TWO

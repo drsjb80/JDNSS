@@ -1,0 +1,22 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;SOA.com.			IN	SOA
+
+;; ANSWER SECTION:
+SOA.com.		86400	IN	SOA	SOA.com. root.one.test.com. 11 28800 7200 604800 86400
+
+;; AUTHORITY SECTION:
+SOA.com.		86400	IN	NS	one.SOA.com.
+SOA.com.		86400	IN	NS	two.SOA.com.
+
+;; ADDITIONAL SECTION:
+one.SOA.com.		86400	IN	A	192.168.0.1
+two.SOA.com.		86400	IN	A	192.168.0.2
+

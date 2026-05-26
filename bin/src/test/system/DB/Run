@@ -1,0 +1,9 @@
+java -cp ~/.m2/repository/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar \
+    -jar ../../../../../../../../../target/jdnss-2.0.jar \
+    --DBClass=com.mysql.jdbc.Driver \
+    --DBURL=jdbc:mysql://localhost/JDNSS \
+    --DBUser=JDNSS \
+    --DBPass=JDNSS \
+    --port=5000 \
+    --LogHandler=Console \
+    --LogLevel=FINEST

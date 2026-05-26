@@ -1,0 +1,83 @@
+06-Apr-2017 20:30:17.876 starting BIND 9.11.0-P3 <id:4801fbc>
+06-Apr-2017 20:30:17.876 running on Darwin x86_64 16.4.0 Darwin Kernel Version 16.4.0: Thu Dec 22 22:53:21 PST 2016; root:xnu-3789.41.3~3/RELEASE_X86_64
+06-Apr-2017 20:30:17.876 built with '--prefix=/usr/local/Cellar/bind/9.11.0-P3' '--enable-threads' '--enable-ipv6' '--with-openssl=/usr/local/opt/openssl' '--with-libjson=no' 'CC=clang'
+06-Apr-2017 20:30:17.876 running as: named -g -c named.conf
+06-Apr-2017 20:30:17.876 ----------------------------------------------------
+06-Apr-2017 20:30:17.876 BIND 9 is maintained by Internet Systems Consortium,
+06-Apr-2017 20:30:17.876 Inc. (ISC), a non-profit 501(c)(3) public-benefit 
+06-Apr-2017 20:30:17.876 corporation.  Support and training for BIND 9 are 
+06-Apr-2017 20:30:17.876 available at https://www.isc.org/support
+06-Apr-2017 20:30:17.876 ----------------------------------------------------
+06-Apr-2017 20:30:17.876 found 4 CPUs, using 4 worker threads
+06-Apr-2017 20:30:17.876 using 3 UDP listeners per interface
+06-Apr-2017 20:30:17.876 using up to 4096 sockets
+06-Apr-2017 20:30:17.880 loading configuration from '/Users/beatys/VirtualBox Shared/JDNSS/src/main/java/edu/msudenver/cs/jdnss/test/named/named.conf'
+06-Apr-2017 20:30:17.882 reading built-in trusted keys from file '/usr/local/Cellar/bind/9.11.0-P3/etc/bind.keys'
+06-Apr-2017 20:30:17.882 using default UDP/IPv4 port range: [49152, 65535]
+06-Apr-2017 20:30:17.882 using default UDP/IPv6 port range: [49152, 65535]
+06-Apr-2017 20:30:17.883 listening on IPv6 interfaces, port 53
+06-Apr-2017 20:30:17.883 could not listen on UDP socket: permission denied
+06-Apr-2017 20:30:17.884 listening on all IPv6 interfaces failed
+06-Apr-2017 20:30:17.884 listening on IPv4 interface lo0, 127.0.0.1#5354
+06-Apr-2017 20:30:17.885 generating session key for dynamic DNS
+06-Apr-2017 20:30:17.885 sizing zone task pool based on 1 zones
+06-Apr-2017 20:30:17.885 'max-cache-size 90%' - setting to 7372MB (out of 8192MB)
+06-Apr-2017 20:30:17.887 set up managed keys zone for view _default, file 'managed-keys.bind'
+06-Apr-2017 20:30:17.887 'max-cache-size 90%' - setting to 7372MB (out of 8192MB)
+06-Apr-2017 20:30:17.889 configuring command channel from '/usr/local/Cellar/bind/9.11.0-P3/etc/rndc.key'
+06-Apr-2017 20:30:17.889 couldn't add command channel 127.0.0.1#953: file not found
+06-Apr-2017 20:30:17.889 configuring command channel from '/usr/local/Cellar/bind/9.11.0-P3/etc/rndc.key'
+06-Apr-2017 20:30:17.889 couldn't add command channel ::1#953: file not found
+06-Apr-2017 20:30:17.889 not using config file logging statement for logging due to -g option
+06-Apr-2017 20:30:17.889 listening on IPv6 interfaces, port 53
+06-Apr-2017 20:30:17.889 could not listen on UDP socket: permission denied
+06-Apr-2017 20:30:17.889 listening on all IPv6 interfaces failed
+06-Apr-2017 20:30:17.890 managed-keys-zone: loaded serial 0
+06-Apr-2017 20:30:17.892 AT.com:1: no TTL specified; using SOA MINTTL instead
+06-Apr-2017 20:30:17.892 zone AT.com/IN: loaded serial 11
+06-Apr-2017 20:30:17.893 all zones loaded
+06-Apr-2017 20:30:17.893 running
+06-Apr-2017 20:30:17.893 zone AT.com/IN: sending notifies (serial 11)
+06-Apr-2017 20:30:17.893 host unreachable resolving './NS/IN': 2001:500:2f::f#53
+06-Apr-2017 20:30:17.893 host unreachable resolving 'one.test.com/A/IN': 2001:500:2f::f#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:500:1::53#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:2f::f#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:500:9f::42#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:500:1::53#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:500:2d::d#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:1::53#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:500:9f::42#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:7fd::1#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:9f::42#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:500:2d::d#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:dc3::35#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:2d::d#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:500:a8::e#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:500:2::c#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:500:84::b#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:7fd::1#53
+06-Apr-2017 20:30:17.894 host unreachable resolving './NS/IN': 2001:7fe::53#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:7fd::1#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/AAAA/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:30:17.894 host unreachable resolving 'one.test.com/A/IN': 2001:dc3::35#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/AAAA/IN': 2001:dc3::35#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/A/IN': 2001:500:a8::e#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:a8::e#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/A/IN': 2001:500:2::c#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:2::c#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/A/IN': 2001:500:84::b#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/AAAA/IN': 2001:500:84::b#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/A/IN': 2001:7fe::53#53
+06-Apr-2017 20:30:17.895 host unreachable resolving 'one.test.com/AAAA/IN': 2001:7fe::53#53
+06-Apr-2017 20:30:18.086 host unreachable resolving 'one.test.com/AAAA/IN': 2001:503:a83e::2:30#53
+06-Apr-2017 20:30:18.086 host unreachable resolving 'one.test.com/A/IN': 2001:503:a83e::2:30#53
+06-Apr-2017 20:30:18.086 host unreachable resolving 'one.test.com/AAAA/IN': 2001:503:231d::2:30#53
+06-Apr-2017 20:30:18.087 host unreachable resolving 'one.test.com/A/IN': 2001:503:231d::2:30#53
+06-Apr-2017 20:30:19.907 shutting down
+06-Apr-2017 20:30:19.907 no longer listening on 127.0.0.1#5354
+06-Apr-2017 20:30:19.942 exiting

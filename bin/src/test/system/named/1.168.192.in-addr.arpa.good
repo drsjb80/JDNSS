@@ -1,0 +1,18 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;28.1.168.192.in-addr.arpa.	IN	PTR
+
+;; ANSWER SECTION:
+28.1.168.192.in-addr.arpa. 86400 IN	PTR	www.reverse.com.
+
+;; AUTHORITY SECTION:
+1.168.192.in-addr.arpa.	86400	IN	NS	ns1.reverse.com.
+1.168.192.in-addr.arpa.	86400	IN	NS	ns2.reverse.com.
+

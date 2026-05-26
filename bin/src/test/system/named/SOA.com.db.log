@@ -1,0 +1,156 @@
+06-Apr-2017 20:29:07.608 starting BIND 9.11.0-P3 <id:4801fbc>
+06-Apr-2017 20:29:07.608 running on Darwin x86_64 16.4.0 Darwin Kernel Version 16.4.0: Thu Dec 22 22:53:21 PST 2016; root:xnu-3789.41.3~3/RELEASE_X86_64
+06-Apr-2017 20:29:07.608 built with '--prefix=/usr/local/Cellar/bind/9.11.0-P3' '--enable-threads' '--enable-ipv6' '--with-openssl=/usr/local/opt/openssl' '--with-libjson=no' 'CC=clang'
+06-Apr-2017 20:29:07.608 running as: named -g -c named.conf
+06-Apr-2017 20:29:07.608 ----------------------------------------------------
+06-Apr-2017 20:29:07.608 BIND 9 is maintained by Internet Systems Consortium,
+06-Apr-2017 20:29:07.608 Inc. (ISC), a non-profit 501(c)(3) public-benefit 
+06-Apr-2017 20:29:07.608 corporation.  Support and training for BIND 9 are 
+06-Apr-2017 20:29:07.608 available at https://www.isc.org/support
+06-Apr-2017 20:29:07.608 ----------------------------------------------------
+06-Apr-2017 20:29:07.608 found 4 CPUs, using 4 worker threads
+06-Apr-2017 20:29:07.608 using 3 UDP listeners per interface
+06-Apr-2017 20:29:07.609 using up to 4096 sockets
+06-Apr-2017 20:29:07.613 loading configuration from '/Users/beatys/VirtualBox Shared/JDNSS/src/main/java/edu/msudenver/cs/jdnss/test/named/named.conf'
+06-Apr-2017 20:29:07.614 reading built-in trusted keys from file '/usr/local/Cellar/bind/9.11.0-P3/etc/bind.keys'
+06-Apr-2017 20:29:07.614 using default UDP/IPv4 port range: [49152, 65535]
+06-Apr-2017 20:29:07.614 using default UDP/IPv6 port range: [49152, 65535]
+06-Apr-2017 20:29:07.615 listening on IPv6 interfaces, port 53
+06-Apr-2017 20:29:07.616 could not listen on UDP socket: permission denied
+06-Apr-2017 20:29:07.616 listening on all IPv6 interfaces failed
+06-Apr-2017 20:29:07.616 listening on IPv4 interface lo0, 127.0.0.1#5354
+06-Apr-2017 20:29:07.617 generating session key for dynamic DNS
+06-Apr-2017 20:29:07.617 sizing zone task pool based on 1 zones
+06-Apr-2017 20:29:07.618 'max-cache-size 90%' - setting to 7372MB (out of 8192MB)
+06-Apr-2017 20:29:07.620 set up managed keys zone for view _default, file 'managed-keys.bind'
+06-Apr-2017 20:29:07.620 'max-cache-size 90%' - setting to 7372MB (out of 8192MB)
+06-Apr-2017 20:29:07.622 configuring command channel from '/usr/local/Cellar/bind/9.11.0-P3/etc/rndc.key'
+06-Apr-2017 20:29:07.622 couldn't add command channel 127.0.0.1#953: file not found
+06-Apr-2017 20:29:07.622 configuring command channel from '/usr/local/Cellar/bind/9.11.0-P3/etc/rndc.key'
+06-Apr-2017 20:29:07.622 couldn't add command channel ::1#953: file not found
+06-Apr-2017 20:29:07.622 not using config file logging statement for logging due to -g option
+06-Apr-2017 20:29:07.622 listening on IPv6 interfaces, port 53
+06-Apr-2017 20:29:07.622 could not listen on UDP socket: permission denied
+06-Apr-2017 20:29:07.622 listening on all IPv6 interfaces failed
+06-Apr-2017 20:29:07.622 managed-keys-zone: loaded serial 0
+06-Apr-2017 20:29:07.625 SOA.com.db:9: using RFC1035 TTL semantics
+06-Apr-2017 20:29:07.625 zone SOA.com.db/IN: loaded serial 11
+06-Apr-2017 20:29:07.625 all zones loaded
+06-Apr-2017 20:29:07.625 running
+06-Apr-2017 20:29:07.625 zone SOA.com.db/IN: sending notifies (serial 11)
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:500:2d::d#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:2d::d#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:2d::d#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:2d::d#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:2d::d#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:7fd::1#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/A/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/A/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:500:84::b#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/A/IN': 2001:7fd::1#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/A/IN': 2001:7fd::1#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:7fd::1#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:500:2::c#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:7fd::1#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:84::b#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:500:a8::e#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:84::b#53
+06-Apr-2017 20:29:07.628 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:84::b#53
+06-Apr-2017 20:29:07.628 host unreachable resolving './NS/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:84::b#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving './NS/IN': 2001:7fe::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving './NS/IN': 2001:500:9f::42#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:29:07.629 host unreachable resolving './NS/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/A/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:503:c27::2:30#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:2::c#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:2::c#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:2::c#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:2::c#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:a8::e#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:a8::e#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:a8::e#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:a8::e#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:7fe::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/A/IN': 2001:7fe::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:7fe::53#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'one.SOA.com/A/IN': 2001:500:9f::42#53
+06-Apr-2017 20:29:07.629 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:7fe::53#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:500:9f::42#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'two.SOA.com/A/IN': 2001:500:9f::42#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'one.SOA.com/A/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:500:9f::42#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'one.SOA.com/AAAA/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'two.SOA.com/A/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.630 host unreachable resolving 'two.SOA.com/AAAA/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.786 host unreachable resolving 'two.SOA.com/A/IN': 2001:503:a83e::2:30#53
+06-Apr-2017 20:29:07.786 host unreachable resolving 'two.SOA.com/A/IN': 2001:503:231d::2:30#53
+06-Apr-2017 20:29:07.876 host unreachable resolving 'ns-703.awsdns-23.net/A/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.876 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-703.awsdns-23.net/A/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2001:500:2f::f#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.877 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-703.awsdns-23.net/A/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2001:503:ba3e::2:30#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2001:500:1::53#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-703.awsdns-23.net/A/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:07.878 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2001:dc3::35#53
+06-Apr-2017 20:29:08.082 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:b::1#53
+06-Apr-2017 20:29:08.082 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:e::1#53
+06-Apr-2017 20:29:08.082 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:48::1#53
+06-Apr-2017 20:29:08.082 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:40::1#53
+06-Apr-2017 20:29:08.083 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:f::1#53
+06-Apr-2017 20:29:08.083 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2001:500:c::1#53
+06-Apr-2017 20:29:08.085 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2401:fd80:404::1#53
+06-Apr-2017 20:29:08.086 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2a01:618:400::1#53
+06-Apr-2017 20:29:08.086 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2a01:618:404::1#53
+06-Apr-2017 20:29:08.087 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2a01:618:404::1#53
+06-Apr-2017 20:29:08.087 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2401:fd80:400::1#53
+06-Apr-2017 20:29:08.087 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2401:fd80:400::1#53
+06-Apr-2017 20:29:08.087 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2001:502:ad09::3#53
+06-Apr-2017 20:29:08.087 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2001:502:ad09::3#53
+06-Apr-2017 20:29:08.087 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2401:fd80:404::1#53
+06-Apr-2017 20:29:08.187 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2600:9000:5303:ad00::1#53
+06-Apr-2017 20:29:08.188 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2600:9000:5305:f000::1#53
+06-Apr-2017 20:29:08.188 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2600:9000:5307:3100::1#53
+06-Apr-2017 20:29:08.188 host unreachable resolving 'ns-1903.awsdns-45.co.uk/A/IN': 2600:9000:5301:6d00::1#53
+06-Apr-2017 20:29:08.191 host unreachable resolving 'ns-1903.awsdns-45.co.uk/AAAA/IN': 2600:9000:5303:ad00::1#53
+06-Apr-2017 20:29:08.205 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2600:9000:5302:ce00::1#53
+06-Apr-2017 20:29:08.205 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2600:9000:5306:4c00::1#53
+06-Apr-2017 20:29:08.205 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2600:9000:5300:8c00::1#53
+06-Apr-2017 20:29:08.205 host unreachable resolving 'ns-1122.awsdns-12.org/A/IN': 2600:9000:5304:f00::1#53
+06-Apr-2017 20:29:08.210 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2600:9000:5301:d800::1#53
+06-Apr-2017 20:29:08.210 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2600:9000:5303:1900::1#53
+06-Apr-2017 20:29:08.210 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2600:9000:5305:5700::1#53
+06-Apr-2017 20:29:08.211 host unreachable resolving 'ns-703.awsdns-23.net/AAAA/IN': 2600:9000:5307:9700::1#53
+06-Apr-2017 20:29:08.282 host unreachable resolving 'ns-1122.awsdns-12.org/AAAA/IN': 2600:9000:5304:f00::1#53
+06-Apr-2017 20:29:09.622 client @0x7fee9b896800 127.0.0.1#65313 (SOA.com): query (cache) 'SOA.com/SOA/IN' denied
+06-Apr-2017 20:29:09.631 shutting down
+06-Apr-2017 20:29:09.631 no longer listening on 127.0.0.1#5354
+06-Apr-2017 20:29:09.670 exiting

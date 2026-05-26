@@ -1,0 +1,19 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 3
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;NSA.com.			IN	NS
+
+;; ANSWER SECTION:
+NSA.com.		86400	IN	NS	one.NSA.com.
+NSA.com.		86400	IN	NS	two.NSA.com.
+
+;; ADDITIONAL SECTION:
+one.NSA.com.		86400	IN	A	147.153.170.17
+two.NSA.com.		86400	IN	A	147.153.170.27
+

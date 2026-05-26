@@ -1,0 +1,116 @@
+#! /bin/bash -e
+
+. TESTS
+
+#	name		file		query	type
+# tests=( 'subdomain	subdomain.com  	www.subdomain.com' )
+# tests=('Nohost	SOA.com		www.SOA.com')
+
+# 5353 used by Bonjour?
+PORT=5354
+
+for i in "${tests[@]}"
+do
+    # create an array with the contents of the current array element
+    b=(${i[@]})
+
+    name=${b[0]};
+    file=${b[1]};
+    query=${b[2]};
+    type=${b[3]};
+
+    echo -n "Testing $name..."
+
+    DIGARGS='+nostats +nocmd +cookie=0123456789abcdef'
+    DIGHOST='@::1'
+
+    JDNSSARGS="--IPaddresses=UDP@0.0.0.0@$PORT"
+
+    case $name in
+    TCP )
+	    DIGARGS="+vc $DIGARGS"
+        JDNSSARGS="--IPaddresses=TCP@0.0.0.0@$PORT"
+        ;;
+	ip )
+	    DIGHOST='@127.0.0.2'
+        JDNSSARGS="--IPaddresses=UDP@127.0.0.2@$PORT"
+        ;;
+	192* | *reverse | *.in-addr.arpa )
+	    query="-x $query"
+        ;;
+	dnssec )
+	    DIGARGS="+dnssec $DIGARGS"
+        ;;
+    esac
+
+    LOGLEVEL=""
+    # LOGLEVEL="--logLevel=ALL"
+
+    JAR='../../../target/jdnss-2.1.jar'
+    JDNSS="java $DEBUG -jar $JAR $JDNSSARGS $LOGLEVEL --once=true --serverSecret=0123456789abcdef0123456789abcdef"
+
+    $JDNSS zone_files/$file &
+    if [[ $name == 'TCP' ]]
+    then
+        sleep 5
+    else
+        sleep 1
+    fi
+
+    dig $DIGARGS $DIGHOST $query -p $PORT $type | \
+        sed -e 's/, id: [0-9][0-9]*$//' > /tmp/$name
+
+    diff --minimal named/$name.good /tmp/$name
+    if [[ $? != 0 ]]
+    then
+    	echo "FAILED"
+        exit 1
+    fi
+
+    rm /tmp/$name
+    sleep 1
+
+    echo "passed"
+
+done
+
+exit
+
+echo -n "Testing MC..."
+    name=MC
+
+    $JDNSS --TCP=false --UDP=false --MC --once=true scopesconf.org &
+    sleep 1
+    java -cp .. MClient www.scopesconf.org A > /tmp/$name
+
+    diff --minimal $name.good /tmp/$name
+    if [[ $? != 0 ]]
+    then
+    	echo "FAILED"
+        exit 1
+    fi
+
+    rm /tmp/$name
+    echo "passed"
+
+echo -n "Testing trunc..."
+
+    name=trunc
+    java -cp .. JDNSS --logLevel=OFF --port=$PORT trunc.org &
+    sleep 1
+
+    dig $DIGARGS @localhost test.trunc.org -p $PORT > /tmp/$name
+
+    diff --minimal $name.good /tmp/$name
+    if [[ $? != 0 ]]
+    then
+    	echo "FAILED"
+        exit 1
+    fi
+
+    rm /tmp/$name
+    sleep 1
+
+    echo "passed"
+
+    kill cat /tmp/named.pid

@@ -1,0 +1,254 @@
+; File written on Tue Apr 17 13:06:58 2018
+; dnssec_signzone version 9.10.3-P4-Ubuntu
+CNAME.com.		86400	IN SOA	CNAME.com. root.one.test.com.CNAME.com. (
+					12         ; serial
+					28800      ; refresh (8 hours)
+					7200       ; retry (2 hours)
+					604800     ; expire (1 week)
+					86400      ; minimum (1 day)
+					)
+			86400	RRSIG	SOA 10 2 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					sUVvKPr04aAw8pQdRflpwsQ9/yE83+MHmBwI
+					KNr/qbm/LECFxrckrwDZde8TQpE3O4cnozHD
+					3LjK86RQ+mBMdmMm8D4q5EByq4knvEjtsUzd
+					A+49ok6Z3VODLcKD54rXef42raIWVoxtp682
+					r8ZWCX1RlOhPeJkWGEnjf3iqK8wmhZmL1Nwx
+					HZIGVqmCKL/8xCkoQm+4E8+dTf47OHzlzlJw
+					PVdAA1QpUpLvbciTJCcp6jPXNQT9lhktrJfB
+					xVuEdYfllEmX8FV1JZ08gWfYcis510M+0vAI
+					WO9qLP2i51istd9B20f1+9uULJjogSkki6x7
+					GjCHJr+zQlwRfXpNqg== )
+			86400	NS	ns1.CNAME.com.
+			86400	NS	ns2.CNAME.com.
+			86400	RRSIG	NS 10 2 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					MVG2GjrBRc7jDz2gDOxft4dAxJwXDUHqpZ9i
+					Q+UpgG6yX79va7+/J9hAzsRjzHm66J3NA955
+					GlhFBGTPwIYfGdkHBa7f16xCNABWdW976A01
+					jSUzlhxZkwEAQGQ2wsQKzqlKPHqjhyLpjrhz
+					GFoFh9ikGO298ZHWZhKnp6KQoooGUD5uciST
+					6cH6n/zczMPXP49/VjrRmNr9yIqld7Hzbl70
+					Oic2LJUfXVrMTrFUQp9sJPkB1xRKFNocuuxw
+					rK9gKswbIwzOjm737jn+xZa/P/ZrAIp9FPFS
+					mniCL6x7O08e/nPBx7QPh3OVXiNmrrUmoGKg
+					MA7QuDWpjwFYlA+IjQ== )
+			86400	NSEC	ftp.CNAME.com. NS SOA RRSIG NSEC DNSKEY
+			86400	RRSIG	NSEC 10 2 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					LGqlUMtdu7wfTF6TomL4qA5Lbz9ZHxZ8F576
+					LNpOhZ/Tq/QA02F5cevCVRmsFBXgbxh0z4ah
+					LS/A/Jm6d15rbcNBOVxkZbjf/+iaC36i74X4
+					03LozfxiUI9f/Te7k4IEcuGZwD4o9eA8aKaD
+					rviADvsMCxkZVdvkzmU+n20QAG8utdgAoUMj
+					yOnqP8kM716apNIgt7+gWK3ypWAI+Vo6WTGP
+					+J6m9N//bcw9NVl8+FGFPTq9ItvYjreDGRCQ
+					DHSuS/HhHFToth5dH9ezLdXVLnmwihnUXPHa
+					5gs7eUCWivjBLthBXlDAUW1Hd91wtd5MUP8C
+					BKhTEgY5DBsP+N1rQA== )
+			86400	DNSKEY	256 3 10 (
+					AwEAAcvvJ2WmmGsgG7hMne7/6gVOGamiQpS6
+					0tYR878TG0kjy66QUXVF7d/zgTcfVLIZVXbX
+					YWmL8eERnYvU+e1VCqogI9hk/iR9TVFp+sEz
+					mY02LdEMMU83nVk4nkhyIqJdn/MiCAPWLDPS
+					vAvcRRvLWhXInUhtQI7n4yHMlsZpAM6kJ7oU
+					T+tFjSRW6LOWV8WEc/K8hQm7scmyHxsTdMQn
+					xYgovnu3u3Zd7RYTj1iIZiciMVAcDVTJhwbC
+					tanC9haUiygFMe9EQkHOau+LsB4wHVYc6hDG
+					+m6tqK6JFuhkbMCSY3yYrGYrbbB24oA+6I5B
+					QQXRVfrMRh202XpMwmuJtdM=
+					) ; ZSK; alg = RSASHA512; key id = 11918
+			86400	DNSKEY	257 3 10 (
+					AwEAAWOF6k63Vd9pngzyWZVbwd6lPwF9wwb+
+					ONKhha/MFwDlGVq1iYUej8DGMRnJsvHCXP6m
+					hmrVRUYCLF3OaOuI8UM83m7WtVtaBQA4OyG2
+					A++34FI0KGFJJ0tmpvxrk9pBgpNpXcvbXZLH
+					C4Ah9zSQY425rCuJuTGXpl2NXMHJt2Wx7Jz5
+					dq4XUe34v0Bb2cuFpYUwiMiZe0KsoKatSGfO
+					PbNeISvOg4U9j2o9cjNRXQ7WekPiKQWeup8/
+					y6dV9fcKCBf9/HVDw4/i2xwSzYJU7F4R6g3a
+					pQwnX3ZcMr1g8maBtUycxrQLKMaGqzbmh6CJ
+					2BEI8gu0Bu2ZpvkNZGFkyTvA3Y7VR+Qb/kJu
+					UtPMT2XLVfnrjVZ0r38NQgawqv4OnoawTWRk
+					E51su7Jts44shT08xkPXz3cV3oTuyA/ifdQP
+					8G/ZlO/ywdkVAVDpv5uIYsa7md8fPENQySFw
+					Od4jULjox3rNnMONeynKbZ9ujh/ERgaklFzd
+					ZEtPPiazCQZpsFsFTwaGQbxWpvZAGCuSBudl
+					mK3BY+ORiKuI0h866cMOAqwr/eRJnXOlN5XR
+					kQVUMo83qdJJQVo6/5GyJbsauNli6O6wokmA
+					uQqyuQx7vhLQ0DLTq5eSucO0QNWgKR192+J6
+					JQ/zFv3brTegQf/9RkWdiYGZkcYe2vsVuQzm
+					Rh11
+					) ; KSK; alg = RSASHA512; key id = 55773
+			86400	RRSIG	DNSKEY 10 2 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					rPhshTUcGxDg/9O8V5SHplN8ruvu59K/GuUu
+					ASzaiCDcSITTOD0BMQvT3TOhIaG4hCNIpiIf
+					VbQwy7E4D4A1J+/bCHj/iz73RSBhPCTQVlZv
+					u4K5jT/mixX+sjzskf3zH8/MYAiysCpuy9zq
+					fOv2y6xOFOduh+DjHFFbHXKl/NweTlFNKOOk
+					Bly1zjjAmME7B+v2Wv70a9E0PWPcblA/duJa
+					bDG7Sg7/f2geCyY8BOMWGqaym/fQJ1J9O3nh
+					FZgNb+nV54tEIF5o2eWcuYn+EIPifIa8lXRi
+					Ewn5+UbT833fsU/fOhoSp7dlqhIH+IuX9aFp
+					VDrorVpAOdJB3rB+Uw== )
+			86400	RRSIG	DNSKEY 10 2 86400 (
+					20180517180658 20180417180658 55773 cname.com.
+					MCIu5Tk09/xNJADInccDlz77GWeSBlyMdOk5
+					z7Es1/l6ghvFnmMo3/K2L3ufdmYViQglFiIY
+					6orbSLXT/ijyc1wQL/l+bDs03ysjND6RQh/S
+					ILpAsjknWic7f+NTKchlDwUjpZ6lfHLYXqHy
+					lFyiRg5jTQZdExfYzkXBBTAVWrUF8y4BewEk
+					WOp7l/DVSjrMdOHwwqcyDxRmSD7iQw7NGxbE
+					m2SK3d3ukPrFlNY+t2zhLh0PBUd1yxE+pJQB
+					6itkL4uhVdlJIWPA1uDT5Zz+f8IQ0saXFRWY
+					Z/dMdJLuUP8E9K5p8UG4TIPm4D9Qm/7euVj5
+					EY2Fc6RqqDogBi2CTQE9Io3x8t826FpB8kir
+					DTS2wJdyf7sOTRyi6fZ0tTh0iLmhZjd0K6S+
+					gI1Ql/creIzpjZYBNwSzNx8MQo1xRaapMGur
+					5oSi54uhGWhuXA5b687EQkqWA0MbGH6xuuZm
+					DU5l9GaxCYG6t+iZubwyVdwUA8iEUu757UH3
+					JaQBUFNpq5VLtrelmHMg8y5fY9r+3Idk//0b
+					Nq3b6ui4fQtNn9lYjNIO2clfKm6/ijO9ohpJ
+					HMbm8NrkDNWW5bgYAfyWtNbgF29DrgrRNrBY
+					up7z6IrlOWTJD+kqb3kfTSlvYA6sFd39Gxtp
+					x3rJB2+hiWOgJ2Jsyt9fKetJjQRFKY/30Xs= )
+NS.com.			86400	IN DNSKEY 256 3 10 (
+					AwEAAZ/29+V5HeaKmELxEpBYt/GVbcxhm/tD
+					csIhQnvS7JLWCXHY3bl3wsWE/Trr50AywSPU
+					SKRrD97LtQWMCUS0XKA39XE91eIQ7lb/l7zL
+					atp6vn0pQg2n/lX8uWXxJduXT+bOVtjhnD4c
+					FvMZW7yc3Q1gdC8a8gw0gCKOvKW+kRWvxZZi
+					RzcWbJEy4Q++JIe5gKTBRroeFTO4dV6hZpWY
+					U9dZAFwFm14khd82Iqkkt6CUoonKTE8LbfDJ
+					7npujzu8xu1qDgTYVDbdtEhf85iVKv96p0cg
+					OnFwwlcQLLMBt/6Ji+r+qCsbUyES8H5BR+G1
+					xbyTyZrMo8KxUx1axhIZGsc=
+					) ; ZSK; alg = RSASHA512; key id = 37235
+			86400	IN DNSKEY 257 3 10 (
+					AwEAAV/7mGjPNGniZaGeHL456plvNpziICY+
+					7Nn2XYCyXDi92usIKFj8xsmveF2ryEvkfQKF
+					0wFuZG9CsDVDh6Y5cn7cyJmi5ePvsq6QAnsJ
+					U/XyNsEl4sDq7dvxXbjdalqhJu72wVwalt2R
+					krqwOjArML7lPyHxu1bYdvqeEwj08QHtDLtx
+					xYtqUtMIoMnA/NyyTqxIpzU+8uEqKjHBfCe0
+					89G7Uxs2NkJRYiN5tgQG9cciqfPp25A7rdvN
+					zSdi+kTMpYwb/1gPQiFBU1bfwAMLqC6t3S0n
+					jwA6iAHy+1eE8yvGuVYfumhEgOe46c9ThN3k
+					hQhg3fn6/zy3JlQEZ2CPj/jfSQtXrokdqfq6
+					W6GAZr91vrmhFjoW6vzxsefRVUvt36JcTCzn
+					yhUHJ5A5j0LrBTaxxTKw/ntfI25Sh9s1BEwH
+					7/eva4XfN7ColYIFTryO2ROti7+4C5J29c72
+					HhSbi5ch407RMP+ibaKFYtdW1ZOY9DYeYf/S
+					WxwJzfuHvv0GYNUML2P5GHbukdJq/5CNW04b
+					JI3mEi4zKoWynrcrNXI4b9lzqXPDSp/HaBJh
+					JdbvLQblNMuOU8JkS1VXb/JZdy0DkdG06Aw/
+					iODbYCMET8wlBPm4qzhEqqjJe6zk1+LIoe6+
+					8Pcdqp3s2r8ac1bMbXb7ua4y4/OUdwLAlSVA
+					462L
+					) ; KSK; alg = RSASHA512; key id = 56679
+www.CNAME.com.		86400	IN CNAME ftp.CNAME.com.
+			86400	RRSIG	CNAME 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					OXI8exM5P3EXKckeiP7Vupuq2JQgH40uJO8M
+					Wp/xTqno7BN+5MkGhlb+MVbrUFtdEgJIg07K
+					Y8zj9LHk9sfUt2TPp7yuInUunGQDVihRezYK
+					QpDkEUcUBQkxpNq/UrBhr1czc9eHQc4AQWlf
+					a3wGs+GW0OOIunH/ZxUgssZ0i73GqOtJtSKp
+					UUXEvab2JMpJ44qIJ9jOo033PcMHYWFKn7Vt
+					tXeq+mwTzQbcA86j81y1IsJt3ab7waB7IrnY
+					fky7EfrNila6HKQ3I3gzti0uFzT/N5jxBTv5
+					bz+meUz5aIWCnYPaIrJjF9m1forXvA2KCDDA
+					hmIDMbsOtoBDXjVADQ== )
+			86400	NSEC	CNAME.com. CNAME RRSIG NSEC
+			86400	RRSIG	NSEC 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					XRTPSdc+tOaYpXSBEiU0yyCpahWRGz7rrWGK
+					/o1soLMS7yPZ//JZ3Os0jvgxaoSZA49ksxEw
+					c7FSNx35o1jTUekyutu5DNCnaK0f6Vgdcw1E
+					pI40xrRdZQakmfE9GSY3x8Mz0D/QZfUfyxT6
+					h17GsZGrB32L6FMAWlbkke+OgpfQy37l3PSO
+					0/aAjx0lCNI/T0T2uYYTkzSJa3tySi4zQhuf
+					ASePLJ7yE/HIF+PvcZwQ3dkUmPisAwb4cYR6
+					cR/7nVcmHf27Qsi/vxwla1EBBY3VWoUBKmcl
+					Iegz+z4/i2bUvMiHcrBox+dRvmdN7UHa4NX+
+					fwLwKqGOLxv0vWF6hg== )
+ftp.CNAME.com.		86400	IN A	192.168.1.1
+			86400	IN A	192.168.1.2
+			86400	RRSIG	A 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					FA/GWMUZuRpMjk15eKXJSl+y1DwpRLhDCYAz
+					dN+mOITvamqScZBjbE1VyHiWRgvSCvHCF/XX
+					5hWEO5iV7xs3HwM8Ndiorh39ANtPEMfunZac
+					oDA/fOCsaexLKrSSIUrQY6KT7ZCs7Ol9e8ik
+					zbHG7UFs1WzS/EDHsv7MSKbfZGQjD0GFZJc3
+					1PqU4h9rIqpNNOlLq6yRrq3Izv7nOMgI7XnR
+					p+PqPyhZvBV5mZppd0qjq/xqoLedfIPiWXnt
+					cLy2qX5SrN2rMhQzpkpGFHDxGZDhdRI8Qhlo
+					AjaMegshQ3urJQwhkgg6AGygRUNx3/y5sR96
+					CSrzRp/BMl1lIg42Nw== )
+			86400	NSEC	ns1.CNAME.com. A RRSIG NSEC
+			86400	RRSIG	NSEC 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					HLM149bFjeAPgdiId/WIkcc8ElpzuaSbb6tH
+					lR33LVj0faID5wbYQhFzcVnWdZZPQOG+YkJp
+					jMRVENW7Ym+xyuE+uFBuUEk1E1LbXOONRm7l
+					DoXtfPyup31RwrsMJ+stLYkA4pN+od5s5PL7
+					zRFSmKpiRnDCKLrVv69AnfDLXTf1rUm654FL
+					DeVC+CNqPMIfUas6Rkg2JZdzgFEEN5vFvksy
+					UZ64W/2huZnzVXneW+D+qfPxJP1B0e2+zF9D
+					XHobqlbDRNL1VK503fkMefRhPGXjEfNDCeic
+					LV5G29LhA+hti+J6F3xSujNwjIuPlprmcM7r
+					2usdwnapppuRf064Wg== )
+ns1.CNAME.com.		86400	IN A	192.168.0.1
+			86400	RRSIG	A 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					viG8kQsD+r8OEVRIfJmN4yDJFNMb6SgXxUST
+					aWgsQUm7mLDp8vkKCz0cKImwtME1bplJ3Tyv
+					kYM5bt30URJXLswDsaMueLaPcKme2Zk5M4gE
+					uTZOAlnzSu6H48MjX2hlC84SCwjMGPCI5IHU
+					HkV3SzNCChTUmk1ovkbvty4KcRbMc/zZTNUT
+					Xuy7/Bek7K0UXXpYnvq5XWSu9tzdBh1v8OAK
+					fN6fpf59VSlsAmwXa0J1Lx7jG7FpUTF3pnfS
+					cQ+6fRt5slfkalCd7qLSfNvDEBjvl5Fswcd7
+					7cO3amt7wPaC1a0l3sJS+aTrWkIUFpt8EtJE
+					WhbzbrxZwNyXQN/ceA== )
+			86400	NSEC	ns2.CNAME.com. A RRSIG NSEC
+			86400	RRSIG	NSEC 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					TU8glA7q8zlEVPC1BfwdtHk30D/xrOOSy14+
+					Zq6inGUG1NzCAX0mWn6B6XboPIcZnSckx1KO
+					ipHZrwThOs951ryBNiLRQoCN9IFHzsmSq3Cs
+					uO1R0JmqOAeBLxbtXGe4uuYMvXjOLDtRB9wR
+					Y1iqZUR3Amuho1nqsxKVA3Si/+Ue470iyvSu
+					nt1EvOuupEY8j3s92cubfYLQwwT0RCYDvaN/
+					FDWmyzEQu4o7yAXA9lGyESAbkyr/fcSiWi4z
+					wDviK1Gidd89gdWqk2hnXYPhdHUN97ZSM1HS
+					4Vcb1WlF4AWOcR/MLsvfkg8P9yPr3dSAXtQU
+					HpmRhNNOMr+tPVSZiA== )
+ns2.CNAME.com.		86400	IN A	192.168.0.2
+			86400	RRSIG	A 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					dtNbxivuj+hK/V2Js8/vjpXXNKmYkshau7/0
+					kxME/l1iQe2+Spsvqvvo3lqePzvC8Wvh3p2i
+					JwdKTkUfrttkDZVEQbmTDKCc1iEWNq48aZDF
+					p1TxSmj+EhZPGqW3wsaW8YDdO+Fn/kQHfza0
+					mM2XgjfBubmHnFmCro/jYwxTn9GmVdht6yDJ
+					lBqVKzumk4qga1LHQNPSK0MyrbnOtFUHRqxv
+					7IcfrFM/Tc2JQqaInPL7b/GlScpL69a0FXlu
+					M7I/WZ3Awzv/qBpwpiAKErjv+gpxqogWiohX
+					llHZL6mRyp7X1czeEn2eBKhvdtB8psAmjEt0
+					6kkkhleNQV557O1f1Q== )
+			86400	NSEC	www.CNAME.com. A RRSIG NSEC
+			86400	RRSIG	NSEC 10 3 86400 (
+					20180517180658 20180417180658 11918 cname.com.
+					qBZAXTOmtYlnBJA663F7hjfHKD677QPHuKxC
+					zC3djSwbrkaPvQaY9zTpvasEEzv5rZ75/M3U
+					DMy5BJY1spAZvB4LxYXQmrVAWK9eTaAyfIDF
+					MXXxH/gaYbomi76Aw5jjdfvJUw7VqMq4jFf5
+					XBXuP7z3V9/YpmJ1BNZOPDE4R1j95hTT94sV
+					ogzh3azHAPNpR0RFM1hCplku8GjmsY+42Ld8
+					gDyTuhH5xzLYYOOOfKVMCW4XcGcN0iuhjO3I
+					asf+dQh87i3L90eapVqtvCJOQjGPYATd9tWT
+					1gG5UEkhvW5d7UcEtRLs5sEXJcNuFODeqLwA
+					XQa0mC4g1THI8W5HGg== )

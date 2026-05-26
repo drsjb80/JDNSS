@@ -1,0 +1,10 @@
+options {
+	directory 	"../zone_files";
+	pid-file 	"/tmp/named.pid";
+	allow-query-cache { none; };
+	allow-query     { any; };
+	listen-on	port 53 { 127.0.0.1; } ;
+	recursion no;
+};
+
+zone "NAME" { type master; file "NAME"; };

@@ -1,0 +1,2 @@
+sudo /usr/local/sbin/named -g -c named.conf
+dig +nostats +nocmd @127.0.0.1 SOA.com

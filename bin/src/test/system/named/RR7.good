@@ -1,0 +1,22 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;RR7.com.			IN	A
+
+;; ANSWER SECTION:
+RR7.com.		86400	IN	A	192.168.1.1
+
+;; AUTHORITY SECTION:
+RR7.com.		86400	IN	NS	ns1.RR7.com.
+RR7.com.		86400	IN	NS	ns2.RR7.com.
+
+;; ADDITIONAL SECTION:
+ns1.RR7.com.		86400	IN	A	192.168.0.1
+ns2.RR7.com.		86400	IN	A	192.168.0.2
+

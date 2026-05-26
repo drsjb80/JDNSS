@@ -1,0 +1,19 @@
+@	IN	SOA	@  beaty.emess.mscd.edu. (
+			21 ; serial
+			28800 ; refresh
+			7200 ; retry
+			604800 ; expire	
+			86400 ; minimum
+			)
+
+	IN	A	129.217.34.146
+
+	IN	NS	ns1
+	IN	NS	ns2
+
+	IN	MX	10	ls12sn.cs.uni-dortmund.de.
+
+www	IN	A	129.217.34.146
+
+ns1	IN	A	147.153.170.17
+ns2	IN	A	147.153.170.27

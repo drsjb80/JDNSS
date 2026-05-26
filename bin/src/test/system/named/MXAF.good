@@ -1,0 +1,14 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;one.MXA.com.			IN	AAAA
+
+;; AUTHORITY SECTION:
+MXA.com.		86400	IN	SOA	MXA.com. root.one.test.com.MXA.com. 11 28800 7200 604800 86400
+

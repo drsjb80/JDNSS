@@ -1,0 +1,24 @@
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR
+;; flags: qr aa rd; QUERY: 1, ANSWER: 3, AUTHORITY: 2, ADDITIONAL: 3
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; COOKIE: 0123456789abcdef0e7790a5817e91b7 (good)
+;; QUESTION SECTION:
+;www.CNAMEAAAA.com.		IN	AAAA
+
+;; ANSWER SECTION:
+www.CNAMEAAAA.com.	86400	IN	CNAME	ftp.CNAMEAAAA.com.
+ftp.CNAMEAAAA.com.	86400	IN	AAAA	fedc:ba98:7654:3210:fedc:ba98:7654:3210
+ftp.CNAMEAAAA.com.	86400	IN	AAAA	fedc:ba98:7654:3210:fedc:ba98:7654:3211
+
+;; AUTHORITY SECTION:
+CNAMEAAAA.com.		86400	IN	NS	one.CNAMEAAAA.com.
+CNAMEAAAA.com.		86400	IN	NS	two.CNAMEAAAA.com.
+
+;; ADDITIONAL SECTION:
+one.CNAMEAAAA.com.	86400	IN	AAAA	fedc:ba98:7654:3210:fedc:ba98:7654:3210
+two.CNAMEAAAA.com.	86400	IN	AAAA	fedc:ba98:7654:3210:fedc:ba98:7654:3211
+

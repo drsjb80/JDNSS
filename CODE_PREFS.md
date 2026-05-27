@@ -13,6 +13,13 @@ This file is for recording coding preferences, style choices, and project conven
 - I prefer to keep pre-existing comments along with AIs
 - I want AI to run my unit and system tests, and create more when appropriate.
 
+## JavaScript
+- Always use strict equality operators: === and !==.
+
+## CSS
+- In CSS, prefer rem, em, en, and percentages for sizing and spacing.
+- In CSS, use named colors instead of hex color values.
+
 ## Error Handling
 
 - Prefer explicit error handling over broad exception swallowing.

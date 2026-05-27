@@ -14,7 +14,7 @@ final class P38 {
 
     static Object call(final String methodName, final Object o,
                               final Object[] args) throws Exception {
-        final Class[] arguments = new Class[args.length];
+        final Class<?>[] arguments = new Class<?>[args.length];
 
         for (int i = 0; i < args.length; i++) {
             arguments[i] = args[i].getClass();

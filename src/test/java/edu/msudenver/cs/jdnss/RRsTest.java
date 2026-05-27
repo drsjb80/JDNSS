@@ -2,8 +2,6 @@ package edu.msudenver.cs.jdnss;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,9 +11,6 @@ import java.util.Set;
 
 public class RRsTest
 {
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @Test
     public void rrsTest1() {
         byte one[] =
@@ -61,13 +56,7 @@ public class RRsTest
     public void rrsTest3() {
         byte three[] = {(byte) 0xc0, 0x00, 0x01, 0x00, 0x00, 0x00};
 
-        exception.expect (AssertionError.class);
-        RRs rrs3 = new RRs(three, 1, 0, 0, 0);
-
-        String expectedRRs3 = "Questions:\n" +
-            "null";
-
-        Assert.assertEquals(rrs3.toString(), expectedRRs3);
+        Assert.assertThrows(AssertionError.class, () -> new RRs(three, 1, 0, 0, 0));
     }
 
     @Test
@@ -81,13 +70,7 @@ public class RRsTest
                 0x00, 0x01, 0x00, 0x000
             };
 
-        exception.expect(AssertionError.class);
-        RRs rrs4 = new RRs(four, 1, 0, 0, 0);
-
-        String expectedRRs4 = "Questions:\n" +
-                "null";
-
-        Assert.assertEquals(rrs4.toString(), expectedRRs4);
+        Assert.assertThrows(AssertionError.class, () -> new RRs(four, 1, 0, 0, 0));
     }
     @Test
     public void nsecGetBytesTest() {

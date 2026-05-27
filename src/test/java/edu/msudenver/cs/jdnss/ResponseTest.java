@@ -7,6 +7,7 @@ import org.junit.Test;
  * Created by beatys on 10/17/17.
  */
 public class ResponseTest {
+    @SuppressWarnings("unused")
     private Response response;
     @Before
     public void setUp() {
@@ -25,7 +26,8 @@ public class ResponseTest {
     }
 
 
-    private byte[] queryNoCookie = {(byte) 0x5f, (byte) 0x3e, (byte) 0x01
+        @SuppressWarnings("unused")
+        private byte[] queryNoCookie = {(byte) 0x5f, (byte) 0x3e, (byte) 0x01
             , (byte) 0x20, (byte) 0x00, (byte) 0x01, (byte) 0x00
             , (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00
             , (byte) 0x00, (byte) 0x04, (byte) 0x74, (byte) 0x65
@@ -33,7 +35,8 @@ public class ResponseTest {
             , (byte) 0x6f, (byte) 0x6d, (byte) 0x00, (byte) 0x00
             , (byte) 0x01, (byte) 0x00, (byte) 0x01};
 
-    private byte[] expectedResponseNoCookie = {(byte) 0x5f, (byte) 0x3e, (byte) 0x85, (byte) 0x00
+        @SuppressWarnings("unused")
+        private byte[] expectedResponseNoCookie = {(byte) 0x5f, (byte) 0x3e, (byte) 0x85, (byte) 0x00
             , (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x01
             , (byte) 0x00, (byte) 0x02, (byte) 0x00, (byte) 0x00
             , (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73

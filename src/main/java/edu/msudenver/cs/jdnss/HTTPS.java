@@ -45,11 +45,10 @@ public class HTTPS {
             public void configure(HttpsParameters params) {
                 try {
                     SSLEngine engine = context.createSSLEngine();
-                    params.setNeedClientAuth(false);
-                    params.setCipherSuites(engine.getEnabledCipherSuites());
-                    params.setProtocols(engine.getEnabledProtocols());
-
                     SSLParameters sslParameters = context.getSupportedSSLParameters();
+                    sslParameters.setNeedClientAuth(false);
+                    sslParameters.setCipherSuites(engine.getEnabledCipherSuites());
+                    sslParameters.setProtocols(engine.getEnabledProtocols());
                     params.setSSLParameters(sslParameters);
 
                 } catch (Exception ex) {
@@ -74,7 +73,6 @@ public class HTTPS {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            boolean finished = false;
             Response r = null;
 
             switch (t.getRequestMethod()) {
@@ -86,24 +84,27 @@ public class HTTPS {
                     break;
                 default:
                     logger.error("Shouldn't get here");
-                    finished = true;
-                    break;
+                    t.sendResponseHeaders(405, -1);
+                    return;
             }
-            if (!finished) {
-                for (String key : t.getRequestHeaders().keySet()) {
-                    System.out.println(key);
-                    System.out.println(t.getRequestHeaders().get(key));
-                }
+            if (r == null) {
+                t.sendResponseHeaders(500, -1);
+                return;
+            }
 
-                t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            for (String key : t.getRequestHeaders().keySet()) {
+                System.out.println(key);
+                System.out.println(t.getRequestHeaders().get(key));
+            }
 
-                String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
-                System.out.println(encoded_response);
-                t.sendResponseHeaders(200, encoded_response.getBytes(StandardCharsets.UTF_8).length);
+            t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-                try (OutputStream os = t.getResponseBody()) {
-                    os.write(encoded_response.getBytes(StandardCharsets.UTF_8));
-                }
+            String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
+            System.out.println(encoded_response);
+            t.sendResponseHeaders(200, encoded_response.getBytes(StandardCharsets.UTF_8).length);
+
+            try (OutputStream os = t.getResponseBody()) {
+                os.write(encoded_response.getBytes(StandardCharsets.UTF_8));
             }
         }
 

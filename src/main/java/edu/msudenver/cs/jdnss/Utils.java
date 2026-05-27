@@ -7,6 +7,7 @@ import org.apache.logging.log4j.message.ObjectMessage;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.MulticastSocket;
+import java.net.StandardSocketOptions;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -484,10 +485,9 @@ class Utils {
         String s = toString((DatagramSocket) mcs) + "\n";
 
         try {
-            s += "getInterface() = " + mcs.getInterface() + "\n";
-            s += "getNetworkInterface() = " + mcs.getNetworkInterface() + "\n";
+            s += "getNetworkInterface() = " + mcs.getOption(StandardSocketOptions.IP_MULTICAST_IF) + "\n";
             s += "getTimeToLive() = " + mcs.getTimeToLive() + "\n";
-            s += "getLoopbackMode() = " + mcs.getLoopbackMode();
+            s += "getLoopbackMode() = " + mcs.getOption(StandardSocketOptions.IP_MULTICAST_LOOP);
         } catch (java.io.IOException ioe) {
             logger.catching(ioe);
             return null;

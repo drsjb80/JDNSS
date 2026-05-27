@@ -19,8 +19,8 @@ class DBZone extends Zone {
     DBZone(final String zoneName, final int domainId, final DBConnection dbConnection)
     {
         this.zoneName = zoneName;
-        int domainId1 = domainId;
-        // DBConnection dbConnection1 = dbConnection;
+        assert domainId >= 0;
+        assert dbConnection != null;
     }
 
     public String getName() { return zoneName; }

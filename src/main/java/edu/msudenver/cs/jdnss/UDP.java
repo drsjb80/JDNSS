@@ -63,7 +63,7 @@ class UDP extends Thread
                 continue;
             }
 
-            Future f = pool.submit(
+            Future<?> f = pool.submit(
                 new UDPThread(
                     Utils.trimByteArray(packet.getData(), packet.getLength()),
                     dsocket, packet.getPort(), packet.getAddress()

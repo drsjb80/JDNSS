@@ -57,13 +57,13 @@ class RRs {
         */
 
         for (int i = 0; i < numQuestions; i++) {
-            Map.Entry<String, Integer> StringAndNumber = null;
+            final Map.Entry<String, Integer> StringAndNumber;
 
             try {
                 StringAndNumber = Utils.parseName(location, buffer);
             } catch (AssertionError ae) {
                 questions[i] = null;
-                assert false;
+                throw ae;
             }
 
             location = StringAndNumber.getValue();

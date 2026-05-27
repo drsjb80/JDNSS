@@ -1,9 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,8 +14,15 @@ import java.util.Set;
 
 public class UtilsTest
 {
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+    private void expectAssertionError(final Runnable action)
+    {
+        Assert.assertThrows(AssertionError.class, action::run);
+    }
+
+    private void expectNullPointerException(final Runnable action)
+    {
+        Assert.assertThrows(NullPointerException.class, action::run);
+    }
 
     @Test
     public void count()
@@ -28,9 +33,8 @@ public class UtilsTest
         Assert.assertEquals (Utils.count ("foo", "foo"), 1);
         Assert.assertEquals (Utils.count ("foofoofoo", "foo"), 3);
 
-        exception.expect (NullPointerException.class);
-        Utils.count (null, "bar");
-        Utils.count ("foo", null);
+        expectNullPointerException(() -> Utils.count (null, "bar"));
+        expectNullPointerException(() -> Utils.count ("foo", null));
     }
 
     @Test
@@ -39,8 +43,7 @@ public class UtilsTest
         Assert.assertEquals (Utils.reverse (""), "");
         Assert.assertEquals (Utils.reverse ("foo"), "oof");
 
-        exception.expect (NullPointerException.class);
-        Utils.reverse (null);
+        expectNullPointerException(() -> Utils.reverse (null));
     }
 
     @Test
@@ -52,8 +55,7 @@ public class UtilsTest
         Assert.assertEquals (Utils.reverseIP ("."), ".");
         Assert.assertEquals (Utils.reverseIP ("..."), "...");
 
-        exception.expect (NullPointerException.class);
-        Utils.reverseIP (null);
+        expectNullPointerException(() -> Utils.reverseIP (null));
     }
 
     @Test
@@ -75,9 +77,8 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (Utils.getTwoBytes (0xfff00f00, 4),
             new byte[]{(byte) 0xff, (byte) 0xf0}));
 
-        exception.expect (AssertionError.class);
-        Utils.getTwoBytes (0xfff0f0, 0);
-        Utils.getTwoBytes (0xfff0f0, 5);
+        expectAssertionError(() -> Utils.getTwoBytes (0xfff0f0, 0));
+        expectAssertionError(() -> Utils.getTwoBytes (0xfff0f0, 5));
     }
 
     @Test
@@ -99,9 +100,8 @@ public class UtilsTest
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 7), (byte) 0xf);
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 8), (byte) 0xf);
 
-        exception.expect (AssertionError.class);
-        Utils.getNybble (1, 0);
-        Utils.getNybble (1, 9);
+        expectAssertionError(() -> Utils.getNybble (1, 0));
+        expectAssertionError(() -> Utils.getNybble (1, 9));
     }
 
     @Test
@@ -159,9 +159,8 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (Utils.toCS ("this"),
             new byte[]{(byte) 4, 't', 'h', 'i', 's'}));
 
-        exception.expect (AssertionError.class);
-        Utils.toCS ("");
-        Utils.toCS (null);
+        expectAssertionError(() -> Utils.toCS (""));
+        expectNullPointerException(() -> Utils.toCS (null));
     }
 
     @Test
@@ -173,9 +172,8 @@ public class UtilsTest
             ("www.foobar.org"), new byte[]
             {3,'w','w','w',6,'f','o','o','b','a','r',3,'o','r','g',0}));
 
-        exception.expect (AssertionError.class);
-        Utils.convertString ("");
-        Utils.convertString (null);
+        expectAssertionError(() -> Utils.convertString (""));
+        expectNullPointerException(() -> Utils.convertString (null));
     }
 
     @Test
@@ -191,8 +189,7 @@ public class UtilsTest
             Utils.combine (null, new byte[]{1}),
             new byte[]{1}));
 
-        exception.expect (AssertionError.class);
-        Utils.combine (null, null);
+        expectAssertionError(() -> Utils.combine (null, null));
     }
 
     @Test
@@ -218,11 +215,9 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 2), new byte[]{0x001, 0x002}));
         Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 4), initial));
 
-        exception.expect (NullPointerException.class);
-        Utils.trimByteArray (null, 2);
-        exception.expect (AssertionError.class);
-        Utils.trimByteArray (initial, 0);
-        Utils.trimByteArray (initial, 5);
+        expectNullPointerException(() -> Utils.trimByteArray (null, 2));
+        expectAssertionError(() -> Utils.trimByteArray (initial, 0));
+        expectAssertionError(() -> Utils.trimByteArray (initial, 5));
     }
 
     @Test
@@ -246,19 +241,16 @@ public class UtilsTest
         Assert.assertEquals("b.c.d.e", Utils.findLongest(v, "a.b.c.d.e"));
 
 
-        v = new HashSet<>();
-        v.add ("");
-        exception.expect (NullPointerException.class);
-        Utils.findLongest (null, "string");
-        exception.expect (AssertionError.class);
-        Utils.findLongest (v, "string");
+        final Set<String> emptySet = new HashSet<>();
+        emptySet.add ("");
+        expectNullPointerException(() -> Utils.findLongest (null, "string"));
+        Assert.assertEquals("", Utils.findLongest (emptySet, "string"));
 
-        v = new HashSet<>();
-        v.add ("foo");
-        Utils.findLongest (v, "bar");
-        Utils.findLongest (v, "");
-        exception.expect (NullPointerException.class);
-        Utils.findLongest (v, null);
+        final Set<String> fooSet = new HashSet<>();
+        fooSet.add ("foo");
+        Utils.findLongest (fooSet, "bar");
+        expectAssertionError(() -> Utils.findLongest (fooSet, ""));
+        expectNullPointerException(() -> Utils.findLongest (fooSet, null));
 
     }
 

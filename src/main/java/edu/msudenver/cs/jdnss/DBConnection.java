@@ -7,8 +7,6 @@ import java.sql.*;
 import java.util.*;
 
 class DBConnection {
-    private Connection conn;
-    private Statement stmt;
     private static final Logger logger = JDNSS.logger;
     private final String dbUser;
     private final String dbPass;

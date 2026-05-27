@@ -16,6 +16,7 @@ public class QueryTest
             (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f,
             (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
             (byte) 0x00, (byte) 0x01};
+    @SuppressWarnings("unused")
     private byte[] header = {(byte) 0xaa, (byte) 0xd8, (byte) 0x01, (byte) 0x00,
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,

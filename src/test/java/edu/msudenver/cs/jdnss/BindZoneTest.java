@@ -1,15 +1,9 @@
 package edu.msudenver.cs.jdnss;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class BindZoneTest
 {
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @Test
     public void bindZone()
     {
@@ -43,8 +37,6 @@ public class BindZoneTest
         Assert.assertEquals (z.toString(), expectedZ);
         */
 
-        String expectedwww = "[ADDR: address = 1.2.3.4, name = www, type = A, TTL = 0, " +
-                "ADDR: address = 4.3.1.1, name = www, type = A, TTL = 0]";
         // FIXME Assert.assertEquals (z.get (RRCode.A, "www").toString(), expectedwww);
 
         // exception.expect (AssertionError.class);

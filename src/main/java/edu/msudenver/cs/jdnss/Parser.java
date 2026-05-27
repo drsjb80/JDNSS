@@ -387,9 +387,10 @@ class Parser {
             case NSEC3PARAM:
                 logger.traceExit(true);
                 return true;
+            default:
+                logger.traceExit(false);
+                return false;
         }
-        logger.traceExit(false);
-        return false;
     }
 
     private void doNSEC() {

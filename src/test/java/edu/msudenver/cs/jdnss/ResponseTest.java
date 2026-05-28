@@ -58,6 +58,25 @@ public class ResponseTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
     }
 
+    @Test
+    public void getBytesMissingARecordReturnsNameErrorWithAuthoritySoa() {
+        final Query missingQuery = new Query(queryMissingARecord);
+        missingQuery.parseQueries("");
+
+        final Response missingResponse = new Response(missingQuery, true);
+        final byte[] result = missingResponse.getBytes();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0x80, unsignedByte(result[2]) & 0x80);
+        Assert.assertEquals(0x04, unsignedByte(result[2]) & 0x04);
+        Assert.assertEquals(0x00, unsignedByte(result[3]) & 0x80);
+        Assert.assertEquals(3, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+    }
+
     private static BindZone createTestZone() {
         final BindZone zone = new BindZone(ZONE_NAME);
         zone.add(ZONE_NAME,
@@ -102,4 +121,16 @@ public class ResponseTest {
             , (byte) 0x73, (byte) 0x74, (byte) 0x03, (byte) 0x63
             , (byte) 0x6f, (byte) 0x6d, (byte) 0x00, (byte) 0x00
             , (byte) 0x01, (byte) 0x00, (byte) 0x01};
+
+        private final byte[] queryMissingARecord = {
+            (byte) 0x12, (byte) 0x34, (byte) 0x01, (byte) 0x00,
+            (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+            (byte) 0x07, (byte) 0x6d, (byte) 0x69, (byte) 0x73,
+            (byte) 0x73, (byte) 0x69, (byte) 0x6e, (byte) 0x67,
+            (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73,
+            (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f,
+            (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
+            (byte) 0x00, (byte) 0x01
+        };
 }

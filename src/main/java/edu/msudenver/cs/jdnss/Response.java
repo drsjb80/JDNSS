@@ -5,6 +5,7 @@ import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.function.IntConsumer;
 
 enum ResponseSection {
     ANSWER, ADDITIONAL, AUTHORITY
@@ -191,28 +192,27 @@ class Response {
     }
 
     private void addAuthorities() {
-        logger.traceEntry();
-        logger.trace(numAuthorities);
-        if (numAuthorities > 0) {
-            if (!UDP || responses.length + authority.length < maximumPayload) {
-                responses = Utils.combine(responses, authority);
-                header.setAuthorityCount(numAuthorities);
-            } else if (responses.length + authority.length >= maximumPayload) {
-                header.markTruncated();
-            }
-        }
+        addSectionToResponse(authority, numAuthorities, header::setAuthorityCount);
     }
 
     private void addAdditionals() {
+        addSectionToResponse(additional, numAdditionals, header::setAdditionalCount);
+    }
+
+    private void addSectionToResponse(final byte[] sectionData, final int sectionCount,
+                                      final IntConsumer setHeaderCount) {
         logger.traceEntry();
-        logger.trace(numAdditionals);
-        if (numAdditionals > 0) {
-            if (!UDP || responses.length + additional.length < maximumPayload) {
-                responses = Utils.combine(responses, additional);
-                header.setAdditionalCount(numAdditionals);
-            } else if (responses.length + additional.length >= maximumPayload) {
-                header.markTruncated();
-            }
+        logger.trace(sectionCount);
+
+        if (sectionCount <= 0) {
+            return;
+        }
+
+        if (!UDP || responses.length + sectionData.length < maximumPayload) {
+            responses = Utils.combine(responses, sectionData);
+            setHeaderCount.accept(sectionCount);
+        } else {
+            header.markTruncated();
         }
     }
 
@@ -438,8 +438,8 @@ class Response {
         responders MUST include an OPT record in their respective responses.
          */
 
-        if (query.getOptrr() != null) {
-            abc = Utils.combine(abc, query.getOptrr().getBytes());
+        if (optRecord != null) {
+            abc = Utils.combine(abc, optRecord.getBytes());
         }
 
         return abc;

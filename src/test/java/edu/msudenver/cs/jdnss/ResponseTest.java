@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,13 +78,109 @@ public class ResponseTest {
         Assert.assertEquals(1, readUInt16(result, 8));
     }
 
+    @Test
+    public void getBytesLargeTxtResponseMarksTruncatedForUdp() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createLargeTxtZone());
+
+        final Query txtQuery = new Query(buildQueryWithOptPayload(0x4321, ZONE_NAME,
+            RRCode.TXT, 64));
+        txtQuery.parseQueries("");
+
+        final Response txtResponse = new Response(txtQuery, true);
+        final byte[] result = txtResponse.getBytes();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0x80, unsignedByte(result[2]) & 0x80);
+        Assert.assertEquals(0x04, unsignedByte(result[2]) & 0x04);
+        Assert.assertEquals(0x02, unsignedByte(result[2]) & 0x02);
+        Assert.assertEquals(1, readUInt16(result, 4));
+    }
+
+    @Test
+    public void getBytesWithoutZoneReturnsRefused() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put("other.com", createZone("other.com"));
+
+        final Query aQuery = new Query(buildQuery(0x5555, ZONE_NAME, RRCode.A));
+        aQuery.parseQueries("");
+
+        final Response refusedResponse = new Response(aQuery, true);
+        final byte[] result = refusedResponse.getBytes();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0x80, unsignedByte(result[2]) & 0x80);
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x80);
+        Assert.assertEquals(ErrorCodes.REFUSED.getCode(), unsignedByte(result[3]) & 0x0f);
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 8));
+    }
+
     private static BindZone createTestZone() {
+        return createZone(ZONE_NAME);
+    }
+
+    private static BindZone createZone(final String zoneName) {
+        final BindZone zone = new BindZone(zoneName);
+        zone.add(zoneName,
+                new SOARR(zoneName, "ns1.test.com", "hostmaster.test.com",
+                        1, 7200, 3600, 1209600, 3600, 3600));
+        zone.add(zoneName, new ARR(zoneName, 3600, "192.168.1.2"));
+        return zone;
+    }
+
+    private static BindZone createLargeTxtZone() {
         final BindZone zone = new BindZone(ZONE_NAME);
         zone.add(ZONE_NAME,
                 new SOARR(ZONE_NAME, "ns1.test.com", "hostmaster.test.com",
                         1, 7200, 3600, 1209600, 3600, 3600));
-        zone.add(ZONE_NAME, new ARR(ZONE_NAME, 3600, "192.168.1.2"));
+
+        zone.add(ZONE_NAME, new TXTRR(ZONE_NAME, 3600, repeatedText(220)));
         return zone;
+    }
+
+    private static String repeatedText(final int size) {
+        final char[] chars = new char[size];
+        Arrays.fill(chars, 'x');
+        return new String(chars);
+    }
+
+    private static byte[] buildQuery(final int id, final String qName, final RRCode type) {
+        byte[] queryBytes = new byte[] {
+                (byte) ((id >> 8) & 0xff), (byte) (id & 0xff),
+                0x01, 0x00,
+                0x00, 0x01,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x00, 0x00
+        };
+
+        queryBytes = Utils.combine(queryBytes, Utils.convertString(qName));
+        queryBytes = Utils.combine(queryBytes, new byte[] {
+                (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
+                0x00, 0x01
+        });
+        return queryBytes;
+    }
+
+    private static byte[] buildQueryWithOptPayload(final int id, final String qName,
+                                                   final RRCode type, final int payloadSize) {
+        byte[] queryBytes = buildQuery(id, qName, type);
+
+        queryBytes[11] = 0x01;
+
+        queryBytes = Utils.combine(queryBytes, new byte[] {
+                0x00,
+                0x00, 0x29,
+                (byte) ((payloadSize >> 8) & 0xff), (byte) (payloadSize & 0xff),
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00
+        });
+
+        return queryBytes;
     }
 
     @SuppressWarnings("unchecked")
@@ -122,7 +219,7 @@ public class ResponseTest {
             , (byte) 0x6f, (byte) 0x6d, (byte) 0x00, (byte) 0x00
             , (byte) 0x01, (byte) 0x00, (byte) 0x01};
 
-        private final byte[] queryMissingARecord = {
+    private final byte[] queryMissingARecord = {
             (byte) 0x12, (byte) 0x34, (byte) 0x01, (byte) 0x00,
             (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
@@ -132,5 +229,5 @@ public class ResponseTest {
             (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f,
             (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
             (byte) 0x00, (byte) 0x01
-        };
+    };
 }

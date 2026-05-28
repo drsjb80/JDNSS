@@ -29,5 +29,6 @@
             "matchCommandLine": true
         },
         "tee": true,
-          }
+        
+    }
 }

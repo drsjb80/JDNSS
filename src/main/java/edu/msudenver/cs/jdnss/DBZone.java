@@ -8,8 +8,14 @@ import java.util.ArrayList;
 class DBZone extends Zone {
     private static final Logger logger = JDNSS.logger;
     private final String zoneName;
+    private final int domainId;
+    private final DBConnection dbConnection;
 
-    DBZone() { zoneName = null; }
+    DBZone() {
+        zoneName = null;
+        domainId = -1;
+        dbConnection = null;
+    }
 
     @Override
     boolean isEmpty() { return zoneName == null; }
@@ -19,6 +25,8 @@ class DBZone extends Zone {
     DBZone(final String zoneName, final int domainId, final DBConnection dbConnection)
     {
         this.zoneName = zoneName;
+        this.domainId = domainId;
+        this.dbConnection = dbConnection;
         assert domainId >= 0;
         assert dbConnection != null;
     }
@@ -30,7 +38,10 @@ class DBZone extends Zone {
         logger.traceEntry(new ObjectMessage(type));
         logger.traceEntry(new ObjectMessage(name));
 
-        // FIXME return dbConnection.get(type, name, domainId);
-        return null;
+        if (isEmpty() || dbConnection == null) {
+            return new ArrayList<>();
+        }
+
+        return new ArrayList<>(dbConnection.get(type, name, domainId));
     }
 }

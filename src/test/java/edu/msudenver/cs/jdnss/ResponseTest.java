@@ -287,6 +287,27 @@ public class ResponseTest {
         Assert.assertEquals(0, readUInt16(result, 10));
     }
 
+    @Test
+    public void multiQuestionQueryReturnsAnswersForEachQuestionWithoutAuthorityLeak() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createMultiQuestionZone());
+
+        final Query multiQuery = new Query(buildMultiQuestionQuery(0x7a11,
+                new String[] {"a.test.com", "b.test.com"},
+                new RRCode[] {RRCode.A, RRCode.A}));
+        multiQuery.parseQueries("");
+
+        final byte[] result = new Response(multiQuery, true).getBytes();
+
+        Assert.assertEquals(2, readUInt16(result, 4));
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 11));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 12));
+    }
+
     private static BindZone createTestZone() {
         return createZone(ZONE_NAME);
     }
@@ -364,6 +385,16 @@ public class ResponseTest {
         return zone;
     }
 
+    private static BindZone createMultiQuestionZone() {
+        final BindZone zone = new BindZone(ZONE_NAME);
+        zone.add(ZONE_NAME,
+                new SOARR(ZONE_NAME, "ns1.test.com", "hostmaster.test.com",
+                        1, 7200, 3600, 1209600, 3600, 3600));
+        zone.add("a.test.com", new ARR("a.test.com", 3600, "192.168.1.11"));
+        zone.add("b.test.com", new ARR("b.test.com", 3600, "192.168.1.12"));
+        return zone;
+    }
+
     private static String repeatedText(final int size) {
         final char[] chars = new char[size];
         Arrays.fill(chars, 'x');
@@ -391,6 +422,33 @@ public class ResponseTest {
                 (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
                 0x00, 0x01
         });
+        return queryBytes;
+    }
+
+    private static byte[] buildMultiQuestionQuery(final int id, final String[] qNames,
+                                                   final RRCode[] types) {
+        if (qNames.length != types.length) {
+            throw new IllegalArgumentException("Question names and types must align");
+        }
+
+        byte[] queryBytes = new byte[] {
+                (byte) ((id >> 8) & 0xff), (byte) (id & 0xff),
+                0x01, 0x00,
+                (byte) ((qNames.length >> 8) & 0xff), (byte) (qNames.length & 0xff),
+                0x00, 0x00,
+                0x00, 0x00,
+                0x00, 0x00
+        };
+
+        for (int i = 0; i < qNames.length; i++) {
+            queryBytes = Utils.combine(queryBytes, DnsNameCodec.convertString(qNames[i]));
+            queryBytes = Utils.combine(queryBytes, new byte[] {
+                    (byte) ((types[i].getCode() >> 8) & 0xff),
+                    (byte) (types[i].getCode() & 0xff),
+                    0x00, 0x01
+            });
+        }
+
         return queryBytes;
     }
 

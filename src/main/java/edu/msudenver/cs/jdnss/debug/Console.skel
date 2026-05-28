@@ -1,8 +1,0 @@
-# -Djava.util.logging.config.file=debug/Console/WHICH.finest
-
-WHICH.level = FINEST
-
-handlers = java.util.logging.ConsoleHandler
-java.util.logging.ConsoleHandler.level = FINEST
-java.util.logging.ConsoleHandler.formatter = \
-    edu.msudenver.cs.javaln.LineNumberFormatter

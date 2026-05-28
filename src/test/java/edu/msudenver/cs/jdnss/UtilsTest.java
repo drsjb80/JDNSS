@@ -169,6 +169,11 @@ public class UtilsTest
             new byte[]{0, 0, 0, 0}));
         Assert.assertTrue (Arrays.equals (Utils.IPV4 ("192.168.1.1"),
             new byte[]{(byte) 192, (byte) 168, (byte) 1, (byte) 1}));
+
+        expectIllegalArgumentException(() -> Utils.IPV4("1.2.3"));
+        expectIllegalArgumentException(() -> Utils.IPV4("256.0.0.1"));
+        expectIllegalArgumentException(() -> Utils.IPV4("1..2.3"));
+        expectIllegalArgumentException(() -> Utils.IPV4("a.b.c.d"));
     }
 
     @Test
@@ -384,6 +389,11 @@ public class UtilsTest
                 (byte) 192,  (byte) 0,    (byte) 2,    (byte) 128
             }
         ));
+
+        expectIllegalArgumentException(() -> Utils.IPV6("2001:::1"));
+        expectIllegalArgumentException(() -> Utils.IPV6("2001:db8:zzzz::1"));
+        expectIllegalArgumentException(() -> Utils.IPV6("1:2:3:4:5:6:7:8:9"));
+        expectIllegalArgumentException(() -> Utils.IPV6("::ffff:300.1.1.1"));
 
 
     }

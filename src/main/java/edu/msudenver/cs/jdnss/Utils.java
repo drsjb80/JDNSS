@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -222,11 +223,32 @@ final class Utils {
      * @return 4 byte array of the address
      */
     static byte[] IPV4(String s) {
-        String[] a = s.split("\\.");
+        String[] a = s.split("\\.", -1);
+        if (a.length != 4) {
+            failIllegalArgument("Invalid IPv4 address: " + s);
+        }
+
         byte[] r = new byte[4];
 
         for (int i = 0; i < a.length; i++) {
-            r[i] = (byte) Integer.parseInt(a[i]);
+            String part = a[i];
+            if (part.isEmpty() || !part.matches("\\d{1,3}")) {
+                failIllegalArgument("Invalid IPv4 address: " + s);
+            }
+
+            int value;
+            try {
+                value = Integer.parseInt(part);
+            } catch (NumberFormatException nfe) {
+                failIllegalArgument("Invalid IPv4 address: " + s);
+                return new byte[0];
+            }
+
+            if (value < 0 || value > 255) {
+                failIllegalArgument("Invalid IPv4 address: " + s);
+            }
+
+            r[i] = (byte) value;
         }
 
         return r;
@@ -352,14 +374,19 @@ final class Utils {
     private static byte[] dodots(final String s) {
         // split at the v6/v4 boundary
         int splitat = s.lastIndexOf(":");
+        if (splitat < 0) {
+            failIllegalArgument("Invalid IPv6 address: " + s);
+        }
+
         String colons = s.substring(0, splitat);
         String dots = s.substring(splitat + 1);
+        byte[] ipv4 = IPV4(dots);
 
         if (colons.equals(":")) {
             colons = "::";
         }
 
-        return combine(docolons(colons, 12), IPV4(dots));
+        return combine(docolons(colons, 12), ipv4);
     }
 
     /**
@@ -370,10 +397,13 @@ final class Utils {
      * @return the conversoin
      */
     private static byte[] docolons(final String s, final int length) {
-        byte[] ret = new byte[length];
+        if (s == null || s.isEmpty()) {
+            failIllegalArgument("Invalid IPv6 address: " + s);
+        }
 
         // nothing but colons, IPv6 unspecified
         if (s.equals("::")) {
+            byte[] ret = new byte[length];
             for (int i = 0; i < length; i++) {
                 ret[i] = 0;
             }
@@ -381,36 +411,81 @@ final class Utils {
             return ret;
         }
 
-        String[] split = s.split(":");
+        final int expectedGroups = length / 2;
 
-        /*
-        ** so, there should be eight total two-byte strings(six for v6 ->
-        ** v4). subtract how many there really are and multiply by two.
-        */
-        int len = ((length / 2) - split.length + 1) * 2;
-        int i = 0;
-
-        if (s.startsWith("::")) {
-            len += 2;
-            i = 1;
+        if (count(s, "::") > 1) {
+            failIllegalArgument("Invalid IPv6 address: " + s);
         }
 
-        completeIPv6(split, ret,  i, len, count(s, ":"));
+        final List<String> groups = new ArrayList<>();
+
+        if (s.contains("::")) {
+            String[] halves = s.split("::", -1);
+            if (halves.length != 2) {
+                failIllegalArgument("Invalid IPv6 address: " + s);
+            }
+
+            String[] left = halves[0].isEmpty() ? new String[0] : halves[0].split(":", -1);
+            String[] right = halves[1].isEmpty() ? new String[0] : halves[1].split(":", -1);
+            validateIpv6Groups(left, s);
+            validateIpv6Groups(right, s);
+
+            int present = left.length + right.length;
+            if (present >= expectedGroups) {
+                failIllegalArgument("Invalid IPv6 address: " + s);
+            }
+
+            groups.addAll(Arrays.asList(left));
+            for (int i = 0; i < expectedGroups - present; i++) {
+                groups.add("0");
+            }
+            groups.addAll(Arrays.asList(right));
+        } else {
+            String[] all = s.split(":", -1);
+            validateIpv6Groups(all, s);
+            if (all.length != expectedGroups) {
+                failIllegalArgument("Invalid IPv6 address: " + s);
+            }
+            groups.addAll(Arrays.asList(all));
+        }
+
+        if (groups.size() != expectedGroups) {
+            failIllegalArgument("Invalid IPv6 address: " + s);
+        }
+
+        byte[] ret = new byte[length];
+        int where = 0;
+        for (String group : groups) {
+            int conv;
+            try {
+                conv = Integer.parseInt(group, 16);
+            } catch (NumberFormatException nfe) {
+                failIllegalArgument("Invalid IPv6 address: " + s);
+                return new byte[0];
+            }
+            ret[where++] = getByte(conv, 2);
+            ret[where++] = getByte(conv, 1);
+        }
+
         return ret;
     }
 
-    private static void completeIPv6(final String[] split, byte[] ret, int i, final int len, final int numColons) {
-        int where = 0;
-        for (; i <= numColons; i++) {
-            // if this is where things are missing, fill in zeros
-            if (split[i].equals("")) {
-                for (int j = 0; j < len; j++) {
-                    ret[where++] = 0;
+    private static void validateIpv6Groups(final String[] groups, final String source) {
+        for (String group : groups) {
+            if (group.isEmpty()) {
+                failIllegalArgument("Invalid IPv6 address: " + source);
+            }
+            if (group.length() > 4) {
+                failIllegalArgument("Invalid IPv6 address: " + source);
+            }
+            for (int i = 0; i < group.length(); i++) {
+                char ch = group.charAt(i);
+                boolean isHex = (ch >= '0' && ch <= '9')
+                        || (ch >= 'a' && ch <= 'f')
+                        || (ch >= 'A' && ch <= 'F');
+                if (!isHex) {
+                    failIllegalArgument("Invalid IPv6 address: " + source);
                 }
-            } else {
-                int conv = Integer.parseInt(split[i], 16);
-                ret[where++] = getByte(conv, 2);
-                ret[where++] = getByte(conv, 1);
             }
         }
     }

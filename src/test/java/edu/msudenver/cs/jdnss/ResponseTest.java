@@ -7,8 +7,10 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.EnumSet;
 
 /**
  * Created by beatys on 10/17/17.
@@ -190,6 +192,83 @@ public class ResponseTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 42));
     }
 
+    @Test
+    public void dnssecMissingRecordAddsAuthorityMaterialWhenPayloadAllows() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createDnssecNegativeZone());
+
+        final Query missingQuery = new Query(buildQueryWithOptPayload(0x3311, "missing.test.com",
+                RRCode.A, 1232, true));
+        missingQuery.parseQueries("");
+
+        final byte[] result = new Response(missingQuery, true).getBytes();
+
+        Assert.assertEquals(0x00, unsignedByte(result[2]) & 0x02);
+        Assert.assertEquals(3, unsignedByte(result[3]) & 0x0f);
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertTrue(readUInt16(result, 8) >= 3);
+    }
+
+    @Test
+    public void dnssecAnswerSignatureCanBeDroppedWhenUdpPayloadIsSmall() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createDnssecAZoneWithLargeSignature());
+
+        final Query dnssecQuery = new Query(buildQueryWithOptPayload(0x4411, ZONE_NAME,
+                RRCode.A, 80, true));
+        dnssecQuery.parseQueries("");
+
+        final byte[] result = new Response(dnssecQuery, true).getBytes();
+
+        Assert.assertEquals(0x02, unsignedByte(result[2]) & 0x02);
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 10));
+    }
+
+    @Test
+    public void dnssecAuthorityOverflowCanSetTruncationWhileHeaderAuthorityCountStaysZero() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createDnssecNegativeZone());
+
+        final Query missingQuery = new Query(buildQueryWithOptPayload(0x5511, "missing.test.com",
+                RRCode.A, 64, true));
+        missingQuery.parseQueries("");
+
+        final Response response = new Response(missingQuery, true);
+        final byte[] result = response.getBytes();
+
+        final Field numAuthoritiesField = Response.class.getDeclaredField("numAuthorities");
+        numAuthoritiesField.setAccessible(true);
+        final int internalAuthorityCount = (int) numAuthoritiesField.get(response);
+
+        Assert.assertEquals(0x02, unsignedByte(result[2]) & 0x02);
+        Assert.assertEquals(0, readUInt16(result, 8));
+        Assert.assertTrue(internalAuthorityCount > 0);
+    }
+
+    @Test
+    public void truncatedResponseHeaderCountsRemainInternallyConsistent() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createLargeTxtZone());
+
+        final Query txtQuery = new Query(buildQueryWithOptPayload(0x6611, ZONE_NAME,
+                RRCode.TXT, 64));
+        txtQuery.parseQueries("");
+
+        final byte[] result = new Response(txtQuery, true).getBytes();
+
+        Assert.assertEquals(0x02, unsignedByte(result[2]) & 0x02);
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+    }
+
     private static BindZone createTestZone() {
         return createZone(ZONE_NAME);
     }
@@ -221,6 +300,28 @@ public class ResponseTest {
         return zone;
     }
 
+        private static BindZone createDnssecAZoneWithLargeSignature() {
+        final BindZone zone = createZone(ZONE_NAME);
+        zone.add(ZONE_NAME,
+            new RRSIG(ZONE_NAME, 3600, RRCode.A, 10, 2, 3600,
+                0x5af00000, 0x5ae00000, 12023, ZONE_NAME, largeSignatureBase64()));
+        return zone;
+        }
+
+        private static BindZone createDnssecNegativeZone() {
+        final BindZone zone = createZone(ZONE_NAME);
+        zone.add(ZONE_NAME,
+            new NSECRR(ZONE_NAME, 3600, ZONE_NAME,
+                EnumSet.of(RRCode.SOA, RRCode.RRSIG, RRCode.NSEC)));
+        zone.add(ZONE_NAME,
+            new RRSIG(ZONE_NAME, 3600, RRCode.SOA, 10, 2, 3600,
+                0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
+        zone.add(ZONE_NAME,
+            new RRSIG(ZONE_NAME, 3600, RRCode.NSEC, 10, 2, 3600,
+                0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
+        return zone;
+        }
+
     private static BindZone createCnameZone() {
         final BindZone zone = new BindZone(ZONE_NAME);
         zone.add(ZONE_NAME,
@@ -236,6 +337,12 @@ public class ResponseTest {
         final char[] chars = new char[size];
         Arrays.fill(chars, 'x');
         return new String(chars);
+    }
+
+    private static String largeSignatureBase64() {
+        final byte[] bytes = new byte[128];
+        Arrays.fill(bytes, (byte) 0x01);
+        return Base64.getEncoder().encodeToString(bytes);
     }
 
     private static byte[] buildQuery(final int id, final String qName, final RRCode type) {

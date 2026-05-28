@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -101,8 +103,53 @@ public class HTTPSTest {
         verify(exchange).sendResponseHeaders(500, -1);
     }
 
+    @Test
+    public void getRequestWithNullQueryReturns500() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("GET", new URI("/dns-query"),
+                new ByteArrayInputStream(new byte[0]));
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(500, -1);
+    }
+
+    @Test
+    public void getRequestWithInvalidBase64Returns500() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("GET", new URI("/dns-query?dns=not_base64*"),
+                new ByteArrayInputStream(new byte[0]));
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(500, -1);
+    }
+
+    @Test
+    public void postRequestBodyReadFailureReturns500() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        InputStream failingBody = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("read failed");
+            }
+        };
+
+        HttpExchange exchange = baseExchange("POST", new URI("/dns-query"), failingBody);
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(500, -1);
+    }
+
     private static HttpExchange baseExchange(final String method, final URI uri,
-                                             final ByteArrayInputStream requestBody) {
+                                             final InputStream requestBody) {
         HttpExchange exchange = mock(HttpExchange.class);
         Headers requestHeaders = new Headers();
         Headers responseHeaders = new Headers();

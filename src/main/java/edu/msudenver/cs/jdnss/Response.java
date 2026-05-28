@@ -138,11 +138,7 @@ class Response {
         logger.traceEntry();
 
         final byte[] add = rr.getBytes(name, minimum);
-
-        checkAndMarkUdpOverflow(responses.length, add.length);
-
-        responses = Utils.combine(responses, add);
-        header.incrementNumAnswers();
+        appendAnswerRecord(add);
 
         //Add RRSIG Records Corresponding to Type
         //seems right to add answers somewhere close but we only want to do it once on last
@@ -156,6 +152,12 @@ class Response {
         maybeCreateSoaDnssecAdditionals(type, name);
 
         logger.traceExit();
+    }
+
+    private void appendAnswerRecord(final byte[] add) {
+        checkAndMarkUdpOverflow(responses.length, add.length);
+        responses = Utils.combine(responses, add);
+        header.incrementNumAnswers();
     }
 
     private void maybeCreateAuthorities(final boolean firstTime, final RRCode type,

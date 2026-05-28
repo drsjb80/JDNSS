@@ -162,6 +162,54 @@ public class ParserTest {
         Assert.assertEquals(604800, aRecords.get(0).getTtl());
     }
 
+    @Test
+    public void includeWithOriginDirectiveAffectsFollowingRecords() throws Exception {
+        Path includeFile = Files.createTempFile("jdnss-include-origin", ".zone");
+        Files.writeString(includeFile, String.join("\n",
+                "$ORIGIN child.test.com.",
+                "api A 192.168.1.99"), StandardCharsets.UTF_8);
+
+        try {
+            String zoneText = String.join("\n",
+                    "$ORIGIN test.com.",
+                    "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                    "$INCLUDE " + includeFile.toAbsolutePath(),
+                    "www A 192.168.1.2");
+
+            BindZone zone = parseZone(zoneText, "test.com");
+
+            Assert.assertEquals(1, zone.get(RRCode.A, "api.child.test.com").size());
+            Assert.assertEquals(1, zone.get(RRCode.A, "www.child.test.com").size());
+        } finally {
+            Files.deleteIfExists(includeFile);
+        }
+    }
+
+    @Test
+    public void nestedIncludeLoadsInnerFileRecords() throws Exception {
+        Path innerInclude = Files.createTempFile("jdnss-include-inner", ".zone");
+        Path outerInclude = Files.createTempFile("jdnss-include-outer", ".zone");
+
+        Files.writeString(innerInclude, "nested A 192.168.1.77\n", StandardCharsets.UTF_8);
+        Files.writeString(outerInclude,
+                "$INCLUDE " + innerInclude.toAbsolutePath() + "\n",
+                StandardCharsets.UTF_8);
+
+        try {
+            String zoneText = String.join("\n",
+                    "$ORIGIN test.com.",
+                    "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                    "$INCLUDE " + outerInclude.toAbsolutePath());
+
+            BindZone zone = parseZone(zoneText, "test.com");
+
+            Assert.assertEquals(1, zone.get(RRCode.A, "nested.test.com").size());
+        } finally {
+            Files.deleteIfExists(innerInclude);
+            Files.deleteIfExists(outerInclude);
+        }
+    }
+
     private static BindZone parseZone(final String zoneText, final String zoneName) throws Exception {
         BindZone zone = new BindZone(zoneName);
         ByteArrayInputStream input = new ByteArrayInputStream(zoneText.getBytes(StandardCharsets.UTF_8));

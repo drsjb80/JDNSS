@@ -27,11 +27,13 @@ class Response {
     private SOARR SOA;
     private final boolean UDP;
     private final Query query;
+    private final OPTRR optRecord;
 
     Response(final Query query, final boolean UDP) {
         this.query = query;
         this.header = new Header(query.getHeader());
         this.UDP = UDP;
+        this.optRecord = query.getOptrr();
 
         for (Queries q : query.getQueries()) {
             if (!processQuery(q)) {
@@ -74,22 +76,23 @@ class Response {
 
     private void processResolvedRecords(final String name, final RRCode type,
                                         final List<RR> records) {
-        boolean firstTime = true;
-        for (RR rr : records) {
-            doOneRR(name, type, records, firstTime, rr);
-            firstTime = false;
+        for (int i = 0; i < records.size(); i++) {
+            final RR rr = records.get(i);
+            final boolean firstRecord = i == 0;
+            final boolean lastRecord = i == records.size() - 1;
+            doOneRR(name, type, firstRecord, lastRecord, rr);
         }
     }
 
     private void applyOptRecordSettings() {
-        if (query.getOptrr() != null) {
-            DNSSEC = query.getOptrr().isDNSSEC();
-            maximumPayload = query.getOptrr().getPayloadSize();
+        if (optRecord != null) {
+            DNSSEC = optRecord.isDNSSEC();
+            maximumPayload = optRecord.getPayloadSize();
         }
     }
 
     private void finalizeHeader() {
-        if (query.getOptrr() != null && header.getNumAdditionals() > 1) {
+        if (optRecord != null && header.getNumAdditionals() > 1) {
             header.incrementAdditionalCount();
         }
         header.build();
@@ -109,13 +112,13 @@ class Response {
     }
 
     private void doOneRR(final String name, final RRCode type,
-                         final List<RR> v, final boolean firstTime, final RR rr) {
+                         final boolean firstRecord, final boolean lastRecord,
+                         final RR rr) {
         logger.traceEntry();
 
         final byte[] add = rr.getBytes(name, minimum);
 
-        if (UDP && (responses != null)
-                && ((responses.length + add.length) > maximumPayload)) {
+        if (UDP && ((responses.length + add.length) > maximumPayload)) {
             header.markTruncated();
         }
 
@@ -125,11 +128,11 @@ class Response {
         //Add RRSIG Records Corresponding to Type
         //seems right to add answers somewhere close but we only want to do it once on last
         //TODO Check the stuff to assure its doing what I want it to
-        if ((v.indexOf(rr) + 1 == v.size()) && DNSSEC) {
+        if (lastRecord && DNSSEC) {
             addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
         }
 
-        maybeCreateAuthorities(firstTime, type, name);
+        maybeCreateAuthorities(firstRecord, type, name);
         maybeCreateTypeAdditionals(type, rr, name);
         maybeCreateSoaDnssecAdditionals(type, name);
 

@@ -28,15 +28,7 @@ public class SystemZoneIntegrationTest {
 
     @Test
     public void oneAZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
-        final BindZone zone = new BindZone("oneA.com");
-        try (InputStream in = new FileInputStream("src/test/system/zone_files/oneA.com")) {
-            final Parser parser = new Parser(in, zone);
-            parser.RRs();
-        }
-
-        final Map<String, Zone> liveZones = getBindZones();
-        liveZones.clear();
-        liveZones.put("oneA.com", zone);
+        installZoneFromSystemFixture("oneA.com");
 
         final Query query = new Query(buildQuery(0x6112, "oneA.com", RRCode.A));
         query.parseQueries("");
@@ -52,6 +44,58 @@ public class SystemZoneIntegrationTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    @Test
+    public void hostZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("host.com");
+
+        final Query query = new Query(buildQuery(0x6113, "www.host.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    @Test
+    public void atZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("AT.com");
+
+        final Query query = new Query(buildQuery(0x6114, "AT.com", RRCode.NS));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(3, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
+        final BindZone zone = new BindZone(zoneName);
+        try (InputStream in = new FileInputStream("src/test/system/zone_files/" + zoneName)) {
+            final Parser parser = new Parser(in, zone);
+            parser.RRs();
+        }
+
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(zoneName, zone);
     }
 
     private static byte[] buildQuery(final int id, final String qName, final RRCode type) {

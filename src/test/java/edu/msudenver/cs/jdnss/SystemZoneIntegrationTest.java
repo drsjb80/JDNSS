@@ -659,6 +659,78 @@ public class SystemZoneIntegrationTest {
         Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
     }
 
+    @Test
+    public void rr1ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR1.com", "www.RR1.com", 0x6135);
+    }
+
+    @Test
+    public void rr2ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR2.com", "www.RR2.com", 0x6136);
+    }
+
+    @Test
+    public void rr3ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR3.com", "www.RR3.com", 0x6137);
+    }
+
+    @Test
+    public void rr4ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR4.com", "RR4.com", 0x6138);
+    }
+
+    @Test
+    public void rr5ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR5.com", "RR5.com", 0x6139);
+    }
+
+    @Test
+    public void rr6ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR6.com", "RR6.com", 0x613a);
+    }
+
+    @Test
+    public void rr7ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        assertSimpleAQueryCase("RR7.com", "RR7.com", 0x613b);
+    }
+
+    @Test
+    public void includeZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("INCLUDE.com");
+
+        final Query query = new Query(buildQuery(0x613c, "www.INCLUDE.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+    }
+
+    private void assertSimpleAQueryCase(final String zoneName, final String qName, final int id)
+            throws Exception {
+        installZoneFromSystemFixture(zoneName);
+
+        final Query query = new Query(buildQuery(id, qName, RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+    }
+
     private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
         final BindZone zone = new BindZone(zoneName);
         try (InputStream in = new FileInputStream("src/test/system/zone_files/" + zoneName)) {

@@ -2,14 +2,6 @@
 #    name	file		query		type
 tests=(
     'TCP	TCP.com		www.TCP.com'
-    'RR1	RR1.com		www.RR1.com'
-    'RR2	RR2.com		www.RR2.com'
-    'RR3	RR3.com		www.RR3.com'
-    'RR4	RR4.com		RR4.com'
-    'RR5	RR5.com		RR5.com'
-    'RR6	RR6.com		RR6.com'
-    'RR7	RR7.com		RR7.com'
-    'INCLUDE	INCLUDE.com	www.INCLUDE.com'
     #'SOA.com.db	SOA.com.db	SOA.com		SOA'
     #'192.168.1.db 192.168.1.db 192.168.1.28'
     'dnssec dnssec.com.signed  dnssec.com'

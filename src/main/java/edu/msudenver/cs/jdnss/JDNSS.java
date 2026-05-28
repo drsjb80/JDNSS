@@ -25,6 +25,28 @@ class JDNSS {
 
     private static final Map<String, Zone> bindZones = new HashMap<>();
 
+    static void normalizeIpAddressOption(final String[] args) {
+        for (String arg: args) {
+            if (arg.startsWith("-IPaddresses") || arg.startsWith("--IPaddresses")) {
+                jargs.IPaddresses = null;
+            }
+        }
+    }
+
+    static Thread.UncaughtExceptionHandler createUncaughtExceptionHandler() {
+        return new Thread.UncaughtExceptionHandler() {
+            @Override public void uncaughtException(Thread t, Throwable e) {
+                System.err.print("Exception in thread \"" + t.getName());
+                System.err.println(e.getLocalizedMessage());
+                System.err.println(e.fillInStackTrace().toString());
+            }
+        };
+    }
+
+    static boolean hasConfiguredZoneSource() {
+        return bindZones.size() != 0 || DBConnection != null;
+    }
+
     /**
      * Finds the Zone associated with the domain name passed in
      *
@@ -156,11 +178,7 @@ class JDNSS {
     public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException {
         // i'm not sure of a better way to do this. i want command-line options to overwrite
         // the defaults.
-        for (String arg: args) {
-            if (arg.startsWith("-IPaddresses") || arg.startsWith("--IPaddresses")) {
-                jargs.IPaddresses = null;
-            }
-        }
+        normalizeIpAddressOption(args);
 
         JCLO jclo = new JCLO(jargs);
         jclo.parse(args);
@@ -170,20 +188,11 @@ class JDNSS {
             System.exit(0);
         }
 
-        Thread.setDefaultUncaughtExceptionHandler(
-                new Thread.UncaughtExceptionHandler() {
-                    @Override public void uncaughtException(Thread t, Throwable e) {
-                        System.err.print("Exception in thread \"" + t.getName());
-                        System.err.println(e.getLocalizedMessage());
-                        System.err.println(e.fillInStackTrace().toString());
-                    }
-                }
-            )
-        ;
+        Thread.setDefaultUncaughtExceptionHandler(createUncaughtExceptionHandler());
         setLogLevel();
         doargs();
 
-        if (bindZones.size() == 0 && DBConnection == null) {
+        if (!hasConfiguredZoneSource()) {
             logger.fatal("No zone files, traceExit.");
             System.exit(1);
         }

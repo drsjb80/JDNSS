@@ -139,6 +139,57 @@ public class ResponseTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
     }
 
+    @Test
+    public void getBytesMissingARecordHasSingleAuthorityAndNoAdditionals() {
+        final Query missingQuery = new Query(queryMissingARecord);
+        missingQuery.parseQueries("");
+
+        final Response missingResponse = new Response(missingQuery, true);
+        final byte[] result = missingResponse.getBytes();
+
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+    }
+
+    @Test
+    public void largeTxtResponseNotTruncatedForTcpMode() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createLargeTxtZone());
+
+        final byte[] payloadLimitedQuery = buildQueryWithOptPayload(0x9123, ZONE_NAME,
+                RRCode.TXT, 64);
+
+        final Query udpQuery = new Query(payloadLimitedQuery);
+        udpQuery.parseQueries("");
+        final byte[] udpResult = new Response(udpQuery, true).getBytes();
+
+        final Query tcpQuery = new Query(payloadLimitedQuery);
+        tcpQuery.parseQueries("");
+        final byte[] tcpResult = new Response(tcpQuery, false).getBytes();
+
+        Assert.assertEquals(0x02, unsignedByte(udpResult[2]) & 0x02);
+        Assert.assertEquals(0x00, unsignedByte(tcpResult[2]) & 0x02);
+        Assert.assertEquals(1, readUInt16(tcpResult, 6));
+    }
+
+    @Test
+    public void cnameLookupIncludesAliasAndResolvedRecordInAnswerCount() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createCnameZone());
+
+        final Query cnameQuery = new Query(buildQuery(0x2211, "www.test.com", RRCode.A));
+        cnameQuery.parseQueries("");
+
+        final byte[] result = new Response(cnameQuery, true).getBytes();
+
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 8));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 42));
+    }
+
     private static BindZone createTestZone() {
         return createZone(ZONE_NAME);
     }
@@ -167,6 +218,17 @@ public class ResponseTest {
         zone.add(ZONE_NAME,
                 new RRSIG(ZONE_NAME, 3600, RRCode.A, 10, 2, 3600,
                         0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
+        return zone;
+    }
+
+    private static BindZone createCnameZone() {
+        final BindZone zone = new BindZone(ZONE_NAME);
+        zone.add(ZONE_NAME,
+                new SOARR(ZONE_NAME, "ns1.test.com", "hostmaster.test.com",
+                        1, 7200, 3600, 1209600, 3600, 3600));
+
+        zone.add("www.test.com", new CNAMERR("www.test.com", 3600, "alias.test.com"));
+        zone.add("alias.test.com", new ARR("alias.test.com", 3600, "192.168.1.42"));
         return zone;
     }
 

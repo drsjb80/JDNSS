@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+THRESHOLD_BYTES="${GIT_LARGE_FILE_THRESHOLD_BYTES:-10240}"
+
+large_files_tmp="$(mktemp)"
+trap 'rm -f "$large_files_tmp"' EXIT
+
+# Scan staged file content (index) so this checks what will actually be committed.
+while IFS= read -r -d '' path; do
+    if ! size=$(git cat-file -s ":$path" 2>/dev/null); then
+        continue
+    fi
+
+    if [[ "$size" -gt "$THRESHOLD_BYTES" ]]; then
+        printf "%s\t%s\n" "$size" "$path" >> "$large_files_tmp"
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [[ ! -s "$large_files_tmp" ]]; then
+    exit 0
+fi
+
+sort -u "$large_files_tmp" -o "$large_files_tmp"
+
+if [[ ! -e /dev/tty ]]; then
+    echo "pre-commit: Found staged files larger than ${THRESHOLD_BYTES} bytes:" >&2
+    cat "$large_files_tmp" >&2
+    echo "pre-commit: Cannot prompt for confirmation without a TTY. Aborting commit." >&2
+    exit 1
+fi
+
+echo "pre-commit: Staged files larger than ${THRESHOLD_BYTES} bytes:" > /dev/tty
+while IFS=$'\t' read -r size path; do
+    size_kb=$(( (size + 1023) / 1024 ))
+    printf " - %s (%s bytes, ~%s KB)\n" "$path" "$size" "$size_kb" > /dev/tty
+done < "$large_files_tmp"
+
+printf "Continue with commit? [y/N] " > /dev/tty
+read -r reply < /dev/tty || reply=""
+
+case "$reply" in
+    y|Y|yes|YES)
+        exit 0
+        ;;
+    *)
+        echo "pre-commit: Commit aborted by user." >&2
+        exit 1
+        ;;
+esac

@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.msudenver.cs.jdnss</groupId>
     <artifactId>jdnss</artifactId>
     <packaging>jar</packaging>
-    <version>2.1</version>
+    <version>3.0</version>
     <name>Java DNS Server</name>
     <url>https://github.com/drsjb80/JDNSS</url>
     <dependencies>
@@ -71,7 +71,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>25</release>
+                    <release>21</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

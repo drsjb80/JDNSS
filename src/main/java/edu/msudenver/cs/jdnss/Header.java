@@ -29,13 +29,13 @@ class Header {
     @Getter private final int opcode;
     @Getter private final int numQuestions;
     @Getter private int numAnswers;
-    @Getter @Setter(AccessLevel.PACKAGE) private int numAuthorities;
-    @Getter @Setter(AccessLevel.PACKAGE) private int numAdditionals;
-    @Getter @Setter(AccessLevel.PACKAGE) private int rcode;
-    @Getter @Setter(AccessLevel.PACKAGE) private boolean TC; // truncation
-    @Getter @Setter(AccessLevel.PACKAGE) private boolean QR; // query
-    @Getter @Setter(AccessLevel.PACKAGE) private boolean AA; // authoritative answer
-    @Getter @Setter(AccessLevel.PACKAGE) private boolean RA; // recursion available
+    @Getter private int numAuthorities;
+    @Getter private int numAdditionals;
+    @Getter private int rcode;
+    @Getter private boolean TC; // truncation
+    @Getter private boolean QR; // query
+    @Getter private boolean AA; // authoritative answer
+    @Getter private boolean RA; // recursion available
 
     @Getter private final boolean RD; // recursion desired
     @Getter private boolean AD; // authenticated data
@@ -43,6 +43,43 @@ class Header {
 
     void incrementNumAnswers() {
         numAnswers++;
+    }
+
+    void incrementAdditionalCount() {
+        numAdditionals++;
+    }
+
+    void setAuthorityCount(final int count) {
+        numAuthorities = count;
+    }
+
+    void setAdditionalCount(final int count) {
+        numAdditionals = count;
+    }
+
+    void markTruncated() {
+        TC = true;
+    }
+
+    void markRefused() {
+        AA = false;
+        rcode = ErrorCodes.REFUSED.getCode();
+    }
+
+    void markNameError() {
+        rcode = ErrorCodes.NAMEERROR.getCode();
+    }
+
+    void markNoError() {
+        rcode = ErrorCodes.NOERROR.getCode();
+    }
+
+    void markFormatError() {
+        rcode = ErrorCodes.FORMERROR.getCode();
+    }
+
+    void markYxrrset() {
+        rcode = ErrorCodes.YXRRSET.getCode();
     }
 
     void build() {
@@ -128,5 +165,28 @@ class Header {
         rcode =   flags & RCODE_BITS;
 
         checkValidity();
+    }
+
+    Header(@NonNull final Header requestHeader) {
+        this.id = requestHeader.id;
+        this.opcode = requestHeader.opcode;
+        this.numQuestions = requestHeader.numQuestions;
+
+        numAnswers = 0;
+        numAuthorities = 0;
+        numAdditionals = 0;
+        rcode = ErrorCodes.NOERROR.getCode();
+        TC = false;
+
+        // Response defaults: QR/AA set, RA unset.
+        QR = true;
+        AA = true;
+        RA = false;
+
+        RD = requestHeader.RD;
+        AD = false;
+        CD = requestHeader.CD;
+
+        build();
     }
 }

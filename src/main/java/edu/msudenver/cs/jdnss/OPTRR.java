@@ -146,7 +146,7 @@ class OPTRR {
         if (!Arrays.equals(sCookie.getBytes(), serverCookie)
                 && serverCookie != null) {
             this.extendedrcode = ((byte) 0x01);
-            header.setRcode(ErrorCodes.YXRRSET.getCode());
+            header.markYxrrset();
         }
 
         this.serverCookie = sCookie.getBytes();

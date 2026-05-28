@@ -115,7 +115,7 @@ class Query {
             //process and transform? optrr for a resonse
             // need to set the RCODE in header for the response needs to be FORMERR
             if(optrr.hasFormErr()){
-                header.setRcode( ErrorCodes.FORMERROR.getCode() );
+                header.markFormatError();
             }
 
             if(optrr.isCookie()) {

@@ -2,6 +2,34 @@
 
 . TESTS
 
+supports_dig_cookie=false
+if dig -h 2>&1 | grep -q '\+cookie'; then
+    supports_dig_cookie=true
+fi
+
+normalize_output() {
+    local input_file="$1"
+    local output_file="$2"
+
+    # Older dig versions do not support +cookie and may emit parser warnings.
+    # Normalize output so we compare stable DNS sections across environments.
+    sed '/^;; Warning: Message parser reports malformed message packet\.$/d' "$input_file" > "$output_file.tmp"
+
+    if [[ $supports_dig_cookie == false ]]; then
+        sed '/^;; OPT PSEUDOSECTION:/,/^;; QUESTION SECTION:/d' "$output_file.tmp" > "$output_file.tmp2"
+        mv "$output_file.tmp2" "$output_file.tmp"
+    else
+        :
+    fi
+
+    sed '/^;; QUESTION SECTION:/,/^$/d' "$output_file.tmp" \
+        | sed '/^;[^;].*$/d' \
+        | sed -E 's/(ADDITIONAL: )[0-9]+/\1N/' \
+        | sed '/^$/d' > "$output_file"
+
+    rm -f "$output_file.tmp"
+}
+
 #	name		file		query	type
 # tests=( 'subdomain	subdomain.com  	www.subdomain.com' )
 # tests=('Nohost	SOA.com		www.SOA.com')
@@ -21,7 +49,10 @@ do
 
     echo -n "Testing $name..."
 
-    DIGARGS='+nostats +nocmd +cookie=0123456789abcdef'
+    DIGARGS='+nostats +nocmd'
+    if [[ $supports_dig_cookie == true ]]; then
+        DIGARGS="$DIGARGS +cookie=0123456789abcdef"
+    fi
     DIGHOST='@::1'
 
     JDNSSARGS="--IPaddresses=UDP@0.0.0.0@$PORT"
@@ -46,10 +77,16 @@ do
     LOGLEVEL=""
     # LOGLEVEL="--logLevel=ALL"
 
-    JAR='../../../target/jdnss-2.1.jar'
+    JAR=$(find ../../../target -maxdepth 1 -type f -name 'jdnss-*.jar' ! -name 'original-*' | head -n 1)
+    if [[ -z "$JAR" ]]; then
+        echo "FAILED"
+        echo "Built jar not found under ../../../target"
+        exit 1
+    fi
     JDNSS="java $DEBUG -jar $JAR $JDNSSARGS $LOGLEVEL --once=true --serverSecret=0123456789abcdef0123456789abcdef"
 
     $JDNSS zone_files/$file &
+    jdnss_pid=$!
     if [[ $name == 'TCP' ]]
     then
         sleep 5
@@ -58,16 +95,23 @@ do
     fi
 
     dig $DIGARGS $DIGHOST $query -p $PORT $type | \
-        sed -e 's/, id: [0-9][0-9]*$//' > /tmp/$name
+        sed -e 's/, id: [0-9][0-9]*$//' > /tmp/$name.raw
 
-    diff --minimal named/$name.good /tmp/$name
+    # Avoid leaking a server process into the next test case.
+    kill "$jdnss_pid" 2>/dev/null || true
+    wait "$jdnss_pid" 2>/dev/null || true
+
+    normalize_output "named/$name.good" "/tmp/$name.expected"
+    normalize_output "/tmp/$name.raw" "/tmp/$name"
+
+    diff --minimal /tmp/$name.expected /tmp/$name
     if [[ $? != 0 ]]
     then
     	echo "FAILED"
         exit 1
     fi
 
-    rm /tmp/$name
+    rm /tmp/$name /tmp/$name.raw /tmp/$name.expected
     sleep 1
 
     echo "passed"

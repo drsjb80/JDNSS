@@ -30,52 +30,67 @@ class Response {
 
     Response(final Query query, final boolean UDP) {
         this.query = query;
-        this.header = query.getHeader();
+        this.header = new Header(query.getHeader());
         this.UDP = UDP;
-        header.setQR(true);
-        header.setAA(true);
-        header.setRA(false);
 
         for (Queries q : query.getQueries()) {
-            String name = q.getName();
-            final RRCode type = q.getType();
-            List<RR> v = new ArrayList<>();
-
-            if (! setZone(name)) {
+            if (!processQuery(q)) {
                 break;
             }
-
-            if (! setMinimum()) {
-                break;
-            }
-
-            if (query.getOptrr() != null) {
-                DNSSEC = query.getOptrr().isDNSSEC();
-                maximumPayload = query.getOptrr().getPayloadSize();
-            }
-
-
-            final Map.Entry<String, List<RR>> stringAndArrayList = findRR(type, name);
-            if (stringAndArrayList.getValue().isEmpty()) {
-                noResourceRecord();
-            } else {
-                name = stringAndArrayList.getKey();
-                v = stringAndArrayList.getValue();
-            }
-
-
-            boolean firstTime = true;
-            for (RR rr : v) {
-                doOneRR(name, type, v, firstTime, rr);
-                firstTime = false;
-            }
-
-            addAuthorities();
-            addAdditionals();
         }
 
+        finalizeHeader();
+    }
+
+    private boolean processQuery(final Queries q) {
+        String name = q.getName();
+        final RRCode type = q.getType();
+        List<RR> records = new ArrayList<>();
+
+        if (! setZone(name)) {
+            return false;
+        }
+
+        if (! setMinimum()) {
+            return false;
+        }
+
+        applyOptRecordSettings();
+
+        final Map.Entry<String, List<RR>> resolvedRecords = findRR(type, name);
+        if (resolvedRecords.getValue().isEmpty()) {
+            noResourceRecord();
+        } else {
+            name = resolvedRecords.getKey();
+            records = resolvedRecords.getValue();
+        }
+
+        processResolvedRecords(name, type, records);
+
+        addAuthorities();
+        addAdditionals();
+        return true;
+    }
+
+    private void processResolvedRecords(final String name, final RRCode type,
+                                        final List<RR> records) {
+        boolean firstTime = true;
+        for (RR rr : records) {
+            doOneRR(name, type, records, firstTime, rr);
+            firstTime = false;
+        }
+    }
+
+    private void applyOptRecordSettings() {
+        if (query.getOptrr() != null) {
+            DNSSEC = query.getOptrr().isDNSSEC();
+            maximumPayload = query.getOptrr().getPayloadSize();
+        }
+    }
+
+    private void finalizeHeader() {
         if (query.getOptrr() != null && header.getNumAdditionals() > 1) {
-            header.setNumAdditionals(header.getNumAdditionals() + 1);
+            header.incrementAdditionalCount();
         }
         header.build();
     }
@@ -101,7 +116,7 @@ class Response {
 
         if (UDP && (responses != null)
                 && ((responses.length + add.length) > maximumPayload)) {
-            header.setTC(true);
+            header.markTruncated();
         }
 
         responses = Utils.combine(responses, add);
@@ -114,12 +129,24 @@ class Response {
             addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
         }
 
+        maybeCreateAuthorities(firstTime, type, name);
+        maybeCreateTypeAdditionals(type, rr, name);
+        maybeCreateSoaDnssecAdditionals(type, name);
+
+        logger.traceExit();
+    }
+
+    private void maybeCreateAuthorities(final boolean firstTime, final RRCode type,
+                                        final String name) {
         if (firstTime && type != RRCode.NS && type != RRCode.DNSKEY) {
             logger.trace("Before calling createAuthorities");
             createAuthorities(name);
             logger.trace("After calling createAuthorities");
         }
+    }
 
+    private void maybeCreateTypeAdditionals(final RRCode type, final RR rr,
+                                            final String name) {
         if (type == RRCode.MX) {
             createAorAAAA(rr.getHost(), name);
         }
@@ -127,20 +154,21 @@ class Response {
         if (type == RRCode.NS) {
             createAorAAAA(rr.getString(), name);
         }
+    }
+
+    private void maybeCreateSoaDnssecAdditionals(final RRCode type,
+                                                  final String name) {
         if (DNSSEC && type == RRCode.SOA) {
             final List<RR> dnsKeyArrayList = zone.get(RRCode.DNSKEY, name);
             createAdditionals(dnsKeyArrayList, name);
         }
-
-        logger.traceExit();
     }
 
     private boolean setZone(@NonNull final String name) {
         zone = JDNSS.getZone(name);
         if (zone.isEmpty()) {
             logger.debug("Zone lookup of " + name + " failed");
-            header.setRcode(ErrorCodes.REFUSED.getCode());
-            header.setAA(false);
+            header.markRefused();
             return false;
         }
         return true;
@@ -153,8 +181,7 @@ class Response {
         final List<RR> w = zone.get(RRCode.SOA, name);
         if (w.isEmpty()) {
             logger.debug("SOA lookup of " + name + " failed");
-            header.setAA(false);
-            header.setRcode(ErrorCodes.REFUSED.getCode());
+            header.markRefused();
             return false;
         }
         SOA = (SOARR) w.get(0);
@@ -168,9 +195,9 @@ class Response {
         if (numAuthorities > 0) {
             if (!UDP || responses.length + authority.length < maximumPayload) {
                 responses = Utils.combine(responses, authority);
-                header.setNumAuthorities(numAuthorities);
+                header.setAuthorityCount(numAuthorities);
             } else if (responses.length + authority.length >= maximumPayload) {
-                header.setTC(true);
+                header.markTruncated();
             }
         }
     }
@@ -181,9 +208,9 @@ class Response {
         if (numAdditionals > 0) {
             if (!UDP || responses.length + additional.length < maximumPayload) {
                 responses = Utils.combine(responses, additional);
-                header.setNumAdditionals(numAdditionals);
+                header.setAdditionalCount(numAdditionals);
             } else if (responses.length + additional.length >= maximumPayload) {
-                header.setTC(true);
+                header.markTruncated();
             }
         }
     }
@@ -244,41 +271,53 @@ class Response {
             final RRSIG rrsig = (RRSIG) foo;
             if (rrsig.getTypeCovered() == type) {
                 final byte[] add = rrsig.getBytes(name, minimum);
-                foo(section, add, destination);
+                appendSignedRecord(section, add, destination);
             }
         }
     }
 
-    private void foo(final ResponseSection section, final byte[] add, final byte[] destination) {
+    private void appendSignedRecord(final ResponseSection section, final byte[] add,
+                                    final byte[] destination) {
         switch (section) {
             case ANSWER:
-                if (UDP && (responses.length + add.length > maximumPayload)) {
-                    header.setTC(true);
-                    break;
-                }
-                responses = Utils.combine(destination, add);
-                header.incrementNumAnswers();
+                appendToAnswerSection(add, destination);
                 break;
             case AUTHORITY:
-                if (UDP && (responses.length + add.length > maximumPayload)) {
-                    header.setTC(true);
-                }
-                authority = Utils.combine(destination, add);
-                numAuthorities++;
+                appendToAuthoritySection(add, destination);
                 break;
             case ADDITIONAL:
-                if (UDP && (responses.length + add.length > maximumPayload)) {
-                    //if bigger then max payload exit without adding RRSIG
-                    break;
-                } else {
-                    additional = Utils.combine(destination, add);
-                    numAdditionals++;
-                    break;
-                }
+                appendToAdditionalSection(add, destination);
+                break;
             default:
                 logger.error("Shouldn't get here.");
                 break;
         }
+    }
+
+    private void appendToAnswerSection(final byte[] add, final byte[] destination) {
+        if (UDP && (responses.length + add.length > maximumPayload)) {
+            header.markTruncated();
+            return;
+        }
+        responses = Utils.combine(destination, add);
+        header.incrementNumAnswers();
+    }
+
+    private void appendToAuthoritySection(final byte[] add, final byte[] destination) {
+        if (UDP && (responses.length + add.length > maximumPayload)) {
+            header.markTruncated();
+        }
+        authority = Utils.combine(destination, add);
+        numAuthorities++;
+    }
+
+    private void appendToAdditionalSection(final byte[] add, final byte[] destination) {
+        if (UDP && (responses.length + add.length > maximumPayload)) {
+            //if bigger then max payload exit without adding RRSIG
+            return;
+        }
+        additional = Utils.combine(destination, add);
+        numAdditionals++;
     }
 
     private void addNSECRecords(final String name) {
@@ -317,10 +356,10 @@ class Response {
 
         if (type == RRCode.MX) {
             logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
-            header.setRcode(ErrorCodes.NOERROR.getCode());
+            header.markNoError();
         } else {
             logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
-            header.setRcode(ErrorCodes.NAMEERROR.getCode());
+            header.markNameError();
         }
     }
 
@@ -366,7 +405,7 @@ class Response {
         final List<RR> v = zone.get(other, name);
         if (v.isEmpty()) {
             logger.debug(type.toString() + " lookup of " + name + " failed");
-            header.setRcode(ErrorCodes.NAMEERROR.getCode());
+            header.markNameError();
             return;
         }
 

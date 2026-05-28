@@ -23,6 +23,14 @@ public class HTTPS {
     private final Logger logger = JDNSS.logger;
 
     public HTTPS(@NotNull final String[] parts) {
+        this(parts, true);
+    }
+
+    HTTPS(@NotNull final String[] parts, final boolean startServer) {
+        if (!startServer) {
+            return;
+        }
+
         NetworkBinding binding = NetworkBinding.fromParts(parts);
         int port = binding.getPort();
 
@@ -38,6 +46,10 @@ public class HTTPS {
             System.out.println("Failed to create HTTPS server on port " + port + " of localhost");
             exception.printStackTrace();
         }
+    }
+
+    HttpHandler createHandler() {
+        return new MyHandler();
     }
 
     private void setSSLParameters(final HttpsServer httpsServer) throws Exception {
@@ -109,7 +121,7 @@ public class HTTPS {
             }
         }
 
-        private Response postResponse(HttpExchange t) throws IOException {
+        private Response postResponse(HttpExchange t) {
             Query q;
             Response r;
             List<Byte> ar = new ArrayList<>();
@@ -119,6 +131,9 @@ public class HTTPS {
                 while ((c = is.read()) != -1) {
                     ar.add((byte) c);
                 }
+            } catch (IOException ioe) {
+                logger.catching(ioe);
+                return null;
             }
 
             byte[] post_query = new byte[ar.size()];
@@ -127,22 +142,40 @@ public class HTTPS {
                 post_query[count++] = b;
             }
 
-            q = new Query(post_query);
-            q.parseQueries(t.getRemoteAddress().toString());
-            r = new Response(q, false);
-            return r;
+            try {
+                q = new Query(post_query);
+                q.parseQueries(t.getRemoteAddress().toString());
+                r = new Response(q, false);
+                return r;
+            } catch (RuntimeException e) {
+                logger.catching(e);
+                return null;
+            }
         }
 
         private Response getResponse(HttpExchange t) {
             Query q;
             Response r;
-            String[] both = t.getRequestURI().getQuery().split("=");
-            byte[] decoded = Base64.getDecoder().decode(both[1]);
+            String query = t.getRequestURI().getQuery();
+            if (query == null) {
+                return null;
+            }
 
-            q = new Query(decoded);
-            q.parseQueries(t.getRemoteAddress().toString());
-            r = new Response(q, false);
-            return r;
+            String[] both = query.split("=", 2);
+            if (both.length < 2) {
+                return null;
+            }
+
+            try {
+                byte[] decoded = Base64.getDecoder().decode(both[1]);
+                q = new Query(decoded);
+                q.parseQueries(t.getRemoteAddress().toString());
+                r = new Response(q, false);
+                return r;
+            } catch (RuntimeException e) {
+                logger.catching(e);
+                return null;
+            }
         }
     }
 

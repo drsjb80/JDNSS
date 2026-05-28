@@ -1,0 +1,142 @@
+package edu.msudenver.cs.jdnss;
+
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+public class HTTPSTest {
+    private Map<String, Zone> originalZones;
+
+    @Before
+    public void setUp() throws Exception {
+        originalZones = new HashMap<>(getBindZones());
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put("other.com", new BindZone("other.com"));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.putAll(originalZones);
+    }
+
+    @Test
+    public void getRequestReturnsBase64Response() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("GET", new URI("/dns-query?dns=" + encodeQuery()),
+                new ByteArrayInputStream(new byte[0]));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(exchange.getResponseBody()).thenReturn(out);
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(eq(200), anyLong());
+        Assert.assertTrue(out.size() > 0);
+        Assert.assertEquals("*", exchange.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    public void postRequestReturnsBase64Response() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("POST", new URI("/dns-query"),
+                new ByteArrayInputStream(buildQueryPacket()));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(exchange.getResponseBody()).thenReturn(out);
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(eq(200), anyLong());
+        Assert.assertTrue(out.size() > 0);
+        Assert.assertEquals("*", exchange.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    public void unsupportedMethodReturns405() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("PUT", new URI("/dns-query"),
+                new ByteArrayInputStream(new byte[0]));
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(405, -1);
+    }
+
+    @Test
+    public void malformedGetQueryReturns500() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("GET", new URI("/dns-query?bad"),
+                new ByteArrayInputStream(new byte[0]));
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(500, -1);
+    }
+
+    private static HttpExchange baseExchange(final String method, final URI uri,
+                                             final ByteArrayInputStream requestBody) {
+        HttpExchange exchange = mock(HttpExchange.class);
+        Headers requestHeaders = new Headers();
+        Headers responseHeaders = new Headers();
+
+        when(exchange.getRequestMethod()).thenReturn(method);
+        when(exchange.getRequestURI()).thenReturn(uri);
+        when(exchange.getRequestBody()).thenReturn(requestBody);
+        when(exchange.getRequestHeaders()).thenReturn(requestHeaders);
+        when(exchange.getResponseHeaders()).thenReturn(responseHeaders);
+        when(exchange.getRemoteAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 5300));
+
+        return exchange;
+    }
+
+    private static String encodeQuery() {
+        return Base64.getEncoder().encodeToString(buildQueryPacket());
+    }
+
+    private static byte[] buildQueryPacket() {
+        return new byte[] {
+                (byte) 0x5f, (byte) 0x3e, (byte) 0x01, (byte) 0x20,
+                (byte) 0x00, (byte) 0x01, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x04, (byte) 0x74, (byte) 0x65, (byte) 0x73,
+                (byte) 0x74, (byte) 0x03, (byte) 0x63, (byte) 0x6f,
+                (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
+                (byte) 0x00, (byte) 0x01
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Zone> getBindZones() throws Exception {
+        Field bindZonesField = JDNSS.class.getDeclaredField("bindZones");
+        bindZonesField.setAccessible(true);
+        return (Map<String, Zone>) bindZonesField.get(null);
+    }
+}

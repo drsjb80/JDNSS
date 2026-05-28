@@ -295,4 +295,51 @@ public class RRsTest
 
         Assert.assertArrayEquals(expected, rr.getBytes());
     }
+
+    @Test
+    public void stringAndAddressRrGetBytesTest() {
+        NSRR ns = new NSRR("test.com", 600, "ns1.test.com");
+        CNAMERR cname = new CNAMERR("www.test.com", 600, "test.com");
+        PTRRR ptr = new PTRRR("2.1.168.192.in-addr.arpa", 600, "host.test.com");
+        TXTRR txt = new TXTRR("test.com", 600, "hello");
+        AAAARR aaaa = new AAAARR("test.com", 600, "2001:db8::1");
+
+        Assert.assertArrayEquals(Utils.convertString("ns1.test.com"), ns.getBytes());
+        Assert.assertArrayEquals(Utils.convertString("test.com"), cname.getBytes());
+        Assert.assertArrayEquals(Utils.convertString("host.test.com"), ptr.getBytes());
+        Assert.assertArrayEquals(Utils.toCS("hello"), txt.getBytes());
+        Assert.assertArrayEquals(Utils.IPV6("2001:db8::1"), aaaa.getBytes());
+
+        Assert.assertEquals("ns1.test.com", ns.getString());
+        Assert.assertEquals("test.com", cname.getString());
+        Assert.assertEquals("host.test.com", ptr.getString());
+    }
+
+    @Test
+    public void hinfoAndEmptyRrBehaviorTest() {
+        HINFORR hinfo = new HINFORR("test.com", 300, "x86_64", "linux");
+        EmptyRR empty = new EmptyRR();
+
+        Assert.assertArrayEquals(Utils.combine(Utils.toCS("x86_64"), Utils.toCS("linux")),
+                hinfo.getBytes());
+        Assert.assertTrue(empty.isEmpty());
+    }
+
+    @Test
+    public void rrGetBytesUsesTtlMinimumWhenRecordTtlIsZero() {
+        QRR qrr = new QRR("test.com", RRCode.A);
+
+        byte[] rrBytes = qrr.getBytes("test.com", 1234);
+
+        Assert.assertEquals(0x04, rrBytes[0]);
+        Assert.assertEquals(0x00, rrBytes[rrBytes.length - 2]);
+        Assert.assertEquals(0x00, rrBytes[rrBytes.length - 1]);
+
+        int ttlOffset = Utils.convertString("test.com").length + 4;
+        int ttl = ((rrBytes[ttlOffset] & 0xff) << 24)
+                | ((rrBytes[ttlOffset + 1] & 0xff) << 16)
+                | ((rrBytes[ttlOffset + 2] & 0xff) << 8)
+                | (rrBytes[ttlOffset + 3] & 0xff);
+        Assert.assertEquals(1234, ttl);
+    }
 }

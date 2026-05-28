@@ -42,6 +42,18 @@ public class JDNSSTest {
     }
 
     @Test
+    public void getZoneLongestMatchIsCaseInsensitive() throws Exception {
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+
+        BindZone zone = new BindZone("test.com");
+        liveZones.put("test.com", zone);
+
+        Zone result = JDNSS.getZone("WWW.TEST.COM");
+        Assert.assertSame(zone, result);
+    }
+
+    @Test
     public void getZoneReturnsEmptyWhenNoMatchExists() throws Exception {
         Map<String, Zone> liveZones = getBindZones();
         liveZones.clear();
@@ -73,6 +85,32 @@ public class JDNSSTest {
         Assert.assertThrows(AssertionError.class, () -> JDNSS.getZone("www.test.com"));
     }
 
+    @Test
+    public void getZoneUsesDbConnectionWhenNoBindMatch() throws Exception {
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put("example.org", new BindZone("example.org"));
+
+        setDbConnection(new FakeDbConnection(false));
+
+        Zone result = JDNSS.getZone("www.test.com");
+        Assert.assertTrue(result instanceof DBZone);
+        Assert.assertEquals("test.com", result.getName());
+    }
+
+    @Test
+    public void getZoneFallsBackToBindZoneWhenDbReturnsEmpty() throws Exception {
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put("example.org", new BindZone("example.org"));
+
+        setDbConnection(new FakeDbConnection(true));
+
+        Zone result = JDNSS.getZone("www.test.com");
+        Assert.assertTrue(result instanceof BindZone);
+        Assert.assertTrue(result.isEmpty());
+    }
+
     @SuppressWarnings("unchecked")
     private static Map<String, Zone> getBindZones() throws Exception {
         Field bindZonesField = JDNSS.class.getDeclaredField("bindZones");
@@ -90,5 +128,22 @@ public class JDNSSTest {
         Field dbConnectionField = JDNSS.class.getDeclaredField("DBConnection");
         dbConnectionField.setAccessible(true);
         dbConnectionField.set(null, dbConnectionValue);
+    }
+
+    private static final class FakeDbConnection extends DBConnection {
+        private final boolean empty;
+
+        FakeDbConnection(final boolean empty) throws ClassNotFoundException {
+            super("java.lang.String", "", "", "");
+            this.empty = empty;
+        }
+
+        @Override
+        DBZone getZone(final String name) {
+            if (empty) {
+                return new DBZone();
+            }
+            return new DBZone("test.com", 0, this);
+        }
     }
 }

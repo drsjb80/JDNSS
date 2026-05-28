@@ -119,6 +119,26 @@ public class ResponseTest {
         Assert.assertEquals(0, readUInt16(result, 8));
     }
 
+    @Test
+    public void getBytesWithDnssecAddsRrsigToAnswerSection() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createDnssecAZone());
+
+        final Query dnssecQuery = new Query(buildQueryWithOptPayload(0x7788, ZONE_NAME,
+                RRCode.A, 1232, true));
+        dnssecQuery.parseQueries("");
+
+        final Response dnssecResponse = new Response(dnssecQuery, true);
+        final byte[] result = dnssecResponse.getBytes();
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0x80, unsignedByte(result[2]) & 0x80);
+        Assert.assertEquals(0x04, unsignedByte(result[2]) & 0x04);
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+    }
+
     private static BindZone createTestZone() {
         return createZone(ZONE_NAME);
     }
@@ -139,6 +159,14 @@ public class ResponseTest {
                         1, 7200, 3600, 1209600, 3600, 3600));
 
         zone.add(ZONE_NAME, new TXTRR(ZONE_NAME, 3600, repeatedText(220)));
+        return zone;
+    }
+
+    private static BindZone createDnssecAZone() {
+        final BindZone zone = createZone(ZONE_NAME);
+        zone.add(ZONE_NAME,
+                new RRSIG(ZONE_NAME, 3600, RRCode.A, 10, 2, 3600,
+                        0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
         return zone;
     }
 
@@ -166,17 +194,27 @@ public class ResponseTest {
         return queryBytes;
     }
 
-    private static byte[] buildQueryWithOptPayload(final int id, final String qName,
-                                                   final RRCode type, final int payloadSize) {
+        private static byte[] buildQueryWithOptPayload(final int id, final String qName,
+                               final RRCode type, final int payloadSize) {
+        return buildQueryWithOptPayload(id, qName, type, payloadSize, false);
+        }
+
+        private static byte[] buildQueryWithOptPayload(final int id, final String qName,
+                               final RRCode type, final int payloadSize,
+                               final boolean dnssecEnabled) {
         byte[] queryBytes = buildQuery(id, qName, type);
 
         queryBytes[11] = 0x01;
+
+        byte[] zFlags = dnssecEnabled
+            ? new byte[] {0x00, 0x00, (byte) 0x80, 0x00}
+            : new byte[] {0x00, 0x00, 0x00, 0x00};
 
         queryBytes = Utils.combine(queryBytes, new byte[] {
                 0x00,
                 0x00, 0x29,
                 (byte) ((payloadSize >> 8) & 0xff), (byte) (payloadSize & 0xff),
-                0x00, 0x00, 0x00, 0x00,
+            zFlags[0], zFlags[1], zFlags[2], zFlags[3],
                 0x00, 0x00
         });
 

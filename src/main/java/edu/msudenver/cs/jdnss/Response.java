@@ -5,6 +5,7 @@ import lombok.ToString;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 enum ResponseSection {
@@ -315,26 +316,31 @@ class Response {
     }
 
     private void appendToAnswerSection(final byte[] add, final byte[] destination) {
-        if (checkAndMarkUdpOverflow(responses.length, add.length)) {
-            return;
-        }
-        responses = Utils.combine(destination, add);
-        header.incrementNumAnswers();
+        appendSignedToSection(add, destination, true,
+                combined -> responses = combined, header::incrementNumAnswers);
     }
 
     private void appendToAuthoritySection(final byte[] add, final byte[] destination) {
-        checkAndMarkUdpOverflow(responses.length, add.length);
-        authority = Utils.combine(destination, add);
-        numAuthorities++;
+        appendSignedToSection(add, destination, false,
+                combined -> authority = combined, () -> numAuthorities++);
     }
 
     private void appendToAdditionalSection(final byte[] add, final byte[] destination) {
-        if (checkAndMarkUdpOverflow(responses.length, add.length)) {
-            //if bigger then max payload exit without adding RRSIG
+        appendSignedToSection(add, destination, true,
+                combined -> additional = combined, () -> numAdditionals++);
+    }
+
+    private void appendSignedToSection(final byte[] add, final byte[] destination,
+                                       final boolean skipWhenOverflow,
+                                       final Consumer<byte[]> sectionUpdater,
+                                       final Runnable counterIncrementer) {
+        final boolean overflow = checkAndMarkUdpOverflow(responses.length, add.length);
+        if (overflow && skipWhenOverflow) {
             return;
         }
-        additional = Utils.combine(destination, add);
-        numAdditionals++;
+
+        sectionUpdater.accept(Utils.combine(destination, add));
+        counterIncrementer.run();
     }
 
     private boolean checkAndMarkUdpOverflow(final int currentLength, final int additionalLength) {

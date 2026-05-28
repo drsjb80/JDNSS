@@ -43,8 +43,8 @@ public class HTTPS {
             httpsServer.setExecutor(null);
             httpsServer.start();
         } catch (Exception exception) {
-            System.out.println("Failed to create HTTPS server on port " + port + " of localhost");
-            exception.printStackTrace();
+            logger.error("Failed to create HTTPS server on port {} of {}", port,
+                    binding.getHost(), exception);
         }
     }
 
@@ -65,7 +65,7 @@ public class HTTPS {
                     params.setSSLParameters(sslParameters);
 
                 } catch (Exception ex) {
-                    System.out.println("Failed to create SSL parameters");
+                    logger.error("Failed to create SSL parameters", ex);
                 }
             }
 
@@ -96,7 +96,7 @@ public class HTTPS {
                     r = postResponse(t);
                     break;
                 default:
-                    logger.error("Shouldn't get here");
+                    logger.warn("Unsupported DoH method: {}", t.getRequestMethod());
                     t.sendResponseHeaders(405, -1);
                     return;
             }
@@ -106,14 +106,13 @@ public class HTTPS {
             }
 
             for (String key : t.getRequestHeaders().keySet()) {
-                System.out.println(key);
-                System.out.println(t.getRequestHeaders().get(key));
+                logger.debug("Request header {}: {}", key, t.getRequestHeaders().get(key));
             }
 
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
             String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
-            System.out.println(encoded_response);
+            logger.trace("Encoded response length: {}", encoded_response.length());
             t.sendResponseHeaders(200, encoded_response.getBytes(StandardCharsets.UTF_8).length);
 
             try (OutputStream os = t.getResponseBody()) {

@@ -119,6 +119,49 @@ public class ParserTest {
         Assert.assertTrue(hinfoRecords.get(0) instanceof HINFORR);
     }
 
+    @Test
+    public void originDirectiveChangesSubsequentRelativeNames() throws Exception {
+        String zoneText = String.join("\n",
+                "$ORIGIN test.com.",
+                "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                "www A 192.168.1.2",
+                "$ORIGIN alt.test.com.",
+                "api A 192.168.1.3");
+
+        BindZone zone = parseZone(zoneText, "test.com");
+
+        Assert.assertEquals(1, zone.get(RRCode.A, "www.test.com").size());
+        Assert.assertEquals(1, zone.get(RRCode.A, "api.alt.test.com").size());
+    }
+
+    @Test
+    public void ttlSuffixHoursAreConvertedToSeconds() throws Exception {
+        String zoneText = String.join("\n",
+                "$ORIGIN test.com.",
+                "@ 1H IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                "www 2H IN A 192.168.1.2");
+
+        BindZone zone = parseZone(zoneText, "test.com");
+        List<RR> aRecords = zone.get(RRCode.A, "www.test.com");
+
+        Assert.assertEquals(1, aRecords.size());
+        Assert.assertEquals(7200, aRecords.get(0).getTtl());
+    }
+
+    @Test
+    public void ttlSuffixWeeksAreConvertedToSeconds() throws Exception {
+        String zoneText = String.join("\n",
+                "$ORIGIN test.com.",
+                "@ 1W IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                "www A 192.168.1.2");
+
+        BindZone zone = parseZone(zoneText, "test.com");
+        List<RR> aRecords = zone.get(RRCode.A, "www.test.com");
+
+        Assert.assertEquals(1, aRecords.size());
+        Assert.assertEquals(604800, aRecords.get(0).getTtl());
+    }
+
     private static BindZone parseZone(final String zoneText, final String zoneName) throws Exception {
         BindZone zone = new BindZone(zoneName);
         ByteArrayInputStream input = new ByteArrayInputStream(zoneText.getBytes(StandardCharsets.UTF_8));

@@ -20,9 +20,8 @@ class UDP extends Thread
 
     public UDP(String[] parts) {
         try {
-            String address = parts[1];
-            int port = Integer.parseInt(parts[2]);
-            dsocket = new DatagramSocket(port, InetAddress.getByName(address));
+            NetworkBinding binding = NetworkBinding.fromParts(parts);
+            dsocket = new DatagramSocket(binding.getPort(), InetAddress.getByName(binding.getHost()));
         } catch (IOException ioe) {
             logger.catching(ioe);
         }

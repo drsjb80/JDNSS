@@ -23,10 +23,11 @@ public class HTTPS {
     private final Logger logger = JDNSS.logger;
 
     public HTTPS(@NotNull final String[] parts) {
-        int port = Integer.parseInt(parts[2]);
+        NetworkBinding binding = NetworkBinding.fromParts(parts);
+        int port = binding.getPort();
 
         try {
-            InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(parts[1]), port);
+            InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(binding.getHost()), port);
 
             HttpsServer httpsServer = HttpsServer.create(address, JDNSS.jargs.backlog);
             setSSLParameters(httpsServer);

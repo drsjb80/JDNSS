@@ -22,8 +22,9 @@ class TCP extends Thread {
     TCP(final String[] parts) {
         type = parts[0];
         backlog = JDNSS.jargs.backlog;
-        address = parts[1];
-        port = Integer.parseInt(parts[2]);
+        NetworkBinding binding = NetworkBinding.fromParts(parts);
+        address = binding.getHost();
+        port = binding.getPort();
     }
 
     public void run() {

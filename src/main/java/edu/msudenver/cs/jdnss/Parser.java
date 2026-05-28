@@ -14,6 +14,28 @@ import java.util.*;
 class Parser {
     private static final int NOTOK = -1;
 
+    private static final Set<RRCode> RR_TOKENS = EnumSet.of(
+            RRCode.A,
+            RRCode.NS,
+            RRCode.CNAME,
+            RRCode.SOA,
+            RRCode.PTR,
+            RRCode.HINFO,
+            RRCode.MX,
+            RRCode.TXT,
+            RRCode.AAAA,
+            RRCode.A6,
+            RRCode.DNAME,
+            RRCode.DS,
+            RRCode.RRSIG,
+            RRCode.NSEC,
+            RRCode.DNSKEY,
+            RRCode.INCLUDE,
+            RRCode.ORIGIN,
+            RRCode.TTL,
+            RRCode.NSEC3,
+            RRCode.NSEC3PARAM);
+
     private static final int DAYSINWEEK = 7;
     private static final int HOURSINDAY = 24;
     private static final int MINUTESINHOUR = 60;
@@ -364,33 +386,9 @@ class Parser {
 
 
     private boolean isARR(final RRCode which) {
-        switch (which) {
-            case A:
-            case NS:
-            case CNAME:
-            case SOA:
-            case PTR:
-            case HINFO:
-            case MX:
-            case TXT:
-            case AAAA:
-            case A6:
-            case DNAME:
-            case DS:
-            case RRSIG:
-            case NSEC:
-            case DNSKEY:
-            case INCLUDE:
-            case ORIGIN:
-            case TTL:
-            case NSEC3:
-            case NSEC3PARAM:
-                logger.traceExit(true);
-                return true;
-            default:
-                logger.traceExit(false);
-                return false;
-        }
+        final boolean isRecordToken = RR_TOKENS.contains(which);
+        logger.traceExit(isRecordToken);
+        return isRecordToken;
     }
 
     private void doNSEC() {
@@ -608,6 +606,111 @@ class Parser {
         }
     }
 
+    private boolean handleDirectiveToken(final RRCode token) throws UnsupportedEncodingException {
+        if (token == RRCode.INCLUDE) {
+            doInclude();
+            return true;
+        }
+
+        if (token == RRCode.ORIGIN) {
+            origin = getDomain();
+            return true;
+        }
+
+        if (token == RRCode.TTL) {
+            globalTTL = getInt("TTL");
+            return true;
+        }
+
+        return false;
+    }
+
+    private void parseOneRecord(final RRCode startToken) {
+        boolean done = false;
+        boolean first = true;
+        RRCode token = startToken;
+
+        currentTTL = -1;
+
+        // read to the end of this RR
+        while (!done) {
+            logger.trace(token);
+
+            switch (token) {
+                case DN:
+                case INADDR:
+                    currentName = stringValue;
+                    token = getNextToken();
+                    break;
+                case IN:
+                    token = getNextToken();
+
+                    if (token == RRCode.INT) {
+                        currentTTL = intValue;
+                        token = getNextToken();
+                    }
+
+                    break;
+                case INT: {
+                    final int temp = intValue;
+                    token = getNextToken();
+                    logger.trace("t = " + token);
+
+                    // ptr ttl in
+                    // ptr in ttl
+                    if (first && (origin.endsWith(".arpa")
+                            || origin.endsWith(".int"))) {
+                        currentName = "" + temp + "." + origin;
+                        logger.trace(currentName);
+
+                        if (token == RRCode.INT) {
+                            currentTTL = intValue;
+                            token = getNextToken();
+                        }
+                    } else if (token == RRCode.IN) {       // ttl in
+                        currentTTL = temp;
+                    } else if (isARR(token)) {
+                        currentTTL = temp;
+                        switches(token);
+                        done = true;
+                    } else {
+                        currentName = "" + temp + "." + origin;
+                    }
+
+                    break;
+                }
+                case A:
+                case AAAA:
+                case NS:
+                case CNAME:
+                case TXT:
+                case HINFO:
+                case MX:
+                case A6:
+                case PTR:
+                case RRSIG:
+                case NSEC:
+                case NSEC3:
+                case NSEC3PARAM:
+                case DNSKEY:
+                    currentTTL = CalcTTL();
+                    switches(token);
+                    done = true;
+                    break;
+                case SOA:
+                    doSOA();
+                    done = true;
+                    break;
+                default:
+                    logger.info("At line " + st.lineno()
+                            + ", didn't recognize: " + token);
+                    done = true;
+                    break;
+            }
+            first = false;
+        }
+    }
+
     void RRs() throws UnsupportedEncodingException {
         currentName = origin;
 
@@ -617,20 +720,7 @@ class Parser {
             while (t != RRCode.EOF) {
                 logger.trace(t);
 
-                if (t == RRCode.INCLUDE) {
-                    doInclude();
-                    t = getNextToken();
-                    continue;
-                }
-
-                if (t == RRCode.ORIGIN) {
-                    origin = getDomain();
-                    t = getNextToken();
-                    continue;
-                }
-
-                if (t == RRCode.TTL) {
-                    globalTTL = getInt("TTL");
+                if (handleDirectiveToken(t)) {
                     t = getNextToken();
                     continue;
                 }
@@ -647,88 +737,7 @@ class Parser {
                 // 6) class type data
                 // 7) type data
 
-                boolean done = false;
-                boolean first = true;
-
-                currentTTL = -1;
-
-                // read to the end of this RR
-                while (!done) {
-                    logger.trace(t);
-
-                    switch (t) {
-                        case DN:
-                        case INADDR:
-                            currentName = stringValue;
-                            t = getNextToken();
-                            break;
-                        case IN:
-                            t = getNextToken();
-
-                            if (t == RRCode.INT) {
-                                currentTTL = intValue;
-                                t = getNextToken();
-                            }
-
-                            break;
-                        case INT: {
-                            final int temp = intValue;
-                            t = getNextToken();
-                            logger.trace("t = " + t);
-
-                            // ptr ttl in
-                            // ptr in ttl
-                            if (first && (origin.endsWith(".arpa")
-                                    || origin.endsWith(".int"))) {
-                                currentName = "" + temp + "." + origin;
-                                logger.trace(currentName);
-
-                                if (t == RRCode.INT) {
-                                    currentTTL = intValue;
-                                    t = getNextToken();
-                                }
-                            } else if (t == RRCode.IN) {       // ttl in
-                                currentTTL = temp;
-                            } else if (isARR(t)) {
-                                currentTTL = temp;
-                                switches(t);
-                                done = true;
-                            } else {
-                                currentName = "" + temp + "." + origin;
-                            }
-
-                            break;
-                        }
-                        case A:
-                        case AAAA:
-                        case NS:
-                        case CNAME:
-                        case TXT:
-                        case HINFO:
-                        case MX:
-                        case A6:
-                        case PTR:
-                        case RRSIG:
-                        case NSEC:
-                        case NSEC3:
-                        case NSEC3PARAM:
-                        case DNSKEY:
-                            currentTTL = CalcTTL();
-                            switches(t);
-                            done = true;
-                            break;
-                        case SOA:
-                            doSOA();
-                            done = true;
-                            break;
-                        default:
-                            logger.info("At line " + st.lineno()
-                                    + ", didn't recognize: " + t);
-                            done = true;
-                            break;
-                    }
-                    first = false;
-                }
+                parseOneRecord(t);
 
                 t = getNextToken();
             }

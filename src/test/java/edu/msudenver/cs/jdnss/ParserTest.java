@@ -210,6 +210,49 @@ public class ParserTest {
         }
     }
 
+    @Test
+    public void malformedLineDoesNotAbortFollowingRecords() throws Exception {
+        String zoneText = String.join("\n",
+                "$ORIGIN test.com.",
+                "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                "broken ?",
+                "www A 192.168.1.2");
+
+        BindZone zone = parseZone(zoneText, "test.com");
+
+        Assert.assertEquals(1, zone.get(RRCode.A, "www.test.com").size());
+        Assert.assertEquals(0, zone.get(RRCode.A, "broken.test.com").size());
+    }
+
+    @Test
+    public void nestedIncludeWithMissingInnerFileDoesNotAbortOuterParsing() throws Exception {
+        Path outerInclude = Files.createTempFile("jdnss-include-outer-missing", ".zone");
+        Path missingInner = outerInclude.resolveSibling("definitely-missing-jdnss-inner.zone");
+
+        Files.writeString(outerInclude,
+                String.join("\n",
+                        "$INCLUDE " + missingInner,
+                        "nested A 192.168.1.77",
+                        "api A 192.168.1.88"),
+                StandardCharsets.UTF_8);
+
+        try {
+            String zoneText = String.join("\n",
+                    "$ORIGIN test.com.",
+                    "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                    "$INCLUDE " + outerInclude.toAbsolutePath(),
+                    "www A 192.168.1.2");
+
+            BindZone zone = parseZone(zoneText, "test.com");
+
+            Assert.assertEquals(1, zone.get(RRCode.A, "nested.test.com").size());
+            Assert.assertEquals(1, zone.get(RRCode.A, "api.test.com").size());
+            Assert.assertEquals(1, zone.get(RRCode.A, "www.test.com").size());
+        } finally {
+            Files.deleteIfExists(outerInclude);
+        }
+    }
+
     private static BindZone parseZone(final String zoneText, final String zoneName) throws Exception {
         BindZone zone = new BindZone(zoneName);
         ByteArrayInputStream input = new ByteArrayInputStream(zoneText.getBytes(StandardCharsets.UTF_8));

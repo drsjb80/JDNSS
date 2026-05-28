@@ -430,11 +430,11 @@ class Parser {
         final int algorithm = getInt("algorithm");
         getLeftParen();
 
-        String publicKey = "";
+        final StringBuilder publicKeyBuilder = new StringBuilder();
         inBase64 = true;
         RRCode tok;
         while ((tok = getNextToken()) == RRCode.BASE64) {
-            publicKey += stringValue;
+            publicKeyBuilder.append(stringValue);
         }
         inBase64 = false;
 
@@ -442,7 +442,7 @@ class Parser {
 
         zone.add(currentName,
                 new DNSKEYRR(currentName, currentTTL, flags, protocol,
-                        algorithm, publicKey));
+                        algorithm, publicKeyBuilder.toString()));
         logger.traceExit(false);
     }
 
@@ -472,10 +472,10 @@ class Parser {
         getLeftParen();
 
         // this is probably cheating as this is supposed to be Base 32.
-        String nextHashedOwnerName = "";
+        final StringBuilder nextHashedOwnerNameBuilder = new StringBuilder();
         inBase64 = true;
         while (getNextToken() == RRCode.BASE64) {
-            nextHashedOwnerName += stringValue;
+            nextHashedOwnerNameBuilder.append(stringValue);
         }
         inBase64 = false;
 
@@ -486,7 +486,7 @@ class Parser {
         }
 
         final NSEC3RR d = new NSEC3RR(currentName, currentTTL, hashAlgorithm,
-                flags, iterations, salt, nextHashedOwnerName, types);
+        flags, iterations, salt, nextHashedOwnerNameBuilder.toString(), types);
         zone.add(currentName, d);
         logger.traceExit();
     }
@@ -511,19 +511,19 @@ class Parser {
         final int keyTag = getInt("key tag");
         final String signersName = getDomain();
 
-        String signature = "";
+        final StringBuilder signatureBuilder = new StringBuilder();
         RRCode tok;
 
         inBase64 = true;
         while ((tok = getNextToken()) == RRCode.BASE64) {
-            signature += stringValue;
+            signatureBuilder.append(stringValue);
         }
         inBase64 = false;
         assert tok == RRCode.RPAREN;
 
         final RRSIG d = new RRSIG(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,
-                keyTag, signersName, signature);
+                keyTag, signersName, signatureBuilder.toString());
         zone.add(currentName, d);
         logger.traceExit();
     }
@@ -606,23 +606,24 @@ class Parser {
         }
     }
 
+    private boolean isReverseLookupOrigin() {
+        return origin.endsWith(".arpa") || origin.endsWith(".int");
+    }
+
     private boolean handleDirectiveToken(final RRCode token) throws UnsupportedEncodingException {
-        if (token == RRCode.INCLUDE) {
-            doInclude();
-            return true;
+        switch (token) {
+            case INCLUDE:
+                doInclude();
+                return true;
+            case ORIGIN:
+                origin = getDomain();
+                return true;
+            case TTL:
+                globalTTL = getInt("TTL");
+                return true;
+            default:
+                return false;
         }
-
-        if (token == RRCode.ORIGIN) {
-            origin = getDomain();
-            return true;
-        }
-
-        if (token == RRCode.TTL) {
-            globalTTL = getInt("TTL");
-            return true;
-        }
-
-        return false;
     }
 
     private void parseOneRecord(final RRCode startToken) {
@@ -658,8 +659,7 @@ class Parser {
 
                     // ptr ttl in
                     // ptr in ttl
-                    if (first && (origin.endsWith(".arpa")
-                            || origin.endsWith(".int"))) {
+                    if (first && isReverseLookupOrigin()) {
                         currentName = "" + temp + "." + origin;
                         logger.trace(currentName);
 

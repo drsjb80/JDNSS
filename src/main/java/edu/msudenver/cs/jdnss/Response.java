@@ -16,6 +16,8 @@ enum ResponseSection {
 class Response {
     private final Logger logger = JDNSS.logger;
     private static final Set<RRCode> ADDRESS_QUERY_TYPES = EnumSet.of(RRCode.A, RRCode.AAAA);
+    private static final Map.Entry<String, List<RR>> EMPTY_RESULT =
+            Map.entry("", Collections.emptyList());
 
     private static final class SectionAppendPolicy {
         private final boolean skipWhenOverflow;
@@ -395,20 +397,25 @@ class Response {
 
     private Map.Entry<String, List<RR>> findRR(final RRCode type, final String name) {
         logger.traceEntry();
-        List<RR> list = zone.get(type, name);
+        final List<RR> list = zone.get(type, name);
         if (list.isEmpty()) {
             logger.debug("Didn't find: " + name);
             if (!isAddressQueryType(type)) {
                 nameNotFound(type, name);
-                return Map.entry("", Collections.emptyList());
-            } else {
-                return lookForCNAME(type, name);
+                return emptyResult();
             }
+
+            return lookForCNAME(type, name);
         }
+
         Map.Entry<java.lang.String, List<edu.msudenver.cs.jdnss.RR>> ret =
                 Map.entry(name, list);
         logger.traceExit(ret);
         return ret;
+    }
+
+    private Map.Entry<String, List<RR>> emptyResult() {
+        return EMPTY_RESULT;
     }
 
     private boolean isAddressQueryType(final RRCode type) {
@@ -434,12 +441,10 @@ class Response {
         logger.traceEntry();
         logger.debug("Looking for a CNAME for " + name);
 
-        final Map.Entry<String, List<RR>> empty = Map.entry("", Collections.emptyList());
-
         final List<RR> u = zone.get(RRCode.CNAME, name);
         if (u.isEmpty()) {
             dealWithOther(type, name);
-            return empty;
+            return emptyResult();
         }
 
         final String s = u.get(0).getString();
@@ -449,7 +454,8 @@ class Response {
             header.incrementNumAnswers();
             return Map.entry(s, v);
         }
-        return empty;
+
+        return emptyResult();
     }
 
     /*

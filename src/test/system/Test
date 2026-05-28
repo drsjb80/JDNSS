@@ -1,4 +1,19 @@
-#! /bin/bash -e
+#! /bin/bash
+set -eo pipefail
+
+TEMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/jdnss-system.XXXXXX")
+jdnss_pid=""
+
+cleanup() {
+    if [[ -n "$jdnss_pid" ]]; then
+        kill "$jdnss_pid" 2>/dev/null || true
+        wait "$jdnss_pid" 2>/dev/null || true
+    fi
+
+    rm -rf "$TEMP_DIR"
+}
+
+trap cleanup EXIT INT TERM
 
 . TESTS
 
@@ -45,7 +60,7 @@ do
     name=${b[0]};
     file=${b[1]};
     query=${b[2]};
-    type=${b[3]};
+    type=${b[3]:-};
 
     echo -n "Testing $name..."
 
@@ -83,9 +98,19 @@ do
         echo "Built jar not found under ../../../target"
         exit 1
     fi
-    JDNSS="java $DEBUG -jar $JAR $JDNSSARGS $LOGLEVEL --once=true --serverSecret=0123456789abcdef0123456789abcdef"
+    JDNSS=(java)
+    if [[ -n "${DEBUG:-}" ]]; then
+        # DEBUG may include multiple JVM arguments.
+        read -r -a debugArgs <<< "$DEBUG"
+        JDNSS+=("${debugArgs[@]}")
+    fi
+    JDNSS+=(-jar "$JAR" "$JDNSSARGS")
+    if [[ -n "$LOGLEVEL" ]]; then
+        JDNSS+=("$LOGLEVEL")
+    fi
+    JDNSS+=(--once=true --serverSecret=0123456789abcdef0123456789abcdef)
 
-    $JDNSS zone_files/$file &
+    "${JDNSS[@]}" "zone_files/$file" &
     jdnss_pid=$!
     if [[ $name == 'TCP' ]]
     then
@@ -94,24 +119,40 @@ do
         sleep 1
     fi
 
-    dig $DIGARGS $DIGHOST $query -p $PORT $type | \
+    DIGCOMMAND=(dig)
+    read -r -a digArgs <<< "$DIGARGS"
+    DIGCOMMAND+=("${digArgs[@]}" "$DIGHOST")
+    read -r -a queryArgs <<< "$query"
+    DIGCOMMAND+=("${queryArgs[@]}" -p "$PORT")
+    if [[ -n "$type" ]]; then
+        DIGCOMMAND+=("$type")
+    fi
+
+    "${DIGCOMMAND[@]}" | \
         sed -e 's/, id: [0-9][0-9]*$//' > /tmp/$name.raw
+
+    if ! kill -0 "$jdnss_pid" 2>/dev/null; then
+        echo "FAILED"
+        echo "Server exited before test query completed for $name"
+        exit 1
+    fi
 
     # Avoid leaking a server process into the next test case.
     kill "$jdnss_pid" 2>/dev/null || true
     wait "$jdnss_pid" 2>/dev/null || true
 
-    normalize_output "named/$name.good" "/tmp/$name.expected"
-    normalize_output "/tmp/$name.raw" "/tmp/$name"
+    normalize_output "named/$name.good" "$TEMP_DIR/$name.expected"
+    normalize_output "/tmp/$name.raw" "$TEMP_DIR/$name"
 
-    diff --minimal /tmp/$name.expected /tmp/$name
+    diff --minimal "$TEMP_DIR/$name.expected" "$TEMP_DIR/$name"
     if [[ $? != 0 ]]
     then
     	echo "FAILED"
         exit 1
     fi
 
-    rm /tmp/$name /tmp/$name.raw /tmp/$name.expected
+    rm "/tmp/$name.raw" "$TEMP_DIR/$name" "$TEMP_DIR/$name.expected"
+    jdnss_pid=""
     sleep 1
 
     echo "passed"

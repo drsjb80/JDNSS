@@ -713,6 +713,81 @@ public class SystemZoneIntegrationTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
     }
 
+    @Test
+    public void tcpZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TCP.com");
+
+        final Query query = new Query(buildQuery(0x613d, "www.TCP.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    @Test
+    public void dnssecZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("dnssec.com", "dnssec.com.signed");
+
+        final Query query = new Query(buildDnssecQuery(0x613e, "dnssec.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(3, readUInt16(result, 8));
+        Assert.assertEquals(5, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    @Test
+    public void ipv4ReverseZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("1.168.192.in-addr.arpa");
+
+        final Query query = new Query(buildQuery(0x613f, "28.1.168.192.in-addr.arpa", RRCode.PTR));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void ipv6ReverseZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19.20.21.22.23.24.25.26.27.28.29.30.31.in-addr.arpa");
+
+        final Query query = new Query(buildQuery(
+                0x6140,
+                "0.1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19.20.21.22.23.24.25.26.27.28.29.30.31.in-addr.arpa",
+                RRCode.PTR));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
     private void assertSimpleAQueryCase(final String zoneName, final String qName, final int id)
             throws Exception {
         installZoneFromSystemFixture(zoneName);
@@ -731,9 +806,43 @@ public class SystemZoneIntegrationTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
 
+    private static byte[] buildDnssecQuery(final int id, final String qName, final RRCode type) {
+    byte[] queryBytes = new byte[] {
+        (byte) ((id >> 8) & 0xff), (byte) (id & 0xff),
+        0x01, 0x00,
+        0x00, 0x01,
+        0x00, 0x00,
+        0x00, 0x00,
+        0x00, 0x01
+    };
+
+    queryBytes = Utils.combine(queryBytes, DnsNameCodec.convertString(qName));
+    queryBytes = Utils.combine(queryBytes, new byte[] {
+        (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
+        0x00, 0x01
+    });
+
+    // Add an OPT record with the DO bit set to request DNSSEC records.
+    queryBytes = Utils.combine(queryBytes, new byte[] {
+        0x00,
+        0x00, 0x29,
+        0x10, 0x00,
+        0x00, 0x00, (byte) 0x80, 0x00,
+        0x00, 0x00
+    });
+
+    return queryBytes;
+    }
+
     private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
+        installZoneFromSystemFixture(zoneName, zoneName);
+    }
+
+    private static void installZoneFromSystemFixture(final String zoneName,
+                                                     final String fixtureFileName)
+            throws Exception {
         final BindZone zone = new BindZone(zoneName);
-        try (InputStream in = new FileInputStream("src/test/system/zone_files/" + zoneName)) {
+        try (InputStream in = new FileInputStream("src/test/system/zone_files/" + fixtureFileName)) {
             final Parser parser = new Parser(in, zone);
             parser.RRs();
         }

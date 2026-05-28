@@ -20,6 +20,9 @@ This file is for recording coding preferences, style choices, and project conven
 - In CSS, prefer rem, em, en, and percentages for sizing and spacing.
 - In CSS, use named colors instead of hex color values.
 
+## Testing
+- Unit test coverage target: 90%
+
 ## Git
 - Always create a git hook that prompts for permission for commits over 10K.
 

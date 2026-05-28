@@ -19,6 +19,15 @@
         "git add": true,
         "git -C /Users/beatys/src/JDNSS": true,
         "/Users/beatys/src/JDNSS/.githooks/pre-commit": true,
-        "git commit": true
-    }
+        "git commit": true,
+        "git push": true,
+        "git rev-parse": true,
+        "awk": true,
+        "mvn -q verify": true,
+        "/^mvn -q -Dtest=.* test$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "tee": true,
+          }
 }

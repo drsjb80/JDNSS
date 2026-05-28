@@ -8,6 +8,10 @@ jdnss.iml
 *.DS_Store
 .gitignore
 
+# Eclipse
+.classpath
+.settings/
+
 # Other
 output.txt
 /.metadata/

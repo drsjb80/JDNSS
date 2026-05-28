@@ -31,4 +31,14 @@ public class MyDatagramSocketTest {
             socket.close();
         }
     }
+
+    @Test
+    public void toStringAfterCloseReturnsWithoutThrowing() throws Exception {
+        MyDatagramSocket socket = new MyDatagramSocket();
+        socket.close();
+
+        String value = socket.toString();
+
+        Assert.assertNotNull(value);
+    }
 }

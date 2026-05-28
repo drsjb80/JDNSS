@@ -27,6 +27,9 @@ class Queries {
 class Query {
     private final Logger logger = JDNSS.logger;
 
+    private static final int DNS_HEADER_LENGTH = 12;
+    private static final int UNICAST_RESPONSE_MASK = 0xc000;
+
     @Getter private final Header header;
     @Getter private final byte[] buffer;
     @Getter private Queries[] queries;
@@ -64,20 +67,11 @@ class Query {
         +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
         */
 
-        int location = 12;
+        int location = DNS_HEADER_LENGTH;
         queries = new Queries[header.getNumQuestions()];
-        
 
         for (int i = 0; i < header.getNumQuestions(); i++) {
-            Map.Entry<String, Integer> StringAndNumber = Utils.parseName(location, buffer);
-
-            location = StringAndNumber.getValue();
-            int qtype = Utils.addThem(buffer[location++], buffer[location++]);
-            int qclass = Utils.addThem(buffer[location++], buffer[location++]);
-            boolean QU = (qclass & 0xc000) == 0xc000;
-
-            queries[i] = new Queries(StringAndNumber.getKey(),
-                    RRCode.findCode(qtype), qclass, QU);
+            location = parseQuestion(location, i);
 
             /*
             ** Multicast DNS defines the top bit in the class field of a
@@ -105,25 +99,48 @@ class Query {
         */
 
         for (int i = 0; i < header.getNumAdditionals(); i++) {
-            logger.traceEntry();
+            parseAdditionalOptRecord(location, clientIPaddress);
+        }
+    }
 
-            // When an OPT RR is included within any DNS message, it
-            // MUST be the only OPT RR in that message.
-            assert header.getNumAdditionals() == 1;
-            this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
+    private int parseQuestion(final int location, final int questionIndex) {
+        int currentLocation = location;
+        Map.Entry<String, Integer> StringAndNumber = Utils.parseName(currentLocation, buffer);
 
-            //process and transform? optrr for a resonse
-            // need to set the RCODE in header for the response needs to be FORMERR
-            if(optrr.hasFormErr()){
-                header.markFormatError();
-            }
+        currentLocation = StringAndNumber.getValue();
+        int qtype = Utils.addThem(buffer[currentLocation++], buffer[currentLocation++]);
+        int qclass = Utils.addThem(buffer[currentLocation++], buffer[currentLocation++]);
+        boolean QU = (qclass & UNICAST_RESPONSE_MASK) == UNICAST_RESPONSE_MASK;
 
-            if(optrr.isCookie()) {
-                try {
-                    optrr.createServerCookie(clientIPaddress, header);
-                } catch (UnsupportedEncodingException e) {
-                    logger.error(e);
-                }
+        queries[questionIndex] = new Queries(StringAndNumber.getKey(),
+                RRCode.findCode(qtype), qclass, QU);
+
+        return currentLocation;
+    }
+
+    private void parseAdditionalOptRecord(final int location, final String clientIPaddress) {
+        logger.traceEntry();
+
+        // When an OPT RR is included within any DNS message, it
+        // MUST be the only OPT RR in that message.
+        assert header.getNumAdditionals() == 1;
+        this.optrr = new OPTRR(Arrays.copyOfRange(buffer, location, buffer.length));
+
+        applyOptRecordEffects(clientIPaddress);
+    }
+
+    private void applyOptRecordEffects(final String clientIPaddress) {
+        //process and transform? optrr for a resonse
+        // need to set the RCODE in header for the response needs to be FORMERR
+        if(optrr.hasFormErr()){
+            header.markFormatError();
+        }
+
+        if(optrr.isCookie()) {
+            try {
+                optrr.createServerCookie(clientIPaddress, header);
+            } catch (UnsupportedEncodingException e) {
+                logger.error(e);
             }
         }
     }

@@ -1,4 +1,24 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "chat.tools.terminal.autoApprove": {
+        "mvn -q -DskipTests compile": true,
+        "mvn -q -DskipTests package": true,
+        "mvn -q test": true,
+        "/^cd /Users/beatys/src/JDNSS/src/test/system && bash \\./Test$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "java": true,
+        "javac": true,
+        "dig": true,
+        "true": true,
+        "mvn -q -f /Users/beatys/src/JDNSS/pom.xml": true,
+        "pgrep": true,
+        "git remote": true,
+        "git add": true,
+        "git -C /Users/beatys/src/JDNSS": true,
+        "/Users/beatys/src/JDNSS/.githooks/pre-commit": true,
+        "git commit": true
+    }
 }

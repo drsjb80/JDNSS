@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-THRESHOLD_BYTES="${GIT_LARGE_FILE_THRESHOLD_BYTES:-10240}"
+THRESHOLD_BYTES="${GIT_LARGE_FILE_THRESHOLD_BYTES:-20480}"
 
 large_files_tmp="$(mktemp)"
 trap 'rm -f "$large_files_tmp"' EXIT

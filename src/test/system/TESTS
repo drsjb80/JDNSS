@@ -2,15 +2,6 @@
 #    name	file		query		type
 tests=(
     'TCP	TCP.com		www.TCP.com'
-    'Nohost	SOA.com		www.SOA.com'
-    'MXAF	MXA.com		one.MXA.com	AAAA'
-    'AnoAAAA	MXA.com		one.MXA.com	AAAA'
-    'BaDomain	MXA.com		one.MXAAA.com	A'
-    'CNAME 	CNAME.com  	www.CNAME.com	CNAME'
-    'CNAMEA 	CNAME.com  	www.CNAME.com'
-    'CNAMEAAAA 	CNAMEAAAA.com  	www.CNAMEAAAA.com	CNAME'
-    'CNAME2AAAA	CNAMEAAAA.com  	www.CNAMEAAAA.com	AAAA'
-    'AAAAnoA	CNAMEAAAA.com  	ftp.CNAMEAAAA.com'
     'RR1	RR1.com		www.RR1.com'
     'RR2	RR2.com		www.RR2.com'
     'RR3	RR3.com		www.RR3.com'

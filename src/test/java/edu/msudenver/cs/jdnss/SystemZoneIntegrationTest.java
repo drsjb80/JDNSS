@@ -512,6 +512,153 @@ public class SystemZoneIntegrationTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
 
+    @Test
+    public void noHostCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("SOA.com");
+
+        final Query query = new Query(buildQuery(0x612c, "www.SOA.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(3, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void mxAfCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("MXA.com");
+
+        final Query query = new Query(buildQuery(0x612d, "one.MXA.com", RRCode.AAAA));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void anoAaaaCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("MXA.com");
+
+        final Query query = new Query(buildQuery(0x612e, "one.MXA.com", RRCode.AAAA));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void badDomainCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("MXA.com");
+
+        final Query query = new Query(buildQuery(0x612f, "one.MXAAA.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(0, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(5, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void cnameCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("CNAME.com");
+
+        final Query query = new Query(buildQuery(0x6130, "www.CNAME.com", RRCode.CNAME));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void cnameAResolutionParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("CNAME.com");
+
+        final Query query = new Query(buildQuery(0x6131, "www.CNAME.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(3, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+    }
+
+    @Test
+    public void cnameAaaaCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("CNAMEAAAA.com");
+
+        final Query query = new Query(buildQuery(0x6132, "www.CNAMEAAAA.com", RRCode.CNAME));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void cnameToAaaaResolutionParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("CNAMEAAAA.com");
+
+        final Query query = new Query(buildQuery(0x6133, "www.CNAMEAAAA.com", RRCode.AAAA));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(3, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void aaaaNoATypeCaseParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("CNAMEAAAA.com");
+
+        final Query query = new Query(buildQuery(0x6134, "ftp.CNAMEAAAA.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
     private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
         final BindZone zone = new BindZone(zoneName);
         try (InputStream in = new FileInputStream("src/test/system/zone_files/" + zoneName)) {

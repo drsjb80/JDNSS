@@ -30,6 +30,16 @@ class Response {
     private final Query query;
     private final OPTRR optRecord;
 
+    private static final class ResolvedRecords {
+        private final String name;
+        private final List<RR> records;
+
+        private ResolvedRecords(final String name, final List<RR> records) {
+            this.name = name;
+            this.records = records;
+        }
+    }
+
     Response(final Query query, final boolean UDP) {
         this.query = query;
         this.header = new Header(query.getHeader());
@@ -46,33 +56,42 @@ class Response {
     }
 
     private boolean processQuery(final Queries q) {
-        String name = q.getName();
+        final String name = q.getName();
         final RRCode type = q.getType();
-        List<RR> records = new ArrayList<>();
 
-        if (! setZone(name)) {
+        if (!prepareQueryContext(name)) {
             return false;
         }
 
-        if (! setMinimum()) {
-            return false;
-        }
-
-        applyOptRecordSettings();
-
-        final Map.Entry<String, List<RR>> resolvedRecords = findRR(type, name);
-        if (resolvedRecords.getValue().isEmpty()) {
-            noResourceRecord();
-        } else {
-            name = resolvedRecords.getKey();
-            records = resolvedRecords.getValue();
-        }
-
-        processResolvedRecords(name, type, records);
+        final ResolvedRecords resolvedRecords = resolveRecords(type, name);
+        processResolvedRecords(resolvedRecords.name, type, resolvedRecords.records);
 
         addAuthorities();
         addAdditionals();
         return true;
+    }
+
+    private boolean prepareQueryContext(final String name) {
+        if (!setZone(name)) {
+            return false;
+        }
+
+        if (!setMinimum()) {
+            return false;
+        }
+
+        applyOptRecordSettings();
+        return true;
+    }
+
+    private ResolvedRecords resolveRecords(final RRCode type, final String name) {
+        final Map.Entry<String, List<RR>> resolved = findRR(type, name);
+        if (resolved.getValue().isEmpty()) {
+            noResourceRecord();
+            return new ResolvedRecords(name, Collections.emptyList());
+        }
+
+        return new ResolvedRecords(resolved.getKey(), resolved.getValue());
     }
 
     private void processResolvedRecords(final String name, final RRCode type,

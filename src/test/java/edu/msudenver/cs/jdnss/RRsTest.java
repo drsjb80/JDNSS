@@ -342,4 +342,22 @@ public class RRsTest
                 | (rrBytes[ttlOffset + 3] & 0xff);
         Assert.assertEquals(1234, ttl);
     }
+
+    @Test
+    public void nsec3GetBytesCurrentlyAsserts() {
+        Set<RRCode> rrSet = new HashSet<>();
+        rrSet.add(RRCode.A);
+        NSEC3RR nsec3 = new NSEC3RR("test.com", 300, 1, 0, 2,
+                "a1", "b2", rrSet);
+
+        Assert.assertThrows(AssertionError.class, nsec3::getBytes);
+    }
+
+    @Test
+    public void nsec3ParamGetBytesCurrentlyAsserts() {
+        NSEC3PARAMRR nsec3param = new NSEC3PARAMRR("test.com", 300,
+                1, 0, 2, "a1");
+
+        Assert.assertThrows(AssertionError.class, nsec3param::getBytes);
+    }
 }

@@ -15,6 +15,7 @@ enum ResponseSection {
 @ToString
 class Response {
     private final Logger logger = JDNSS.logger;
+    private static final Set<RRCode> ADDRESS_QUERY_TYPES = EnumSet.of(RRCode.A, RRCode.AAAA);
 
     private final Header header;
     private byte[] additional;
@@ -162,21 +163,33 @@ class Response {
 
     private void maybeCreateAuthorities(final boolean firstTime, final RRCode type,
                                         final String name) {
-        if (firstTime && type != RRCode.NS && type != RRCode.DNSKEY) {
+        if (shouldCreateAuthorities(firstTime, type)) {
             logger.trace("Before calling createAuthorities");
             createAuthorities(name);
             logger.trace("After calling createAuthorities");
         }
     }
 
+    private boolean shouldCreateAuthorities(final boolean firstTime, final RRCode type) {
+        return firstTime && type != RRCode.NS && type != RRCode.DNSKEY;
+    }
+
     private void maybeCreateTypeAdditionals(final RRCode type, final RR rr,
                                             final String name) {
-        if (type == RRCode.MX) {
-            createAorAAAA(rr.getHost(), name);
+        final String additionalHost = getAdditionalHost(type, rr);
+        if (additionalHost != null) {
+            createAorAAAA(additionalHost, name);
         }
+    }
 
-        if (type == RRCode.NS) {
-            createAorAAAA(rr.getString(), name);
+    private String getAdditionalHost(final RRCode type, final RR rr) {
+        switch (type) {
+            case MX:
+                return rr.getHost();
+            case NS:
+                return rr.getString();
+            default:
+                return null;
         }
     }
 
@@ -373,7 +386,7 @@ class Response {
         List<RR> list = zone.get(type, name);
         if (list.isEmpty()) {
             logger.debug("Didn't find: " + name);
-            if (type != RRCode.AAAA && type != RRCode.A) {
+            if (!isAddressQueryType(type)) {
                 nameNotFound(type, name);
                 return Map.entry("", Collections.emptyList());
             } else {
@@ -384,6 +397,10 @@ class Response {
                 Map.entry(name, list);
         logger.traceExit(ret);
         return ret;
+    }
+
+    private boolean isAddressQueryType(final RRCode type) {
+        return ADDRESS_QUERY_TYPES.contains(type);
     }
 
     private void nameNotFound(final RRCode type, final String name) {

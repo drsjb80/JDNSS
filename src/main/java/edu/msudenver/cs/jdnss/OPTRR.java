@@ -8,6 +8,13 @@ import java.util.Arrays;
 
 class OPTRR {
     private final static Logger logger = JDNSS.logger;
+
+    private static final int ROOT_LABEL = 0x00;
+    private static final int OPT_TYPE_CODE = 41;
+    private static final int CLIENT_COOKIE_LENGTH = 8;
+    private static final int COOKIE_OPTION_CODE = 10;
+    private static final int EDNS0_CHAIN_OPTION_CODE = 12;
+
     @Getter private boolean DNSSEC;
     @Getter private boolean cookie;
     @Getter private int payloadSize;
@@ -34,48 +41,65 @@ class OPTRR {
      */
     OPTRR(byte[] bytes) {
         logger.traceEntry();
-        assert bytes[0] == 0;
+        assert bytes[0] == ROOT_LABEL;
 
         int location = 1;
 
         location = parseHeader(bytes, location);
+        parseOptions(bytes, location);
+    }
 
+    private void parseOptions(final byte[] bytes, int location) {
         int total_length = location + rdLength;
         while (location < total_length) {
-            optionCode = Utils.addThem(bytes[location++], bytes[location++]);
-            logger.trace(optionCode);
-
-            optionLength = Utils.addThem(bytes[location++], bytes[location++]);
-            logger.trace(optionLength);
-
-            // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-11
-
-            switch (optionCode) {
-                case 10:
-                    cookie = true;
-                    clientCookie = Arrays.copyOfRange(bytes, location, location + 8);
-                    location += 8;
-
-                    if (optionLength > 8) { // server cookie returned
-                        // OPTION-LENGTH >= 16, <= 40 [rfc7873]
-                        assert optionLength == 16 || optionLength == 24 || optionLength == 32 || optionLength == 40;
-                        serverCookie = Arrays.copyOfRange(bytes, location, location + optionLength - 8);
-                    }
-                    break;
-                case 12:
-                    location += optionLength;
-                    original = Arrays.copyOfRange(bytes, 0, bytes.length);
-                    break;
-                default:
-                    logger.error("Shouldn't get here");
-                    return;
-            }
+            location = parseOption(bytes, location);
         }
+    }
+
+    private int parseOption(final byte[] bytes, int location) {
+        optionCode = Utils.addThem(bytes[location++], bytes[location++]);
+        logger.trace(optionCode);
+
+        optionLength = Utils.addThem(bytes[location++], bytes[location++]);
+        logger.trace(optionLength);
+
+        // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-11
+
+        switch (optionCode) {
+            case COOKIE_OPTION_CODE:
+                return parseCookieOption(bytes, location);
+            case EDNS0_CHAIN_OPTION_CODE:
+                return parseChainOption(bytes, location);
+            default:
+                logger.error("Shouldn't get here");
+                return Integer.MAX_VALUE;
+        }
+    }
+
+    private int parseCookieOption(final byte[] bytes, int location) {
+        cookie = true;
+        clientCookie = Arrays.copyOfRange(bytes, location, location + CLIENT_COOKIE_LENGTH);
+        location += CLIENT_COOKIE_LENGTH;
+
+        if (optionLength > CLIENT_COOKIE_LENGTH) { // server cookie returned
+            // OPTION-LENGTH >= 16, <= 40 [rfc7873]
+            assert optionLength == 16 || optionLength == 24 || optionLength == 32 || optionLength == 40;
+            serverCookie = Arrays.copyOfRange(bytes, location,
+                    location + optionLength - CLIENT_COOKIE_LENGTH);
+        }
+
+        return location;
+    }
+
+    private int parseChainOption(final byte[] bytes, int location) {
+        location += optionLength;
+        original = Arrays.copyOfRange(bytes, 0, bytes.length);
+        return location;
     }
 
     private int parseHeader(byte[] bytes, int location) {
         type = Utils.addThem(bytes[location++], bytes[location++]);
-        assert type == 41;
+        assert type == OPT_TYPE_CODE;
 
         payloadSize = Utils.addThem(bytes[location++], bytes[location++]);
         logger.trace(payloadSize);

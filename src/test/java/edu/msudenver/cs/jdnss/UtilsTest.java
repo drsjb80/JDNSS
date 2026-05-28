@@ -3,8 +3,11 @@ package edu.msudenver.cs.jdnss;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.DatagramPacket;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -86,6 +89,16 @@ public class UtilsTest
     {
         Assert.assertTrue (Arrays.equals (Utils.getBytes (0xfedc1234),
             new byte[]{(byte) 0xfe, (byte) 0xdc, (byte) 0x12, (byte) 0x34}));
+    }
+
+    @Test
+    public void getBytesFromLong()
+    {
+        Assert.assertTrue(Arrays.equals(Utils.getBytes(0x0102030405060708L),
+            new byte[]{
+                (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04,
+                (byte) 0x05, (byte) 0x06, (byte) 0x07, (byte) 0x08
+            }));
     }
         
     @Test
@@ -368,5 +381,93 @@ public class UtilsTest
         ));
 
 
+    }
+
+    @Test
+    public void byteArrayToStringFormatsOffsetsAndNewlines()
+    {
+        byte[] bytes = "abcdefghijK".getBytes();
+        String formatted = Utils.toString(bytes);
+
+        Assert.assertTrue(formatted.startsWith("000: "));
+        Assert.assertTrue(formatted.contains("\n010: "));
+        Assert.assertTrue(formatted.contains("K"));
+    }
+
+    @Test
+    public void datagramPacketToStringIncludesCoreFields()
+    {
+        byte[] payload = new byte[] {1, 2, 3, 4};
+        DatagramPacket packet = new DatagramPacket(payload, payload.length);
+
+        String rendered = Utils.toString(packet);
+
+        Assert.assertTrue(rendered.contains("getLength() = 4"));
+        Assert.assertTrue(rendered.contains("getOffset() = 0"));
+        Assert.assertTrue(rendered.contains("getData() = "));
+    }
+
+    @Test
+    public void parseNameReadsPlainLabelSequence()
+    {
+        byte[] encoded = new byte[] {
+            3, 'w', 'w', 'w',
+            7, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
+            3, 'c', 'o', 'm',
+            0
+        };
+
+        Map.Entry<String, Integer> parsed = Utils.parseName(0, encoded);
+
+        Assert.assertEquals(new AbstractMap.SimpleEntry<>("www.example.com", 17), parsed);
+    }
+
+    @Test
+    public void parseNameReadsCompressionPointer()
+    {
+        byte[] encoded = new byte[] {
+            7, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
+            3, 'c', 'o', 'm',
+            0,
+            3, 'w', 'w', 'w',
+            (byte) 0xc0, 0x00
+        };
+
+        Map.Entry<String, Integer> parsed = Utils.parseName(13, encoded);
+
+        Assert.assertEquals(new AbstractMap.SimpleEntry<>("www.example.com", 19), parsed);
+    }
+
+    @Test
+    public void parseNameReturnsEmptyForRootLabel()
+    {
+        byte[] encoded = new byte[] {0};
+        Map.Entry<String, Integer> parsed = Utils.parseName(0, encoded);
+
+        Assert.assertEquals("", parsed.getKey());
+        Assert.assertEquals(Integer.valueOf(1), parsed.getValue());
+    }
+
+    @Test
+    public void parseNameReturnsAbsoluteOffsetForRootLabelAtNonZeroStart()
+    {
+        byte[] encoded = new byte[] {9, 9, 9, 0};
+        Map.Entry<String, Integer> parsed = Utils.parseName(3, encoded);
+
+        Assert.assertEquals("", parsed.getKey());
+        Assert.assertEquals(Integer.valueOf(4), parsed.getValue());
+    }
+
+    @Test
+    public void parseNameRejectsForwardPointer()
+    {
+        byte[] encoded = new byte[] {
+            3, 'w', 'w', 'w',
+            (byte) 0xc0, 0x06,
+            3, 'b', 'a', 'd',
+            0
+        };
+
+        expectAssertionError(() -> Utils.parseName(0, encoded));
     }
 }

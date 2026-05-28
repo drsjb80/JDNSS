@@ -30,16 +30,9 @@ public class SystemZoneIntegrationTest {
     public void oneAZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("oneA.com");
 
-        final Query query = new Query(buildQuery(0x6112, "oneA.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6112, "oneA.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
@@ -50,16 +43,9 @@ public class SystemZoneIntegrationTest {
     public void hostZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("host.com");
 
-        final Query query = new Query(buildQuery(0x6113, "www.host.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6113, "www.host.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -71,16 +57,9 @@ public class SystemZoneIntegrationTest {
     public void atZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("AT.com");
 
-        final Query query = new Query(buildQuery(0x6114, "AT.com", RRCode.NS));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6114, "AT.com", RRCode.NS));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(3, readUInt16(result, 6));
-        Assert.assertEquals(0, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 3, 0, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -90,16 +69,9 @@ public class SystemZoneIntegrationTest {
     public void soaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("SOA.com");
 
-        final Query query = new Query(buildQuery(0x6115, "SOA.com", RRCode.SOA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6115, "SOA.com", RRCode.SOA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -109,32 +81,18 @@ public class SystemZoneIntegrationTest {
     public void nsZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("NS.com");
 
-        final Query query = new Query(buildQuery(0x6116, "NS.com", RRCode.NS));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6116, "NS.com", RRCode.NS));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(0, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 0, 0, 0);
     }
 
     @Test
     public void mxZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("MX.com");
 
-        final Query query = new Query(buildQuery(0x6117, "MX.com", RRCode.MX));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6117, "MX.com", RRCode.MX));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -144,16 +102,9 @@ public class SystemZoneIntegrationTest {
     public void hinfoZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("HINFO.com");
 
-        final Query query = new Query(buildQuery(0x6118, "www.HINFO.com", RRCode.HINFO));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6118, "www.HINFO.com", RRCode.HINFO));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -163,16 +114,9 @@ public class SystemZoneIntegrationTest {
     public void txtZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TXT.com");
 
-        final Query query = new Query(buildQuery(0x6119, "www.TXT.com", RRCode.TXT));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6119, "www.TXT.com", RRCode.TXT));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -182,16 +126,9 @@ public class SystemZoneIntegrationTest {
     public void aaaaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("AAAA.com");
 
-        final Query query = new Query(buildQuery(0x611a, "www.AAAA.com", RRCode.AAAA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x611a, "www.AAAA.com", RRCode.AAAA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(6, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 6, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -201,16 +138,9 @@ public class SystemZoneIntegrationTest {
     public void soa1ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("SOA1.com");
 
-        final Query query = new Query(buildQuery(0x611b, "SOA1.com", RRCode.SOA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x611b, "SOA1.com", RRCode.SOA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -220,16 +150,9 @@ public class SystemZoneIntegrationTest {
     public void soa2ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("SOA2.com");
 
-        final Query query = new Query(buildQuery(0x611c, "SOA2.com", RRCode.SOA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x611c, "SOA2.com", RRCode.SOA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -239,16 +162,9 @@ public class SystemZoneIntegrationTest {
     public void nsaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("NSA.com");
 
-        final Query query = new Query(buildQuery(0x611d, "NSA.com", RRCode.NS));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x611d, "NSA.com", RRCode.NS));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(0, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 0, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 147, 153, 170, 17));
         Assert.assertTrue(containsIpv4(result, 147, 153, 170, 27));
@@ -258,32 +174,18 @@ public class SystemZoneIntegrationTest {
     public void nsaaaaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("NSAAAA.com");
 
-        final Query query = new Query(buildQuery(0x611e, "NSAAAA.com", RRCode.NS));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x611e, "NSAAAA.com", RRCode.NS));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(0, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 0, 2, 0);
     }
 
     @Test
     public void mxaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("MXA.com");
 
-        final Query query = new Query(buildQuery(0x611f, "MXA.com", RRCode.MX));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x611f, "MXA.com", RRCode.MX));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(4, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 4, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -295,16 +197,9 @@ public class SystemZoneIntegrationTest {
     public void mxaaaaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("MXAAAA.com");
 
-        final Query query = new Query(buildQuery(0x6120, "MXAAAA.com", RRCode.MX));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6120, "MXAAAA.com", RRCode.MX));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(4, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 4, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
@@ -314,32 +209,18 @@ public class SystemZoneIntegrationTest {
     public void noMxZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("oneA.com");
 
-        final Query query = new Query(buildQuery(0x6121, "oneA.com", RRCode.MX));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6121, "oneA.com", RRCode.MX));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(0, readUInt16(result, 6));
-        Assert.assertEquals(1, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 0, 1, 0, 0);
     }
 
     @Test
     public void ttlMinimumZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TTLminimum.com");
 
-        final Query query = new Query(buildQuery(0x6122, "www.TTLminimum.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6122, "www.TTLminimum.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -349,16 +230,9 @@ public class SystemZoneIntegrationTest {
     public void ttlRrZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TTLRR.com");
 
-        final Query query = new Query(buildQuery(0x6123, "www.TTLRR.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6123, "www.TTLRR.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -368,16 +242,9 @@ public class SystemZoneIntegrationTest {
     public void ttlDefaultZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TTLdefault.com");
 
-        final Query query = new Query(buildQuery(0x6124, "www.TTLdefault.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6124, "www.TTLdefault.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(4, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 4, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -389,16 +256,9 @@ public class SystemZoneIntegrationTest {
     public void ttl1ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TTL1.com");
 
-        final Query query = new Query(buildQuery(0x6125, "www.TTL1.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6125, "www.TTL1.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
@@ -407,16 +267,9 @@ public class SystemZoneIntegrationTest {
     public void ttl2ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TTL2.com");
 
-        final Query query = new Query(buildQuery(0x6126, "www.TTL2.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6126, "www.TTL2.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
@@ -425,16 +278,9 @@ public class SystemZoneIntegrationTest {
     public void ttl3ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TTL3.com");
 
-        final Query query = new Query(buildQuery(0x6127, "www.TTL3.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6127, "www.TTL3.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
@@ -443,16 +289,9 @@ public class SystemZoneIntegrationTest {
     public void subdomainZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("subdomain.com");
 
-        final Query query = new Query(buildQuery(0x6128, "www.subdomain.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6128, "www.subdomain.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
@@ -461,16 +300,9 @@ public class SystemZoneIntegrationTest {
     public void subdomainNestedOriginZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("subdomain.com");
 
-        final Query query = new Query(buildQuery(0x6129, "www.www.subdomain.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6129, "www.www.subdomain.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 2, 2));
     }
@@ -479,16 +311,9 @@ public class SystemZoneIntegrationTest {
     public void originZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("ORIGIN.com");
 
-        final Query query = new Query(buildQuery(0x612a, "www.sub.ORIGIN.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x612a, "www.sub.ORIGIN.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -498,16 +323,9 @@ public class SystemZoneIntegrationTest {
     public void nonAtSoaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("nonAT.com");
 
-        final Query query = new Query(buildQuery(0x612b, "www.nonAT.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x612b, "www.nonAT.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
@@ -516,96 +334,54 @@ public class SystemZoneIntegrationTest {
     public void noHostCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("SOA.com");
 
-        final Query query = new Query(buildQuery(0x612c, "www.SOA.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x612c, "www.SOA.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(0, readUInt16(result, 6));
-        Assert.assertEquals(1, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(3, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 0, 1, 0, 3);
     }
 
     @Test
     public void mxAfCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("MXA.com");
 
-        final Query query = new Query(buildQuery(0x612d, "one.MXA.com", RRCode.AAAA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x612d, "one.MXA.com", RRCode.AAAA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(0, readUInt16(result, 6));
-        Assert.assertEquals(1, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 0, 1, 0, 0);
     }
 
     @Test
     public void anoAaaaCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("MXA.com");
 
-        final Query query = new Query(buildQuery(0x612e, "one.MXA.com", RRCode.AAAA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x612e, "one.MXA.com", RRCode.AAAA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(0, readUInt16(result, 6));
-        Assert.assertEquals(1, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 0, 1, 0, 0);
     }
 
     @Test
     public void badDomainCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("MXA.com");
 
-        final Query query = new Query(buildQuery(0x612f, "one.MXAAA.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x612f, "one.MXAAA.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(0, readUInt16(result, 6));
-        Assert.assertEquals(0, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(5, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 0, 0, 0, 5);
     }
 
     @Test
     public void cnameCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("CNAME.com");
 
-        final Query query = new Query(buildQuery(0x6130, "www.CNAME.com", RRCode.CNAME));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6130, "www.CNAME.com", RRCode.CNAME));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
     }
 
     @Test
     public void cnameAResolutionParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("CNAME.com");
 
-        final Query query = new Query(buildQuery(0x6131, "www.CNAME.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6131, "www.CNAME.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(3, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 3, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -615,48 +391,27 @@ public class SystemZoneIntegrationTest {
     public void cnameAaaaCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("CNAMEAAAA.com");
 
-        final Query query = new Query(buildQuery(0x6132, "www.CNAMEAAAA.com", RRCode.CNAME));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6132, "www.CNAMEAAAA.com", RRCode.CNAME));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
     }
 
     @Test
     public void cnameToAaaaResolutionParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("CNAMEAAAA.com");
 
-        final Query query = new Query(buildQuery(0x6133, "www.CNAMEAAAA.com", RRCode.AAAA));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6133, "www.CNAMEAAAA.com", RRCode.AAAA));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(3, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 3, 2, 2, 0);
     }
 
     @Test
     public void aaaaNoATypeCaseParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("CNAMEAAAA.com");
 
-        final Query query = new Query(buildQuery(0x6134, "ftp.CNAMEAAAA.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x6134, "ftp.CNAMEAAAA.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(0, readUInt16(result, 6));
-        Assert.assertEquals(1, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 0, 1, 0, 0);
     }
 
     @Test
@@ -698,16 +453,9 @@ public class SystemZoneIntegrationTest {
     public void includeZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("INCLUDE.com");
 
-        final Query query = new Query(buildQuery(0x613c, "www.INCLUDE.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x613c, "www.INCLUDE.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
@@ -717,16 +465,9 @@ public class SystemZoneIntegrationTest {
     public void tcpZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("TCP.com");
 
-        final Query query = new Query(buildQuery(0x613d, "www.TCP.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x613d, "www.TCP.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
@@ -737,16 +478,9 @@ public class SystemZoneIntegrationTest {
     public void dnssecZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("dnssec.com", "dnssec.com.signed");
 
-        final Query query = new Query(buildDnssecQuery(0x613e, "dnssec.com", RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildDnssecQuery(0x613e, "dnssec.com", RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(2, readUInt16(result, 6));
-        Assert.assertEquals(3, readUInt16(result, 8));
-        Assert.assertEquals(5, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 2, 3, 5, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
@@ -757,81 +491,60 @@ public class SystemZoneIntegrationTest {
     public void ipv4ReverseZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("1.168.192.in-addr.arpa");
 
-        final Query query = new Query(buildQuery(0x613f, "28.1.168.192.in-addr.arpa", RRCode.PTR));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(0x613f, "28.1.168.192.in-addr.arpa", RRCode.PTR));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 0, 0);
     }
 
     @Test
     public void ipv6ReverseZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
         installZoneFromSystemFixture("1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19.20.21.22.23.24.25.26.27.28.29.30.31.in-addr.arpa");
 
-        final Query query = new Query(buildQuery(
+        final byte[] result = queryResponse(buildQuery(
                 0x6140,
                 "0.1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19.20.21.22.23.24.25.26.27.28.29.30.31.in-addr.arpa",
                 RRCode.PTR));
-        query.parseQueries("");
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 0, 0);
     }
 
     private void assertSimpleAQueryCase(final String zoneName, final String qName, final int id)
             throws Exception {
         installZoneFromSystemFixture(zoneName);
 
-        final Query query = new Query(buildQuery(id, qName, RRCode.A));
-        query.parseQueries("");
+        final byte[] result = queryResponse(buildQuery(id, qName, RRCode.A));
 
-        final byte[] result = new Response(query, true).getBytes();
-
-        Assert.assertEquals(1, readUInt16(result, 4));
-        Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(2, readUInt16(result, 8));
-        Assert.assertEquals(2, readUInt16(result, 10));
-        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        assertResponseHeader(result, 1, 1, 2, 2, 0);
 
         Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
     }
 
     private static byte[] buildDnssecQuery(final int id, final String qName, final RRCode type) {
-    byte[] queryBytes = new byte[] {
-        (byte) ((id >> 8) & 0xff), (byte) (id & 0xff),
-        0x01, 0x00,
-        0x00, 0x01,
-        0x00, 0x00,
-        0x00, 0x00,
-        0x00, 0x01
-    };
+        byte[] queryBytes = new byte[] {
+                (byte) ((id >> 8) & 0xff), (byte) (id & 0xff),
+                0x01, 0x00,
+                0x00, 0x01,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x00, 0x01
+        };
 
-    queryBytes = Utils.combine(queryBytes, DnsNameCodec.convertString(qName));
-    queryBytes = Utils.combine(queryBytes, new byte[] {
-        (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
-        0x00, 0x01
-    });
+        queryBytes = Utils.combine(queryBytes, DnsNameCodec.convertString(qName));
+        queryBytes = Utils.combine(queryBytes, new byte[] {
+                (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
+                0x00, 0x01
+        });
 
-    // Add an OPT record with the DO bit set to request DNSSEC records.
-    queryBytes = Utils.combine(queryBytes, new byte[] {
-        0x00,
-        0x00, 0x29,
-        0x10, 0x00,
-        0x00, 0x00, (byte) 0x80, 0x00,
-        0x00, 0x00
-    });
+        // Add an OPT record with the DO bit set to request DNSSEC records.
+        queryBytes = Utils.combine(queryBytes, new byte[] {
+                0x00,
+                0x00, 0x29,
+                0x10, 0x00,
+                0x00, 0x00, (byte) 0x80, 0x00,
+                0x00, 0x00
+        });
 
-    return queryBytes;
+        return queryBytes;
     }
 
     private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
@@ -870,11 +583,30 @@ public class SystemZoneIntegrationTest {
         return queryBytes;
     }
 
+    private static byte[] queryResponse(final byte[] queryBytes) {
+        final Query query = new Query(queryBytes);
+        query.parseQueries("");
+        return new Response(query, true).getBytes();
+    }
+
     @SuppressWarnings("unchecked")
     private static Map<String, Zone> getBindZones() throws Exception {
         final Field bindZonesField = JDNSS.class.getDeclaredField("bindZones");
         bindZonesField.setAccessible(true);
         return (Map<String, Zone>) bindZonesField.get(null);
+    }
+
+    private static void assertResponseHeader(final byte[] result,
+                                             final int qdCount,
+                                             final int anCount,
+                                             final int nsCount,
+                                             final int arCount,
+                                             final int rCode) {
+        Assert.assertEquals(qdCount, readUInt16(result, 4));
+        Assert.assertEquals(anCount, readUInt16(result, 6));
+        Assert.assertEquals(nsCount, readUInt16(result, 8));
+        Assert.assertEquals(arCount, readUInt16(result, 10));
+        Assert.assertEquals(rCode, unsignedByte(result[3]) & 0x0f);
     }
 
     private static int readUInt16(final byte[] bytes, final int offset) {

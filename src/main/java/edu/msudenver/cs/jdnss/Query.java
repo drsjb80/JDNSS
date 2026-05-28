@@ -105,7 +105,7 @@ class Query {
 
     private int parseQuestion(final int location, final int questionIndex) {
         int currentLocation = location;
-        Map.Entry<String, Integer> StringAndNumber = Utils.parseName(currentLocation, buffer);
+        Map.Entry<String, Integer> StringAndNumber = DnsNameCodec.parseName(currentLocation, buffer);
 
         currentLocation = StringAndNumber.getValue();
         int qtype = Utils.addThem(buffer[currentLocation++], buffer[currentLocation++]);
@@ -148,7 +148,7 @@ class Query {
     byte[] buildResponseQueries() {
         byte[] questions = new byte[0];
         for(Queries query: this.getQueries()) {
-            questions = Utils.combine(questions, Utils.convertString(query.getName()));
+            questions = Utils.combine(questions, DnsNameCodec.convertString(query.getName()));
             questions = Utils.combine(questions, Utils.getTwoBytes(query.getType().getCode(), 2));
             questions = Utils.combine(questions, Utils.getTwoBytes(query.getQclass(), 2));
         }

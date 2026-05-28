@@ -22,7 +22,7 @@ class NSECRR extends RR {
     @Override
     protected byte[] getBytes() {
         byte[] a = new byte[0];
-        a = Utils.combine(a, Utils.convertString(nextDomainName));
+        a = Utils.combine(a, DnsNameCodec.convertString(nextDomainName));
         a = Utils.combine(a, buildBitMap());
         return a;
     }

@@ -63,7 +63,7 @@ abstract class RR {
      */
     public byte[] getBytes(final String question, final int TTLminimum) {
         final int minttl = ttl == 0 ? TTLminimum : ttl;
-        final byte[] name = Utils.convertString(question);
+        final byte[] name = DnsNameCodec.convertString(question);
         final byte[] rdata = getBytes();
         final int rdatalen = rdata.length;
         final int count = name.length + 2 + 2 + 4 + 2 + rdatalen;
@@ -132,7 +132,7 @@ abstract class STRINGRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        return Utils.convertString(string);
+        return DnsNameCodec.convertString(string);
     }
 }
 

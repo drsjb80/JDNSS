@@ -34,9 +34,9 @@ class NSEC3RR extends RR {
         a = Utils.combine(a, Utils.getByte(flags, 2));
         a = Utils.combine(a, Utils.getTwoBytes(iterations, 1));
         a = Utils.combine(a, Utils.getByte(salt.length(), 1));
-        a = Utils.combine(a, Utils.convertString(salt));
+        a = Utils.combine(a, DnsNameCodec.convertString(salt));
         a = Utils.combine(a, Utils.getByte(this.nextHashedOwnerName.length(), 1));
-        a = Utils.combine(a, Utils.convertString(nextHashedOwnerName));
+        a = Utils.combine(a, DnsNameCodec.convertString(nextHashedOwnerName));
 
         assert false;
         return a;

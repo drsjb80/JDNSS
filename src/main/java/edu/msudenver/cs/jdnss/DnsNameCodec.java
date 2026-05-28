@@ -24,10 +24,10 @@ final class DnsNameCodec {
      * @return the converted form in bytes
      */
     static byte[] convertString(@NonNull final String s) {
-        assert !s.equals("");
         if (s.equals("")) {
             failIllegalArgument("domain name must not be empty");
         }
+        assert !s.equals("");
 
         // there's an extra byte needed both before and after
         byte[] a = new byte[s.length() + 2];
@@ -119,13 +119,11 @@ final class DnsNameCodec {
 
     private static void failIllegalName() {
         logger.warn("Illegal name");
-        assert false;
         throw new IllegalArgumentException("Illegal DNS name encoding");
     }
 
     private static void failIllegalArgument(final String message) {
         logger.warn(message);
-        assert false;
         throw new IllegalArgumentException(message);
     }
 }

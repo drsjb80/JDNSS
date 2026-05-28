@@ -60,10 +60,10 @@ class RRs {
             final Map.Entry<String, Integer> StringAndNumber;
 
             try {
-                StringAndNumber = Utils.parseName(location, buffer);
-            } catch (AssertionError ae) {
+                StringAndNumber = DnsNameCodec.parseName(location, buffer);
+            } catch (IllegalArgumentException iae) {
                 questions[i] = null;
-                throw ae;
+                throw iae;
             }
 
             location = StringAndNumber.getValue();

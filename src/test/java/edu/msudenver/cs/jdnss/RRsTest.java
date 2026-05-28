@@ -38,7 +38,7 @@ public class RRsTest
             0x00,
             0x00, 0x01, 0x00, 0x00,
             0x04, 'm', 'a', 'i', 'l',
-            (byte) 0xc0, 0x04, 0x00,
+            (byte) 0xc0, 0x04,
             0x00, 0x01, 0x00, 0x00
         };
 
@@ -56,7 +56,7 @@ public class RRsTest
     public void rrsTest3() {
         byte three[] = {(byte) 0xc0, 0x00, 0x01, 0x00, 0x00, 0x00};
 
-        Assert.assertThrows(AssertionError.class, () -> new RRs(three, 1, 0, 0, 0));
+        Assert.assertThrows(IllegalArgumentException.class, () -> new RRs(three, 1, 0, 0, 0));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class RRsTest
                 0x00, 0x01, 0x00, 0x000
             };
 
-        Assert.assertThrows(AssertionError.class, () -> new RRs(four, 1, 0, 0, 0));
+        Assert.assertThrows(IllegalArgumentException.class, () -> new RRs(four, 1, 0, 0, 0));
     }
     @Test
     public void nsecGetBytesTest() {
@@ -304,9 +304,9 @@ public class RRsTest
         TXTRR txt = new TXTRR("test.com", 600, "hello");
         AAAARR aaaa = new AAAARR("test.com", 600, "2001:db8::1");
 
-        Assert.assertArrayEquals(Utils.convertString("ns1.test.com"), ns.getBytes());
-        Assert.assertArrayEquals(Utils.convertString("test.com"), cname.getBytes());
-        Assert.assertArrayEquals(Utils.convertString("host.test.com"), ptr.getBytes());
+        Assert.assertArrayEquals(DnsNameCodec.convertString("ns1.test.com"), ns.getBytes());
+        Assert.assertArrayEquals(DnsNameCodec.convertString("test.com"), cname.getBytes());
+        Assert.assertArrayEquals(DnsNameCodec.convertString("host.test.com"), ptr.getBytes());
         Assert.assertArrayEquals(Utils.toCS("hello"), txt.getBytes());
         Assert.assertArrayEquals(Utils.IPV6("2001:db8::1"), aaaa.getBytes());
 
@@ -335,7 +335,7 @@ public class RRsTest
         Assert.assertEquals(0x00, rrBytes[rrBytes.length - 2]);
         Assert.assertEquals(0x00, rrBytes[rrBytes.length - 1]);
 
-        int ttlOffset = Utils.convertString("test.com").length + 4;
+        int ttlOffset = DnsNameCodec.convertString("test.com").length + 4;
         int ttl = ((rrBytes[ttlOffset] & 0xff) << 24)
                 | ((rrBytes[ttlOffset + 1] & 0xff) << 16)
                 | ((rrBytes[ttlOffset + 2] & 0xff) << 8)
@@ -350,7 +350,7 @@ public class RRsTest
         NSEC3RR nsec3 = new NSEC3RR("test.com", 300, 1, 0, 2,
                 "a1", "b2", rrSet);
 
-        Assert.assertThrows(AssertionError.class, nsec3::getBytes);
+        Assert.assertThrows(IllegalArgumentException.class, nsec3::getBytes);
     }
 
     @Test
@@ -366,7 +366,7 @@ public class RRsTest
         MXRR mx = new MXRR("test.com", 600, "mail.test.com", 10);
 
         byte[] expected = Utils.combine(new byte[] {0x00, 0x0a},
-                Utils.convertString("mail.test.com"));
+                DnsNameCodec.convertString("mail.test.com"));
 
         Assert.assertArrayEquals(expected, mx.getBytes());
         Assert.assertEquals("mail.test.com", mx.getHost());

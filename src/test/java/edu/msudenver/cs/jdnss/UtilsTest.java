@@ -22,6 +22,11 @@ public class UtilsTest
         Assert.assertThrows(AssertionError.class, action::run);
     }
 
+    private void expectIllegalArgumentException(final Runnable action)
+    {
+        Assert.assertThrows(IllegalArgumentException.class, action::run);
+    }
+
     private void expectNullPointerException(final Runnable action)
     {
         Assert.assertThrows(NullPointerException.class, action::run);
@@ -80,8 +85,8 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (Utils.getTwoBytes (0xfff00f00, 4),
             new byte[]{(byte) 0xff, (byte) 0xf0}));
 
-        expectAssertionError(() -> Utils.getTwoBytes (0xfff0f0, 0));
-        expectAssertionError(() -> Utils.getTwoBytes (0xfff0f0, 5));
+        expectIllegalArgumentException(() -> Utils.getTwoBytes (0xfff0f0, 0));
+        expectIllegalArgumentException(() -> Utils.getTwoBytes (0xfff0f0, 5));
     }
 
     @Test
@@ -113,8 +118,8 @@ public class UtilsTest
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 7), (byte) 0xf);
         Assert.assertEquals (Utils.getNybble (0xfff00f00, 8), (byte) 0xf);
 
-        expectAssertionError(() -> Utils.getNybble (1, 0));
-        expectAssertionError(() -> Utils.getNybble (1, 9));
+        expectIllegalArgumentException(() -> Utils.getNybble (1, 0));
+        expectIllegalArgumentException(() -> Utils.getNybble (1, 9));
     }
 
     @Test
@@ -179,14 +184,14 @@ public class UtilsTest
     @Test
     public void convertString()
     {
-        Assert.assertTrue (Arrays.equals (Utils.convertString ("foo"),
+        Assert.assertTrue (Arrays.equals (DnsNameCodec.convertString ("foo"),
             new byte[] {3, 'f', 'o', 'o', 0}));
-        Assert.assertTrue (Arrays.equals (Utils.convertString
+        Assert.assertTrue (Arrays.equals (DnsNameCodec.convertString
             ("www.foobar.org"), new byte[]
             {3,'w','w','w',6,'f','o','o','b','a','r',3,'o','r','g',0}));
 
-        expectAssertionError(() -> Utils.convertString (""));
-        expectNullPointerException(() -> Utils.convertString (null));
+        expectIllegalArgumentException(() -> DnsNameCodec.convertString (""));
+        expectNullPointerException(() -> DnsNameCodec.convertString (null));
     }
 
     @Test
@@ -202,7 +207,7 @@ public class UtilsTest
             Utils.combine (null, new byte[]{1}),
             new byte[]{1}));
 
-        expectAssertionError(() -> Utils.combine (null, null));
+        expectIllegalArgumentException(() -> Utils.combine (null, null));
     }
 
     @Test
@@ -229,8 +234,8 @@ public class UtilsTest
         Assert.assertTrue (Arrays.equals (Utils.trimByteArray (initial, 4), initial));
 
         expectNullPointerException(() -> Utils.trimByteArray (null, 2));
-        expectAssertionError(() -> Utils.trimByteArray (initial, 0));
-        expectAssertionError(() -> Utils.trimByteArray (initial, 5));
+        expectIllegalArgumentException(() -> Utils.trimByteArray (initial, 0));
+        expectIllegalArgumentException(() -> Utils.trimByteArray (initial, 5));
     }
 
     @Test
@@ -400,7 +405,7 @@ public class UtilsTest
         byte[] payload = new byte[] {1, 2, 3, 4};
         DatagramPacket packet = new DatagramPacket(payload, payload.length);
 
-        String rendered = Utils.toString(packet);
+        String rendered = SocketDebugFormatter.toString(packet);
 
         Assert.assertTrue(rendered.contains("getLength() = 4"));
         Assert.assertTrue(rendered.contains("getOffset() = 0"));
@@ -417,7 +422,7 @@ public class UtilsTest
             0
         };
 
-        Map.Entry<String, Integer> parsed = Utils.parseName(0, encoded);
+        Map.Entry<String, Integer> parsed = DnsNameCodec.parseName(0, encoded);
 
         Assert.assertEquals(new AbstractMap.SimpleEntry<>("www.example.com", 17), parsed);
     }
@@ -433,7 +438,7 @@ public class UtilsTest
             (byte) 0xc0, 0x00
         };
 
-        Map.Entry<String, Integer> parsed = Utils.parseName(13, encoded);
+        Map.Entry<String, Integer> parsed = DnsNameCodec.parseName(13, encoded);
 
         Assert.assertEquals(new AbstractMap.SimpleEntry<>("www.example.com", 19), parsed);
     }
@@ -442,7 +447,7 @@ public class UtilsTest
     public void parseNameReturnsEmptyForRootLabel()
     {
         byte[] encoded = new byte[] {0};
-        Map.Entry<String, Integer> parsed = Utils.parseName(0, encoded);
+        Map.Entry<String, Integer> parsed = DnsNameCodec.parseName(0, encoded);
 
         Assert.assertEquals("", parsed.getKey());
         Assert.assertEquals(Integer.valueOf(1), parsed.getValue());
@@ -452,7 +457,7 @@ public class UtilsTest
     public void parseNameReturnsAbsoluteOffsetForRootLabelAtNonZeroStart()
     {
         byte[] encoded = new byte[] {9, 9, 9, 0};
-        Map.Entry<String, Integer> parsed = Utils.parseName(3, encoded);
+        Map.Entry<String, Integer> parsed = DnsNameCodec.parseName(3, encoded);
 
         Assert.assertEquals("", parsed.getKey());
         Assert.assertEquals(Integer.valueOf(4), parsed.getValue());
@@ -468,6 +473,6 @@ public class UtilsTest
             0
         };
 
-        expectAssertionError(() -> Utils.parseName(0, encoded));
+        expectIllegalArgumentException(() -> DnsNameCodec.parseName(0, encoded));
     }
 }

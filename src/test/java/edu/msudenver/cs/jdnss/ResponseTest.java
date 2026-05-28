@@ -355,7 +355,7 @@ public class ResponseTest {
                 0x00, 0x00
         };
 
-        queryBytes = Utils.combine(queryBytes, Utils.convertString(qName));
+        queryBytes = Utils.combine(queryBytes, DnsNameCodec.convertString(qName));
         queryBytes = Utils.combine(queryBytes, new byte[] {
                 (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
                 0x00, 0x01

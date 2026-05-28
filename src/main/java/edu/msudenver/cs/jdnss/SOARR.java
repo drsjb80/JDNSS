@@ -36,8 +36,8 @@ class SOARR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        byte[] a = Utils.convertString(server);
-        a = Utils.combine(a, Utils.convertString(contact));
+        byte[] a = DnsNameCodec.convertString(server);
+        a = Utils.combine(a, DnsNameCodec.convertString(contact));
         a = Utils.combine(a, Utils.getBytes(serial));
         a = Utils.combine(a, Utils.getBytes(refresh));
         a = Utils.combine(a, Utils.getBytes(retry));

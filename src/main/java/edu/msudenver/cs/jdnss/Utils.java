@@ -3,13 +3,12 @@ package edu.msudenver.cs.jdnss;
 import lombok.NonNull;
 import org.apache.logging.log4j.Logger;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.MulticastSocket;
-import java.net.StandardSocketOptions;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 final class Utils {
     private static final Logger logger = JDNSS.logger;
@@ -82,10 +81,10 @@ final class Utils {
      * @return the requested byte
      */
     static byte getByte(int from, int which) {
-        assert which >= 1 && which <= 4;
         if (which < 1 || which > 4) {
             failIllegalArgument("which must be between 1 and 4");
         }
+        assert which >= 1 && which <= 4;
 
         int shift = (which - 1) * 8;
         return (byte) ((from >>> shift) & 0xff);
@@ -99,10 +98,10 @@ final class Utils {
      * @return the requested byte
      */
     private static byte getByte(long from, int which) {
-        assert which >= 1 && which <= 8;
         if (which < 1 || which > 8) {
             failIllegalArgument("which must be between 1 and 8");
         }
+        assert which >= 1 && which <= 8;
 
         int shift = (which - 1) * 8;
         return (byte) ((from >>> shift) & 0xff);
@@ -116,10 +115,10 @@ final class Utils {
      * @return the requested byte array
      */
     static byte[] getTwoBytes(int from, int which) {
-        assert which > 1 && which <= 4;
         if (which <= 1 || which > 4) {
             failIllegalArgument("which must be between 2 and 4");
         }
+        assert which > 1 && which <= 4;
 
         byte[] ret = new byte[2];
         ret[0] = getByte(from, which);
@@ -169,10 +168,10 @@ final class Utils {
      * @return the requested nybble
      */
     static byte getNybble(int from, int which) {
-        assert which >= 1 && which <= 8;
         if (which < 1 || which > 8) {
             failIllegalArgument("which must be between 1 and 8");
         }
+        assert which >= 1 && which <= 8;
 
         int shift = (which - 1) * 4;
         return (byte) ((from >>> shift) & 0x0f);
@@ -248,17 +247,6 @@ final class Utils {
     }
 
     /**
-     * Converts a domain string into the form needed for a response --
-     * given a string "www.foobar.org" it is converted to the 3www6foobar3org0
-     *
-     * @param s the original String
-     * @return the converted form in bytes
-     */
-    static byte[] convertString(@NonNull final String s) {
-        return DnsNameCodec.convertString(s);
-    }
-
-    /**
      * Combine two byte arrays into one
      *
      * @param one one of the arrays
@@ -266,10 +254,10 @@ final class Utils {
      * @return byte array made from one and two
      */
     static byte[] combine(final byte[] one, final byte[] two) {
-        assert one != null || two != null;
         if (one == null && two == null) {
             failIllegalArgument("At least one byte array must be non-null");
         }
+        assert one != null || two != null;
 
         if (one == null) {
             return two;
@@ -299,11 +287,11 @@ final class Utils {
     }
 
     static byte[] trimByteArray(@NonNull final byte[] old, final int length) {
-        assert length > 0: length + " is invalid";
-        assert length <= old.length: length + " is invalid";
         if (length <= 0 || length > old.length) {
             failIllegalArgument(length + " is invalid");
         }
+        assert length > 0: length + " is invalid";
+        assert length <= old.length: length + " is invalid";
 
         byte[] ret = new byte[length];
         System.arraycopy(old, 0, ret, 0, length);
@@ -442,75 +430,8 @@ final class Utils {
         return docolons(s, 16);
     }
 
-    static String toString(DatagramPacket dgp) {
-        StringBuilder s = new StringBuilder();
-
-        s.append("getAddress() = ").append(dgp.getAddress()).append("\n");
-        s.append("getLength() = ").append(dgp.getLength()).append("\n");
-        s.append("getOffset() = ").append(dgp.getOffset()).append("\n");
-        s.append("getPort() = ").append(dgp.getPort()).append("\n");
-        s.append("getSocketAddress() = ").append(dgp.getSocketAddress()).append("\n");
-        s.append("getData() = ").append(Utils.toString(dgp.getData()));
-
-        return s.toString();
-    }
-
-    private static String toString(DatagramSocket dgs) {
-        StringBuilder s = new StringBuilder();
-
-        try {
-            s.append("getBroadcast() = ").append(dgs.getBroadcast()).append("\n");
-            // s += "getInetAddress = " + dgs.getInetAddress().getHostAddress() + "\n";
-            s.append("getInetAddress = ").append(dgs.getInetAddress()).append("\n");
-            // s += "getLocalAddress = " + dgs.getLocalAddress().getHostAddress() + "\n";
-            s.append("getLocalAddress = ").append(dgs.getLocalAddress()).append("\n");
-            s.append("getLocalPort() = ").append(dgs.getLocalPort()).append("\n");
-            s.append("getLocalSocketAddress() = ").append(dgs.getLocalSocketAddress()).append("\n");
-            s.append("getReceiveBufferSize() = ").append(dgs.getReceiveBufferSize()).append("\n");
-            s.append("getReuseAddress() = ").append(dgs.getReuseAddress()).append("\n");
-            s.append("getSendBufferSize() = ").append(dgs.getSendBufferSize()).append("\n");
-            s.append("getSoTimeout() = ").append(dgs.getSoTimeout()).append("\n");
-            s.append("getTrafficClass() = ").append(dgs.getTrafficClass()).append("\n");
-            s.append("isBound() = ").append(dgs.isBound()).append("\n");
-            s.append("isClosed() = ").append(dgs.isClosed()).append("\n");
-            s.append("isConnected() = ").append(dgs.isConnected());
-        } catch (java.net.SocketException SE) {
-            logger.catching(SE);
-            return null;
-        }
-
-        return s.toString();
-    }
-
-    static String toString(MulticastSocket mcs) {
-        String socketDetails = toString((DatagramSocket) mcs);
-        if (socketDetails == null) {
-            return null;
-        }
-        StringBuilder s = new StringBuilder(socketDetails).append("\n");
-
-        try {
-            s.append("getNetworkInterface() = ")
-                    .append(mcs.getOption(StandardSocketOptions.IP_MULTICAST_IF))
-                    .append("\n");
-            s.append("getTimeToLive() = ").append(mcs.getTimeToLive()).append("\n");
-            s.append("getLoopbackMode() = ")
-                    .append(mcs.getOption(StandardSocketOptions.IP_MULTICAST_LOOP));
-        } catch (java.io.IOException ioe) {
-            logger.catching(ioe);
-            return null;
-        }
-
-        return s.toString();
-    }
-
-    static Map.Entry<String, Integer> parseName(int start, byte[] buffer) {
-        return DnsNameCodec.parseName(start, buffer);
-    }
-
     private static void failIllegalArgument(final String message) {
         logger.warn(message);
-        assert false;
         throw new IllegalArgumentException(message);
     }
 }

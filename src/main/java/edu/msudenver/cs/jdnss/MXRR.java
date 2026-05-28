@@ -24,6 +24,6 @@ class MXRR extends RR {
         c[0] = Utils.getByte(preference, 2);
         c[1] = Utils.getByte(preference, 1);
 
-        return Utils.combine(c, Utils.convertString(host));
+        return Utils.combine(c, DnsNameCodec.convertString(host));
     }
 }

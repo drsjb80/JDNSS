@@ -44,7 +44,7 @@ class MC extends UDP {
      * Tries to find a non-loopback, active interface first.
      */
     NetworkInterface getNetworkInterface() throws SocketException {
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        Enumeration<NetworkInterface> interfaces = getNetworkInterfaces();
         
         // First pass: try to find a non-loopback, up interface
         while (interfaces.hasMoreElements()) {
@@ -55,7 +55,7 @@ class MC extends UDP {
         }
         
         // Second pass: accept any interface that supports multicast
-        interfaces = NetworkInterface.getNetworkInterfaces();
+        interfaces = getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface netIf = interfaces.nextElement();
             if (netIf.supportsMulticast()) {
@@ -65,5 +65,9 @@ class MC extends UDP {
         
         // Fallback: return null (will use system default)
         return null;
+    }
+
+    Enumeration<NetworkInterface> getNetworkInterfaces() throws SocketException {
+        return NetworkInterface.getNetworkInterfaces();
     }
 }

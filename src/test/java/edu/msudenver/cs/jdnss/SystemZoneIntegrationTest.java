@@ -140,6 +140,63 @@ public class SystemZoneIntegrationTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
     }
 
+    @Test
+    public void hinfoZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("HINFO.com");
+
+        final Query query = new Query(buildQuery(0x6118, "www.HINFO.com", RRCode.HINFO));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    @Test
+    public void txtZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TXT.com");
+
+        final Query query = new Query(buildQuery(0x6119, "www.TXT.com", RRCode.TXT));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
+    @Test
+    public void aaaaZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("AAAA.com");
+
+        final Query query = new Query(buildQuery(0x611a, "www.AAAA.com", RRCode.AAAA));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(6, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
+    }
+
     private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
         final BindZone zone = new BindZone(zoneName);
         try (InputStream in = new FileInputStream("src/test/system/zone_files/" + zoneName)) {

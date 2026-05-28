@@ -360,4 +360,16 @@ public class RRsTest
 
         Assert.assertThrows(AssertionError.class, nsec3param::getBytes);
     }
+
+    @Test
+    public void mxGetBytesAndGettersTest() {
+        MXRR mx = new MXRR("test.com", 600, "mail.test.com", 10);
+
+        byte[] expected = Utils.combine(new byte[] {0x00, 0x0a},
+                Utils.convertString("mail.test.com"));
+
+        Assert.assertArrayEquals(expected, mx.getBytes());
+        Assert.assertEquals("mail.test.com", mx.getHost());
+        Assert.assertEquals(10, mx.getPreference());
+    }
 }

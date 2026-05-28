@@ -310,6 +310,135 @@ public class SystemZoneIntegrationTest {
         Assert.assertTrue(containsIpv4(result, 192, 168, 0, 2));
     }
 
+    @Test
+    public void noMxZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("oneA.com");
+
+        final Query query = new Query(buildQuery(0x6121, "oneA.com", RRCode.MX));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+    }
+
+    @Test
+    public void ttlMinimumZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TTLminimum.com");
+
+        final Query query = new Query(buildQuery(0x6122, "www.TTLminimum.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+    }
+
+    @Test
+    public void ttlRrZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TTLRR.com");
+
+        final Query query = new Query(buildQuery(0x6123, "www.TTLRR.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(2, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+    }
+
+    @Test
+    public void ttlDefaultZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TTLdefault.com");
+
+        final Query query = new Query(buildQuery(0x6124, "www.TTLdefault.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(4, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 2));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 3));
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 4));
+    }
+
+    @Test
+    public void ttl1ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TTL1.com");
+
+        final Query query = new Query(buildQuery(0x6125, "www.TTL1.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+    }
+
+    @Test
+    public void ttl2ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TTL2.com");
+
+        final Query query = new Query(buildQuery(0x6126, "www.TTL2.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+    }
+
+    @Test
+    public void ttl3ZoneFileParsesAndAnswersLikeSystemFixture() throws Exception {
+        installZoneFromSystemFixture("TTL3.com");
+
+        final Query query = new Query(buildQuery(0x6127, "www.TTL3.com", RRCode.A));
+        query.parseQueries("");
+
+        final byte[] result = new Response(query, true).getBytes();
+
+        Assert.assertEquals(1, readUInt16(result, 4));
+        Assert.assertEquals(1, readUInt16(result, 6));
+        Assert.assertEquals(2, readUInt16(result, 8));
+        Assert.assertEquals(2, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+
+        Assert.assertTrue(containsIpv4(result, 192, 168, 1, 1));
+    }
+
     private static void installZoneFromSystemFixture(final String zoneName) throws Exception {
         final BindZone zone = new BindZone(zoneName);
         try (InputStream in = new FileInputStream("src/test/system/zone_files/" + zoneName)) {

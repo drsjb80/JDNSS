@@ -23,10 +23,15 @@ class DBConnection {
         Class.forName(dbClass);
     }
 
-    private Set<String> getDomains(Statement stmt) {
+    Connection createConnection() throws SQLException {
+        return DriverManager.getConnection(dbURL, dbUser, dbPass);
+    }
+
+    private Set<String> getDomains(final Connection conn) {
         Set<String> v = new HashSet<>();
 
-        try (ResultSet rs = stmt.executeQuery("SELECT * FROM domains")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT name FROM domains");
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 v.add(rs.getString("name"));
             }
@@ -36,16 +41,23 @@ class DBConnection {
         return v;
     }
 
-    private DBZone getZone(Statement stmt, String s) {
-        try (ResultSet rs = stmt.executeQuery("SELECT * FROM domains WHERE name = '" + s + "'")) {
-            rs.next();
+    private DBZone getZone(final Connection conn, final String s) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM domains WHERE name = ?")) {
+            stmt.setString(1, s);
+            try (ResultSet rs = stmt.executeQuery()) {
+            if (!rs.next()) {
+                return new DBZone();
+            }
             final int domainId = rs.getInt("id");
             logger.trace(domainId);
 
-            assert !rs.next();
+            if (rs.next()) {
+                logger.warn("multiple domains returned for " + s);
+            }
 
             logger.traceExit(s);
             return new DBZone(s, domainId, this);
+            }
         } catch (SQLException sqle) {
             logger.catching(sqle);
         }
@@ -55,18 +67,20 @@ class DBConnection {
     DBZone getZone(final String name) {
         logger.traceEntry(name);
 
-        try (Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass);
-             Statement stmt = conn.createStatement()) {
+        try (Connection conn = createConnection()) {
 
-            Set<String> v = getDomains(stmt);
+            Set<String> v = getDomains(conn);
             if (v.isEmpty()) {
                 return new DBZone();
             }
 
             String s = Utils.findLongest(v, name);
+            if (s == null) {
+                return new DBZone();
+            }
             logger.trace(s);
 
-            return getZone(stmt, s);
+            return getZone(conn, s);
         } catch (SQLException sqle) {
             logger.catching(sqle);
         }
@@ -78,17 +92,24 @@ class DBConnection {
         logger.traceEntry(new ObjectMessage(name));
         logger.traceEntry(new ObjectMessage(domainId));
 
-        try (Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(
-             "SELECT * FROM records where domain_id = " + domainId +
-                     " AND name = \"" + name + "\"" +
-                     " AND type = \"" + type.name() + "\"")) {
+        List<RR> ret = new ArrayList<>();
 
-            List<RR> ret = new ArrayList<>();
+        try (Connection conn = createConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT name, content, ttl, prio FROM records where domain_id = ? AND name = ? AND type = ?")) {
+
+            stmt.setInt(1, domainId);
+            stmt.setString(2, name);
+            stmt.setString(3, type.name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                addRR(type, name, rs);
+                RR rr = addRR(type, name, rs);
+                if (rr != null) {
+                    ret.add(rr);
+                }
+            }
             }
 
             return ret;
@@ -96,10 +117,10 @@ class DBConnection {
             logger.catching(sqle);
         }
 
-        return Collections.emptyList();
+        return ret;
     }
 
-    private void addRR(final RRCode type, final String name, final ResultSet rs) throws SQLException {
+    private RR addRR(final RRCode type, final String name, final ResultSet rs) throws SQLException {
         final String dbname = rs.getString("name");
         final String dbcontent = rs.getString("content");
         final int dbttl = rs.getInt("ttl");
@@ -108,47 +129,49 @@ class DBConnection {
         switch (type) {
             case SOA: {
                 String[] s = dbcontent.split("\\s+");
-                new SOARR(dbname, s[0], s[1],
+                return new SOARR(dbname, s[0], s[1],
                         Integer.parseInt(s[2]), Integer.parseInt(s[3]),
                         Integer.parseInt(s[4]), Integer.parseInt(s[5]),
                         Integer.parseInt(s[6]), dbttl);
-                return;
             }
             case NS: {
-                new NSRR(dbname, dbttl, dbcontent);
-                return; }
+                return new NSRR(dbname, dbttl, dbcontent);
+            }
             case A: {
-                new ARR(dbname, dbttl, dbcontent);
-                return; }
+                return new ARR(dbname, dbttl, dbcontent);
+            }
             case AAAA: {
-                new AAAARR(dbname, dbttl, dbcontent);
-                return; }
+                return new AAAARR(dbname, dbttl, dbcontent);
+            }
             case MX: {
-                new MXRR(dbname, dbttl, dbcontent, dbprio);
-                return; }
+                return new MXRR(dbname, dbttl, dbcontent, dbprio);
+            }
             case TXT: {
-                new TXTRR(dbname, dbttl, dbcontent);
-                return; }
+                return new TXTRR(dbname, dbttl, dbcontent);
+            }
             case CNAME: {
-                new CNAMERR(dbname, dbttl, dbcontent);
-                return; }
+                return new CNAMERR(dbname, dbttl, dbcontent);
+            }
             case PTR: {
-                new PTRRR(dbname, dbttl, dbcontent);
-                return; }
+                return new PTRRR(dbname, dbttl, dbcontent);
+            }
             case HINFO: {
                 final String[] s = dbcontent.split("\\s+");
-                new HINFORR(dbname, dbttl, s[0], s[1]);
-                return;
+                return new HINFORR(dbname, dbttl, s[0], s[1]);
             }
             case RRSIG:
             case NSEC:
             case DNSKEY:
             case NSEC3:
-            case NSEC3PARAM: { return; }
+            case NSEC3PARAM: {
+                return null;
+            }
             default: {
                 logger.warn("requested type " + type + " for " + name + " not found");
                 break;
             }
         }
+
+        return null;
     }
 }

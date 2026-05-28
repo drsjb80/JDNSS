@@ -27,11 +27,7 @@ class TCP extends Thread {
         port = binding.getPort();
     }
 
-    public void run() {
-        logger.traceEntry();
-
-        ServerSocket serverSocket;
-
+    ServerSocket createServerSocket() throws IOException {
         switch(type) {
             case "TLS":
                 assert JDNSS.jargs.keystoreFile != null;
@@ -42,29 +38,49 @@ class TCP extends Thread {
                     System.setProperty("javax.net.debug", "all");
                 }
 
-                try {
-                    SSLServerSocketFactory sslServerSocketfactory =
-                            (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
-                    serverSocket = sslServerSocketfactory.createServerSocket(port, backlog, InetAddress.getByName(address));
-                } catch (IOException ioe) {
-                    logger.catching(ioe);
-                    return;
-                }
-                break;
+                SSLServerSocketFactory sslServerSocketfactory =
+                        (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+                return sslServerSocketfactory.createServerSocket(port, backlog, InetAddress.getByName(address));
             case "TCP":
-                try {
-                    serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(address));
-                } catch (IOException E) {
-                    logger.throwing(E);
-                    return;
-                }
-                break;
+                return new ServerSocket(port, backlog, InetAddress.getByName(address));
             default:
-                assert false;
-                return;
+                throw new IOException("Unsupported TCP type: " + type);
+        }
+    }
+
+    ExecutorService createThreadPool() {
+        return Executors.newFixedThreadPool(JDNSS.jargs.getThreads());
+    }
+
+    Future<?> submitSocketTask(final ExecutorService pool, final Socket socket) {
+        return pool.submit(new TCPThread(socket));
+    }
+
+    void waitForCompletion(final Future<?> future) {
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.catching(e);
+        }
+    }
+
+    void exitProcess(final int statusCode) {
+        System.exit(statusCode);
+    }
+
+    public void run() {
+        logger.traceEntry();
+
+        ServerSocket serverSocket;
+
+        try {
+            serverSocket = createServerSocket();
+        } catch (IOException ioe) {
+            logger.catching(ioe);
+            return;
         }
 
-        ExecutorService pool = Executors.newFixedThreadPool(JDNSS.jargs.getThreads());
+        ExecutorService pool = createThreadPool();
 
         while (true) {
             Socket socket;
@@ -78,18 +94,13 @@ class TCP extends Thread {
 
             logger.trace("Received TCP packet");
 
-            Future<?> f = pool.submit(new TCPThread(socket));
+            Future<?> f = submitSocketTask(pool, socket);
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
             if (JDNSS.jargs.isOnce()) {
-                try {
-                    f.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.catching(e);
-                }
-
-                System.exit(0);
+                waitForCompletion(f);
+                exitProcess(0);
             }
         }
     }

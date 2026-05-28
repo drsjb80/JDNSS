@@ -27,6 +27,42 @@ class UDP extends Thread
         }
     }
 
+    int packetSize() {
+        return this instanceof MC ? 1500 : 512;
+    }
+
+    ExecutorService createThreadPool() {
+        int threadPoolSize = JDNSS.jargs.getThreads();
+        return Executors.newFixedThreadPool(threadPoolSize);
+    }
+
+    void receivePacket(final DatagramPacket packet) throws IOException {
+        dsocket.receive(packet);
+    }
+
+    Future<?> submitPacketTask(final ExecutorService pool, final DatagramPacket packet) {
+        return pool.submit(
+                new UDPThread(
+                        Utils.trimByteArray(packet.getData(), packet.getLength()),
+                        dsocket, packet.getPort(), packet.getAddress()
+                )
+        );
+    }
+
+    void waitForCompletion(final Future<?> future) {
+        while (!future.isDone()) {
+            try {
+                sleep(100);
+
+            } catch (InterruptedException IE) {
+            }
+        }
+    }
+
+    void exitProcess(final int statusCode) {
+        System.exit(statusCode);
+    }
+
     /**
      * This method is used by both UDP and MC
      */
@@ -43,18 +79,17 @@ class UDP extends Thread
         just going with 1500.
         */
 
-        int size = this instanceof MC ? 1500 : 512;
+        int size = packetSize();
 
         byte[] buffer = new byte[size];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        int threadPoolSize = JDNSS.jargs.getThreads();
-        ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
+        ExecutorService pool = createThreadPool();
 
         while (true)
         {
             try
             {
-                dsocket.receive(packet);
+                receivePacket(packet);
             }
             catch (IOException ioe)
             {
@@ -62,23 +97,12 @@ class UDP extends Thread
                 continue;
             }
 
-            Future<?> f = pool.submit(
-                new UDPThread(
-                    Utils.trimByteArray(packet.getData(), packet.getLength()),
-                    dsocket, packet.getPort(), packet.getAddress()
-                )
-            );
+            Future<?> f = submitPacketTask(pool, packet);
 
             // if we're only supposed to answer once, and we're the first,
             // bring everything down with us.
             if (JDNSS.jargs.isOnce()) {
-                while (!f.isDone()) {
-                    try {
-                        sleep(100);
-
-                    } catch (InterruptedException IE) {
-                    }
-                }
+                waitForCompletion(f);
                 /*
                 try 
                 {   
@@ -90,7 +114,7 @@ class UDP extends Thread
                 }
                 */
 
-                System.exit(0);
+                exitProcess(0);
             }
         }
     }

@@ -118,9 +118,7 @@ class Response {
 
         final byte[] add = rr.getBytes(name, minimum);
 
-        if (UDP && ((responses.length + add.length) > maximumPayload)) {
-            header.markTruncated();
-        }
+        checkAndMarkUdpOverflow(responses.length, add.length);
 
         responses = Utils.combine(responses, add);
         header.incrementNumAnswers();
@@ -298,8 +296,7 @@ class Response {
     }
 
     private void appendToAnswerSection(final byte[] add, final byte[] destination) {
-        if (UDP && (responses.length + add.length > maximumPayload)) {
-            header.markTruncated();
+        if (checkAndMarkUdpOverflow(responses.length, add.length)) {
             return;
         }
         responses = Utils.combine(destination, add);
@@ -307,20 +304,31 @@ class Response {
     }
 
     private void appendToAuthoritySection(final byte[] add, final byte[] destination) {
-        if (UDP && (responses.length + add.length > maximumPayload)) {
-            header.markTruncated();
-        }
+        checkAndMarkUdpOverflow(responses.length, add.length);
         authority = Utils.combine(destination, add);
         numAuthorities++;
     }
 
     private void appendToAdditionalSection(final byte[] add, final byte[] destination) {
-        if (UDP && (responses.length + add.length > maximumPayload)) {
+        if (checkAndMarkUdpOverflow(responses.length, add.length)) {
             //if bigger then max payload exit without adding RRSIG
             return;
         }
         additional = Utils.combine(destination, add);
         numAdditionals++;
+    }
+
+    private boolean checkAndMarkUdpOverflow(final int currentLength, final int additionalLength) {
+        if (!UDP) {
+            return false;
+        }
+
+        if (currentLength + additionalLength > maximumPayload) {
+            header.markTruncated();
+            return true;
+        }
+
+        return false;
     }
 
     private void addNSECRecords(final String name) {

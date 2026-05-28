@@ -17,6 +17,20 @@ class Response {
     private final Logger logger = JDNSS.logger;
     private static final Set<RRCode> ADDRESS_QUERY_TYPES = EnumSet.of(RRCode.A, RRCode.AAAA);
 
+    private static final class SectionAppendPolicy {
+        private final boolean skipWhenOverflow;
+        private final Consumer<byte[]> sectionUpdater;
+        private final Runnable counterIncrementer;
+
+        private SectionAppendPolicy(final boolean skipWhenOverflow,
+                                    final Consumer<byte[]> sectionUpdater,
+                                    final Runnable counterIncrementer) {
+            this.skipWhenOverflow = skipWhenOverflow;
+            this.sectionUpdater = sectionUpdater;
+            this.counterIncrementer = counterIncrementer;
+        }
+    }
+
     private final Header header;
     private byte[] additional;
     private int numAdditionals;
@@ -314,35 +328,33 @@ class Response {
 
     private void appendSignedRecord(final ResponseSection section, final byte[] add,
                                     final byte[] destination) {
+        final SectionAppendPolicy policy = resolveSectionAppendPolicy(section);
+        if (policy == null) {
+            logger.error("Shouldn't get here.");
+            return;
+        }
+
+        appendSignedToSection(add, destination, policy.skipWhenOverflow,
+                policy.sectionUpdater, policy.counterIncrementer);
+    }
+
+    private SectionAppendPolicy resolveSectionAppendPolicy(final ResponseSection section) {
         switch (section) {
             case ANSWER:
-                appendToAnswerSection(add, destination);
-                break;
+                return new SectionAppendPolicy(true,
+                        combined -> responses = combined,
+                        header::incrementNumAnswers);
             case AUTHORITY:
-                appendToAuthoritySection(add, destination);
-                break;
+                return new SectionAppendPolicy(false,
+                        combined -> authority = combined,
+                        () -> numAuthorities++);
             case ADDITIONAL:
-                appendToAdditionalSection(add, destination);
-                break;
+                return new SectionAppendPolicy(true,
+                        combined -> additional = combined,
+                        () -> numAdditionals++);
             default:
-                logger.error("Shouldn't get here.");
-                break;
+                return null;
         }
-    }
-
-    private void appendToAnswerSection(final byte[] add, final byte[] destination) {
-        appendSignedToSection(add, destination, true,
-                combined -> responses = combined, header::incrementNumAnswers);
-    }
-
-    private void appendToAuthoritySection(final byte[] add, final byte[] destination) {
-        appendSignedToSection(add, destination, false,
-                combined -> authority = combined, () -> numAuthorities++);
-    }
-
-    private void appendToAdditionalSection(final byte[] add, final byte[] destination) {
-        appendSignedToSection(add, destination, true,
-                combined -> additional = combined, () -> numAdditionals++);
     }
 
     private void appendSignedToSection(final byte[] add, final byte[] destination,

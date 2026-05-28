@@ -229,6 +229,24 @@ public class ResponseTest {
     }
 
     @Test
+    public void dnssecSoaQueryAddsDnskeyMaterialToAdditionalSection() throws Exception {
+        final Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put(ZONE_NAME, createDnssecSoaAdditionalZone());
+
+        final Query soaQuery = new Query(buildQueryWithOptPayload(0x7711, ZONE_NAME,
+                RRCode.SOA, 1232, true));
+        soaQuery.parseQueries("");
+
+        final byte[] result = new Response(soaQuery, true).getBytes();
+
+        Assert.assertEquals(0x00, unsignedByte(result[2]) & 0x02);
+        Assert.assertEquals(0, unsignedByte(result[3]) & 0x0f);
+        Assert.assertTrue(readUInt16(result, 6) >= 2);
+        Assert.assertTrue(readUInt16(result, 10) >= 2);
+    }
+
+    @Test
     public void dnssecAuthorityOverflowCanSetTruncationWhileHeaderAuthorityCountStaysZero() throws Exception {
         final Map<String, Zone> liveZones = getBindZones();
         liveZones.clear();
@@ -321,6 +339,19 @@ public class ResponseTest {
                 0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
         return zone;
         }
+
+            private static BindZone createDnssecSoaAdditionalZone() {
+            final BindZone zone = createZone(ZONE_NAME);
+            zone.add(ZONE_NAME,
+                new DNSKEYRR(ZONE_NAME, 3600, 257, 3, 8, "AQ=="));
+            zone.add(ZONE_NAME,
+                new RRSIG(ZONE_NAME, 3600, RRCode.SOA, 10, 2, 3600,
+                    0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
+            zone.add(ZONE_NAME,
+                new RRSIG(ZONE_NAME, 3600, RRCode.DNSKEY, 10, 2, 3600,
+                    0x5af00000, 0x5ae00000, 12023, ZONE_NAME, "AQ=="));
+            return zone;
+            }
 
     private static BindZone createCnameZone() {
         final BindZone zone = new BindZone(ZONE_NAME);

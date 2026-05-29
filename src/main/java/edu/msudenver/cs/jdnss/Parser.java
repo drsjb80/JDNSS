@@ -7,6 +7,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 // IPV6 addresses: http://www.faqs.org/rfcs/rfc1884.html
 // IPV6 DNS: http://www.faqs.org/rfcs/rfc1886.html
@@ -45,6 +46,20 @@ class Parser {
             RRCode.TTL,
             RRCode.NSEC3,
             RRCode.NSEC3PARAM);
+
+    private static final Pattern IPV4_PATTERN = Pattern.compile("(\\d+\\.){3}+\\d+");
+    private static final Pattern IPV6_PATTERN = Pattern.compile("(\\p{XDigit}*:)+\\p{XDigit}+");
+    private static final Pattern IPV6_MIXED_PATTERN = Pattern.compile("(\\p{XDigit}*:)+(\\d+\\.){3}+\\d+");
+    private static final Pattern INADDR_ARPA_V4_PATTERN = Pattern.compile("(\\d+\\.){4}+in-addr\\.arpa\\.");
+    private static final Pattern INADDR_ARPA_V6_PATTERN = Pattern.compile("(\\d+\\.){32}+in-addr\\.arpa\\.");
+    private static final Pattern IP6_INT_V6_PATTERN = Pattern.compile("(\\d+\\.){32}+ip6\\.int\\.");
+    private static final Pattern DATE_PATTERN = Pattern.compile("\\d{14}");
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+    private static final Pattern MDWH_PATTERN = Pattern.compile("\\d+[MHDW]");
+    private static final Pattern HEX_PATTERN = Pattern.compile("[0-9A-Fa-f]+");
+    private static final Pattern FQDN_PATTERN = Pattern.compile("([-a-zA-Z0-9_]+\\.)+");
+    private static final Pattern PQDN_PATTERN = Pattern.compile("[-a-zA-Z0-9_]+(\\.[-a-zA-Z0-9_]+)*");
+    private static final Pattern BASE64_PATTERN = Pattern.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
 
     static final int MAX_INCLUDE_DEPTH = 32;
 
@@ -178,7 +193,7 @@ class Parser {
     }
 
     private RRCode matchIpv4Token(final String tokenText) {
-        if (tokenText.matches("(\\d+\\.){3}+\\d+")) {
+        if (IPV4_PATTERN.matcher(tokenText).matches()) {
             stringValue = tokenText;
             logger.traceExit("IPV4ADDR");
             return RRCode.IPV4ADDR;
@@ -187,8 +202,8 @@ class Parser {
     }
 
     private RRCode matchIpv6Token(final String tokenText) {
-        if (tokenText.matches("(\\p{XDigit}*:)+\\p{XDigit}+")
-                || tokenText.matches("(\\p{XDigit}*:)+(\\d+\\.){3}+\\d+")) {
+        if (IPV6_PATTERN.matcher(tokenText).matches()
+                || IPV6_MIXED_PATTERN.matcher(tokenText).matches()) {
             stringValue = tokenText.replaceFirst("(:0+)+", ":");
             stringValue = stringValue.replaceFirst("^0+:", ":");
             logger.trace(stringValue);
@@ -200,9 +215,9 @@ class Parser {
 
     private RRCode matchInAddrToken(final String tokenText) {
         final String lower = tokenText.toLowerCase();
-        if (lower.matches("(\\d+\\.){4}+in-addr\\.arpa\\.")
-                || lower.matches("(\\d+\\.){32}+in-addr\\.arpa\\.")
-                || lower.matches("(\\d+\\.){32}+ip6\\.int\\.")) {
+        if (INADDR_ARPA_V4_PATTERN.matcher(lower).matches()
+                || INADDR_ARPA_V6_PATTERN.matcher(lower).matches()
+                || IP6_INT_V6_PATTERN.matcher(lower).matches()) {
             stringValue = lower.replaceFirst("\\.$", "");
             logger.trace(stringValue);
             logger.traceExit("INADDR");
@@ -212,7 +227,7 @@ class Parser {
     }
 
     private RRCode matchDateToken(final String tokenText) {
-        if (tokenText.matches("\\d{14}")) {
+        if (DATE_PATTERN.matcher(tokenText).matches()) {
             calculateDate(tokenText);
             logger.traceExit("DATE");
             return RRCode.DATE;
@@ -221,7 +236,7 @@ class Parser {
     }
 
     private RRCode matchIntegerToken(final String tokenText) {
-        if (tokenText.matches("\\d+")) {
+        if (INTEGER_PATTERN.matcher(tokenText).matches()) {
             intValue = Integer.parseInt(tokenText);
             logger.trace(intValue);
             logger.traceExit("INT");
@@ -231,7 +246,7 @@ class Parser {
     }
 
     private RRCode matchMdwhToken(final String tokenText) {
-        if (tokenText.matches("\\d+[MHDW]")) {
+        if (MDWH_PATTERN.matcher(tokenText).matches()) {
             calculateMDWM(tokenText);
             logger.trace(intValue);
             logger.traceExit("INT");
@@ -241,7 +256,7 @@ class Parser {
     }
 
     private RRCode matchHexToken(final String tokenText) {
-        if (tokenText.matches("[0-9A-Fa-f]+")) {
+        if (HEX_PATTERN.matcher(tokenText).matches()) {
             stringValue = tokenText;
             return RRCode.HEX;
         }
@@ -249,7 +264,7 @@ class Parser {
     }
 
     private RRCode matchFqdnToken(final String tokenText) {
-        if (tokenText.matches("([-a-zA-Z0-9_]+\\.)+")) {
+        if (FQDN_PATTERN.matcher(tokenText).matches()) {
             stringValue = tokenText.replaceFirst("\\.$", "");
             logger.trace(stringValue);
             logger.traceExit("DN");
@@ -259,7 +274,7 @@ class Parser {
     }
 
     private RRCode matchPqdnToken(final String tokenText) {
-        if (!inBase64 && tokenText.matches("[-a-zA-Z0-9_]+(\\.[-a-zA-Z0-9_]+)*")) {
+        if (!inBase64 && PQDN_PATTERN.matcher(tokenText).matches()) {
             stringValue = tokenText + "." + origin;
             logger.trace(stringValue);
             logger.traceExit("PQDN");
@@ -269,8 +284,7 @@ class Parser {
     }
 
     private RRCode matchBase64Token(final String tokenText) {
-        String pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$";
-        if (inBase64 && tokenText.matches(pattern)) {
+        if (inBase64 && BASE64_PATTERN.matcher(tokenText).matches()) {
             stringValue = tokenText.trim();
             logger.trace(stringValue);
             logger.traceExit("BASE64");

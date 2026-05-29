@@ -372,20 +372,32 @@ class Response {
     private SectionAppendPolicy resolveSectionAppendPolicy(final ResponseSection section) {
         switch (section) {
             case ANSWER:
-                return new SectionAppendPolicy(true,
-                        combined -> responses = combined,
-                        header::incrementNumAnswers);
+                return resolveAnswerAppendPolicy();
             case AUTHORITY:
-                return new SectionAppendPolicy(false,
-                        combined -> authority = combined,
-                        () -> numAuthorities++);
+                return resolveAuthorityAppendPolicy();
             case ADDITIONAL:
-                return new SectionAppendPolicy(true,
-                        combined -> additional = combined,
-                        () -> numAdditionals++);
+                return resolveAdditionalAppendPolicy();
             default:
                 return null;
         }
+    }
+
+    private SectionAppendPolicy resolveAnswerAppendPolicy() {
+        return new SectionAppendPolicy(true,
+                combined -> responses = combined,
+                header::incrementNumAnswers);
+    }
+
+    private SectionAppendPolicy resolveAuthorityAppendPolicy() {
+        return new SectionAppendPolicy(false,
+                combined -> authority = combined,
+                () -> numAuthorities++);
+    }
+
+    private SectionAppendPolicy resolveAdditionalAppendPolicy() {
+        return new SectionAppendPolicy(true,
+                combined -> additional = combined,
+                () -> numAdditionals++);
     }
 
     private void appendSignedToSection(final byte[] add, final byte[] destination,
@@ -524,21 +536,28 @@ class Response {
 
     byte[] getBytes() {
         logger.traceEntry();
-        byte[] abc = new byte[0];
-        abc = Utils.combine(abc, header.getHeader());
-        abc = Utils.combine(abc, query.buildResponseQueries());
-        abc = Utils.combine(abc, responses);
+        byte[] responseBytes = buildResponseBytes();
+        return appendOptRecordIfPresent(responseBytes);
+    }
 
+    private byte[] buildResponseBytes() {
+        byte[] responseBytes = new byte[0];
+        responseBytes = Utils.combine(responseBytes, header.getHeader());
+        responseBytes = Utils.combine(responseBytes, query.buildResponseQueries());
+        responseBytes = Utils.combine(responseBytes, responses);
+        return responseBytes;
+    }
+
+    private byte[] appendOptRecordIfPresent(final byte[] responseBytes) {
         /*
         If an OPT record is present in a received request, compliant
         responders MUST include an OPT record in their respective responses.
          */
-
         if (optRecord != null) {
-            abc = Utils.combine(abc, optRecord.getBytes());
+            return Utils.combine(responseBytes, optRecord.getBytes());
         }
 
-        return abc;
+        return responseBytes;
     }
 
 }

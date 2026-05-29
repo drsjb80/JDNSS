@@ -12,6 +12,16 @@ import java.util.*;
 // IPV6 DNS: http://www.faqs.org/rfcs/rfc1886.html
 
 class Parser {
+    private static final class RecordProgress {
+        private final RRCode token;
+        private final boolean done;
+
+        private RecordProgress(final RRCode token, final boolean done) {
+            this.token = token;
+            this.done = done;
+        }
+    }
+
     private static final int NOTOK = -1;
 
     private static final Set<RRCode> RR_TOKENS = EnumSet.of(
@@ -637,66 +647,28 @@ class Parser {
         while (!done) {
             logger.trace(token);
 
+            if (isImmediateRecordToken(token)) {
+                handleImmediateRecordToken(token);
+                done = true;
+                first = false;
+                continue;
+            }
+
             switch (token) {
                 case DN:
                 case INADDR:
-                    currentName = stringValue;
-                    token = getNextToken();
+                    token = handleNameToken();
                     break;
                 case IN:
-                    token = getNextToken();
-
-                    if (token == RRCode.INT) {
-                        currentTTL = intValue;
-                        token = getNextToken();
-                    }
-
+                    token = handleInToken();
                     break;
                 case INT: {
-                    final int temp = intValue;
-                    token = getNextToken();
-                    logger.trace("t = " + token);
-
-                    // ptr ttl in
-                    // ptr in ttl
-                    if (first && isReverseLookupOrigin()) {
-                        currentName = "" + temp + "." + origin;
-                        logger.trace(currentName);
-
-                        if (token == RRCode.INT) {
-                            currentTTL = intValue;
-                            token = getNextToken();
-                        }
-                    } else if (token == RRCode.IN) {       // ttl in
-                        currentTTL = temp;
-                    } else if (isARR(token)) {
-                        currentTTL = temp;
-                        switches(token);
-                        done = true;
-                    } else {
-                        currentName = "" + temp + "." + origin;
-                    }
+                    final RecordProgress progress = handleIntegerToken(first);
+                    token = progress.token;
+                    done = progress.done;
 
                     break;
                 }
-                case A:
-                case AAAA:
-                case NS:
-                case CNAME:
-                case TXT:
-                case HINFO:
-                case MX:
-                case A6:
-                case PTR:
-                case RRSIG:
-                case NSEC:
-                case NSEC3:
-                case NSEC3PARAM:
-                case DNSKEY:
-                    currentTTL = CalcTTL();
-                    switches(token);
-                    done = true;
-                    break;
                 case SOA:
                     doSOA();
                     done = true;
@@ -711,6 +683,80 @@ class Parser {
         }
     }
 
+    private RRCode handleNameToken() {
+        currentName = stringValue;
+        return getNextToken();
+    }
+
+    private RRCode handleInToken() {
+        RRCode token = getNextToken();
+        if (token == RRCode.INT) {
+            currentTTL = intValue;
+            token = getNextToken();
+        }
+        return token;
+    }
+
+    private boolean isImmediateRecordToken(final RRCode token) {
+        switch (token) {
+            case A:
+            case AAAA:
+            case NS:
+            case CNAME:
+            case TXT:
+            case HINFO:
+            case MX:
+            case A6:
+            case PTR:
+            case RRSIG:
+            case NSEC:
+            case NSEC3:
+            case NSEC3PARAM:
+            case DNSKEY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void handleImmediateRecordToken(final RRCode token) {
+        currentTTL = CalcTTL();
+        switches(token);
+    }
+
+    private RecordProgress handleIntegerToken(final boolean firstRecord) {
+        final int temp = intValue;
+        RRCode nextToken = getNextToken();
+        logger.trace("t = " + nextToken);
+
+        // ptr ttl in
+        // ptr in ttl
+        if (firstRecord && isReverseLookupOrigin()) {
+            currentName = "" + temp + "." + origin;
+            logger.trace(currentName);
+
+            if (nextToken == RRCode.INT) {
+                currentTTL = intValue;
+                nextToken = getNextToken();
+            }
+            return new RecordProgress(nextToken, false);
+        }
+
+        if (nextToken == RRCode.IN) {
+            currentTTL = temp;
+            return new RecordProgress(nextToken, false);
+        }
+
+        if (isARR(nextToken)) {
+            currentTTL = temp;
+            switches(nextToken);
+            return new RecordProgress(nextToken, true);
+        }
+
+        currentName = "" + temp + "." + origin;
+        return new RecordProgress(nextToken, false);
+    }
+
     void RRs() throws UnsupportedEncodingException {
         currentName = origin;
 
@@ -720,31 +766,33 @@ class Parser {
             while (t != RRCode.EOF) {
                 logger.trace(t);
 
-                if (handleDirectiveToken(t)) {
-                    t = getNextToken();
-                    continue;
-                }
-
-                // 5.1. Format
-                // [name]        [ttl]        [class]        type        data
-                // [name]        [class]        [ttl]        type        data
-                // 1                IN        1H        PTR        @
-                // 1) name ttl class type data
-                // 2) name class type data
-                // 3) name type data
-                // 4) ttl class type data
-                // 5) ttl type data
-                // 6) class type data
-                // 7) type data
-
-                parseOneRecord(t);
-
-                t = getNextToken();
+                t = parseTokenAndGetNext(t);
             }
         } catch (IllegalArgumentException IAE) {
             logger.catching(IAE);
             logger.fatal("Skipping: " + zone.getName());
         }
+    }
+
+    private RRCode parseTokenAndGetNext(final RRCode token)
+            throws UnsupportedEncodingException {
+        if (handleDirectiveToken(token)) {
+            return getNextToken();
+        }
+
+        // 5.1. Format
+        // [name]        [ttl]        [class]        type        data
+        // [name]        [class]        [ttl]        type        data
+        // 1                IN        1H        PTR        @
+        // 1) name ttl class type data
+        // 2) name class type data
+        // 3) name type data
+        // 4) ttl class type data
+        // 5) ttl type data
+        // 6) class type data
+        // 7) type data
+        parseOneRecord(token);
+        return getNextToken();
     }
 
     private int getInt(final String message) {

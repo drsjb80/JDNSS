@@ -46,6 +46,8 @@ class Parser {
             RRCode.NSEC3,
             RRCode.NSEC3PARAM);
 
+    static final int MAX_INCLUDE_DEPTH = 32;
+
     private static final int DAYSINWEEK = 7;
     private static final int HOURSINDAY = 24;
     private static final int MINUTESINHOUR = 60;
@@ -63,6 +65,7 @@ class Parser {
 
     private StreamTokenizer st;
     private final Map<String, RRCode> tokens = new Hashtable<>();
+    private final Deque<String> includeStack = new ArrayDeque<>();
 
     private final BindZone zone;
     private final Logger logger = JDNSS.logger;
@@ -83,6 +86,12 @@ class Parser {
 
         initTokenizer(st);
 
+        registerTokens();
+
+        origin = zone.getName();
+    }
+
+    private void registerTokens() {
         tokens.put("SOA", RRCode.SOA);
         tokens.put("IN", RRCode.IN);
         tokens.put("MX", RRCode.MX);
@@ -103,8 +112,6 @@ class Parser {
         tokens.put("$INCLUDE", RRCode.INCLUDE);
         tokens.put("$ORIGIN", RRCode.ORIGIN);
         tokens.put("$TTL", RRCode.TTL);
-
-        origin = zone.getName();
     }
 
     private void initTokenizer(final StreamTokenizer st) {
@@ -136,97 +143,140 @@ class Parser {
     private RRCode matcher(final String a) {
         logger.traceEntry(new ObjectMessage(a));
 
-        /*
-        ** \\d matches digits
-        */
-        if (a.matches("(\\d+\\.){3}+\\d+")) {
-            stringValue = a;
+        RRCode token = matchIpv4Token(a);
+        if (token != null) return token;
+
+        token = matchIpv6Token(a);
+        if (token != null) return token;
+
+        token = matchInAddrToken(a);
+        if (token != null) return token;
+
+        token = matchDateToken(a);
+        if (token != null) return token;
+
+        token = matchIntegerToken(a);
+        if (token != null) return token;
+
+        token = matchMdwhToken(a);
+        if (token != null) return token;
+
+        token = matchHexToken(a);
+        if (token != null) return token;
+
+        token = matchFqdnToken(a);
+        if (token != null) return token;
+
+        token = matchPqdnToken(a);
+        if (token != null) return token;
+
+        token = matchBase64Token(a);
+        if (token != null) return token;
+
+        logger.fatal("Unknown token on line " + st.lineno() + ": " + a);
+        return RRCode.NOTOK;
+    }
+
+    private RRCode matchIpv4Token(final String tokenText) {
+        if (tokenText.matches("(\\d+\\.){3}+\\d+")) {
+            stringValue = tokenText;
             logger.traceExit("IPV4ADDR");
             return RRCode.IPV4ADDR;
         }
+        return null;
+    }
 
-        /*
-        ** any number of hex digits separated by colons or
-        ** any number of hex digits separated by colons that
-        ** end in an IPv4 address
-        */
-        if (a.matches("(\\p{XDigit}*:)+\\p{XDigit}+")
-                || a.matches("(\\p{XDigit}*:)+(\\d+\\.){3}+\\d+")) {
-            stringValue = a.replaceFirst("(:0+)+", ":");
+    private RRCode matchIpv6Token(final String tokenText) {
+        if (tokenText.matches("(\\p{XDigit}*:)+\\p{XDigit}+")
+                || tokenText.matches("(\\p{XDigit}*:)+(\\d+\\.){3}+\\d+")) {
+            stringValue = tokenText.replaceFirst("(:0+)+", ":");
             stringValue = stringValue.replaceFirst("^0+:", ":");
             logger.trace(stringValue);
             logger.traceExit("IPV6ADDR");
             return RRCode.IPV6ADDR;
         }
+        return null;
+    }
 
-        final String b = a.toLowerCase();
-        if (b.matches("(\\d+\\.){4}+in-addr\\.arpa\\.")
-                || b.matches("(\\d+\\.){32}+in-addr\\.arpa\\.")
-                || b.matches("(\\d+\\.){32}+ip6\\.int\\.")) {
-            stringValue = b.replaceFirst("\\.$", "");
+    private RRCode matchInAddrToken(final String tokenText) {
+        final String lower = tokenText.toLowerCase();
+        if (lower.matches("(\\d+\\.){4}+in-addr\\.arpa\\.")
+                || lower.matches("(\\d+\\.){32}+in-addr\\.arpa\\.")
+                || lower.matches("(\\d+\\.){32}+ip6\\.int\\.")) {
+            stringValue = lower.replaceFirst("\\.$", "");
             logger.trace(stringValue);
             logger.traceExit("INADDR");
             return RRCode.INADDR;
         }
+        return null;
+    }
 
-        if (a.matches("\\d{14}")) {
-            calculateDate(a);
+    private RRCode matchDateToken(final String tokenText) {
+        if (tokenText.matches("\\d{14}")) {
+            calculateDate(tokenText);
             logger.traceExit("DATE");
             return RRCode.DATE;
         }
+        return null;
+    }
 
-        if (a.matches("\\d+")) {
-            intValue = Integer.parseInt(a);
+    private RRCode matchIntegerToken(final String tokenText) {
+        if (tokenText.matches("\\d+")) {
+            intValue = Integer.parseInt(tokenText);
             logger.trace(intValue);
             logger.traceExit("INT");
             return RRCode.INT;
         }
+        return null;
+    }
 
-        /*
-        ** "(Newer versions of BIND(named) will accept the suffixes
-        ** 'M','H','D' or 'W', indicating a time-interval of minutes,
-        ** hours, days and weeks respectively.)"
-        */
-        if (a.matches("\\d+[MHDW]")) {
-            calculateMDWM(a);
+    private RRCode matchMdwhToken(final String tokenText) {
+        if (tokenText.matches("\\d+[MHDW]")) {
+            calculateMDWM(tokenText);
             logger.trace(intValue);
             logger.traceExit("INT");
             return RRCode.INT;
         }
+        return null;
+    }
 
-        if (a.matches("[0-9A-Fa-f]+")) {
-            stringValue = a;
+    private RRCode matchHexToken(final String tokenText) {
+        if (tokenText.matches("[0-9A-Fa-f]+")) {
+            stringValue = tokenText;
             return RRCode.HEX;
         }
+        return null;
+    }
 
-        // FQDN's end with a dot
-        if (a.matches("([-a-zA-Z0-9_]+\\.)+")) {
-            // remove the dot
-            stringValue = a.replaceFirst("\\.$", "");
+    private RRCode matchFqdnToken(final String tokenText) {
+        if (tokenText.matches("([-a-zA-Z0-9_]+\\.)+")) {
+            stringValue = tokenText.replaceFirst("\\.$", "");
             logger.trace(stringValue);
             logger.traceExit("DN");
             return RRCode.DN;
         }
+        return null;
+    }
 
-        // PQDN's don't
-        if (!inBase64 && a.matches("[-a-zA-Z0-9_]+(\\.[-a-zA-Z0-9_]+)*")) {
-            stringValue = a + "." + origin;
+    private RRCode matchPqdnToken(final String tokenText) {
+        if (!inBase64 && tokenText.matches("[-a-zA-Z0-9_]+(\\.[-a-zA-Z0-9_]+)*")) {
+            stringValue = tokenText + "." + origin;
             logger.trace(stringValue);
             logger.traceExit("PQDN");
             return RRCode.DN;
         }
+        return null;
+    }
 
-        // if (a.matches("[a-zA-Z0-9/\\+]+(==?)?"))
+    private RRCode matchBase64Token(final String tokenText) {
         String pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$";
-        if (inBase64 && a.matches(pattern)) {
-            stringValue = a.trim();
+        if (inBase64 && tokenText.matches(pattern)) {
+            stringValue = tokenText.trim();
             logger.trace(stringValue);
             logger.traceExit("BASE64");
             return RRCode.BASE64;
         }
-
-        logger.fatal("Unknown token on line " + st.lineno() + ": " + a);
-        return RRCode.NOTOK;
+        return null;
     }
 
     private RRCode classifyWordToken(final String tokenText) {
@@ -320,7 +370,7 @@ class Parser {
             logger.trace(Integer.toHexString(intValue));
         }
         catch(ParseException e){
-            assert false;
+            throw parseFailure("Invalid date token: " + a);
         }
     }
 
@@ -353,7 +403,35 @@ class Parser {
         // up.
 
         final int t = getOneWord();
-        assert t == StreamTokenizer.TT_WORD;
+        if (t != StreamTokenizer.TT_WORD) {
+            throw parseFailure("Expecting include path after $INCLUDE at line " + st.lineno());
+        }
+
+        final String includePath = st.sval;
+        final File includeFile = new File(includePath);
+        final String includeContext = includeContextString();
+
+        final String canonicalIncludePath;
+        try {
+            canonicalIncludePath = includeFile.getCanonicalPath();
+        } catch (IOException e) {
+            logger.info("Cannot resolve $INCLUDE file at line " + st.lineno()
+                    + ": " + includePath + " (context: " + includeContext + ")");
+            return;
+        }
+
+        if (includeStack.size() >= MAX_INCLUDE_DEPTH) {
+            logger.warn("Skipping $INCLUDE due to max depth " + MAX_INCLUDE_DEPTH
+                    + " at line " + st.lineno() + ": " + canonicalIncludePath
+                    + " (context: " + includeContext + ")");
+            return;
+        }
+
+        if (includeStack.contains(canonicalIncludePath)) {
+            logger.warn("Skipping recursive $INCLUDE cycle at line " + st.lineno()
+                    + ": " + canonicalIncludePath + " (context: " + includeContext + ")");
+            return;
+        }
 
         // save the old one so we can get back to it.  if we're called
         // recursively, we're still good to go...
@@ -361,22 +439,36 @@ class Parser {
 
         final FileInputStream in;
         try {
-            in = new FileInputStream(st.sval);
+            in = new FileInputStream(includeFile);
         } catch (FileNotFoundException e) {
             logger.info("Cannot open $INCLUDE file at line " + st.lineno()
-                    + ": " + st.sval);
+                    + ": " + includePath + " (context: " + includeContext + ")");
             return;
         }
 
-        st = new StreamTokenizer(new InputStreamReader(in, "UTF-8"));
-        initTokenizer(st);
-
-        RRs();
-
-        // restore the old one.
-        st = old;
+        includeStack.push(canonicalIncludePath);
+        try {
+            st = new StreamTokenizer(new InputStreamReader(in, "UTF-8"));
+            initTokenizer(st);
+            RRs();
+        } finally {
+            includeStack.pop();
+            st = old;
+            try {
+                in.close();
+            } catch (IOException ignored) {
+                logger.debug("Unable to close $INCLUDE file: " + canonicalIncludePath);
+            }
+        }
 
         logger.traceExit();
+    }
+
+    private String includeContextString() {
+        if (includeStack.isEmpty()) {
+            return "<root>";
+        }
+        return String.join(" -> ", includeStack);
     }
 
     private void doSOA() {
@@ -442,7 +534,9 @@ class Parser {
 
         final int flags = getInt("flags");
         final int protocol = getInt("protocol");
-        assert protocol == 3;
+        if (protocol != 3) {
+            throw parseFailure("DNSKEY protocol must be 3 at line " + st.lineno());
+        }
         final int algorithm = getInt("algorithm");
         getLeftParen();
 
@@ -453,8 +547,7 @@ class Parser {
             publicKeyBuilder.append(stringValue);
         }
         inBase64 = false;
-
-        assert tok == RRCode.RPAREN;
+        ensureToken(tok, RRCode.RPAREN, "right paren");
 
         zone.add(currentName,
                 new DNSKEYRR(currentName, currentTTL, flags, protocol,
@@ -512,7 +605,9 @@ class Parser {
         logger.traceEntry();
 
         final RRCode typeCovered = getNextToken();
-        assert isARR(typeCovered): typeCovered + " not covered with RRSIG on line " + st.lineno();
+        if (!isARR(typeCovered)) {
+            throw parseFailure(typeCovered + " not covered with RRSIG on line " + st.lineno());
+        }
 
         final int algorithm = getInt("algorithm");
         final int labels = getInt("labels");
@@ -535,7 +630,7 @@ class Parser {
             signatureBuilder.append(stringValue);
         }
         inBase64 = false;
-        assert tok == RRCode.RPAREN;
+        ensureToken(tok, RRCode.RPAREN, "right paren");
 
         final RRSIG d = new RRSIG(currentName, currentTTL, typeCovered,
                 algorithm, labels, originalTTL, expiration, inception,
@@ -544,7 +639,7 @@ class Parser {
         logger.traceExit();
     }
 
-    private void switches(final RRCode t) {
+    private void dispatchRecord(final RRCode t) {
         logger.traceEntry(new ObjectMessage(t));
 
         switch (t) {
@@ -755,7 +850,7 @@ class Parser {
 
     private void handleImmediateRecordToken(final RRCode token) {
         currentTTL = CalcTTL();
-        switches(token);
+        dispatchRecord(token);
     }
 
     private RecordProgress handleIntegerToken(final boolean firstRecord) {
@@ -783,7 +878,7 @@ class Parser {
 
         if (isARR(nextToken)) {
             currentTTL = temp;
-            switches(nextToken);
+            dispatchRecord(nextToken);
             return new RecordProgress(nextToken, true);
         }
 
@@ -831,53 +926,64 @@ class Parser {
 
     private int getInt(final String message) {
         RRCode token = getNextToken();
-        assert token == RRCode.INT: "Expecting " + message + " at line " + st.lineno();
+        ensureToken(token, RRCode.INT, message);
         return intValue;
     }
 
     private void getLeftParen() {
         RRCode token = getNextToken();
-        assert token == RRCode.LPAREN: "Expecting left paren at line " + st.lineno();
+        ensureToken(token, RRCode.LPAREN, "left paren");
     }
 
     private void getRightParen() {
         RRCode token = getNextToken();
-        assert token == RRCode.RPAREN: "Expecting right paren at line " + st.lineno();
+        ensureToken(token, RRCode.RPAREN, "right paren");
     }
 
     private String getString() {
         RRCode token = getNextToken();
-        assert token == RRCode.STRING: "Expecting string at line " + st.lineno();
+        ensureToken(token, RRCode.STRING, "string");
         return stringValue;
     }
 
     private String getDomain() {
         RRCode token = getNextToken();
-        assert token == RRCode.DN: "Expecting domain at line " + st.lineno();
+        ensureToken(token, RRCode.DN, "domain");
         return stringValue;
     }
 
     private String getHex() {
         RRCode token = getNextToken();
-        assert token == RRCode.HEX: "Expecting hexadecimal at line " + st.lineno();
+        ensureToken(token, RRCode.HEX, "hexadecimal");
         return stringValue;
     }
 
     private int getDate() {
         RRCode token = getNextToken();
-        assert token == RRCode.DATE: "Expecting date at line " + st.lineno();
+        ensureToken(token, RRCode.DATE, "date");
         return intValue;
     }
 
     private String getIPV4ADDR() {
         RRCode token = getNextToken();
-        assert token == RRCode.IPV4ADDR: "Expecting IPV4ADDR at line " + st.lineno();
+        ensureToken(token, RRCode.IPV4ADDR, "IPV4ADDR");
         return stringValue;
     }
 
     private String getIPV6ADDR() {
         RRCode token = getNextToken();
-        assert token == RRCode.IPV6ADDR: "Expecting IPV6ADDR at line " + st.lineno();
+        ensureToken(token, RRCode.IPV6ADDR, "IPV6ADDR");
         return stringValue;
+    }
+
+    private void ensureToken(final RRCode actual, final RRCode expected, final String message) {
+        if (actual != expected) {
+            throw parseFailure("Expecting " + message + " at line " + st.lineno());
+        }
+    }
+
+    private IllegalArgumentException parseFailure(final String message) {
+        logger.warn(message);
+        return new IllegalArgumentException(message);
     }
 }

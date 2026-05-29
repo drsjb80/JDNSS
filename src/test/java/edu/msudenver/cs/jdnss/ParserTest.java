@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 
 public class ParserTest {
@@ -250,6 +251,83 @@ public class ParserTest {
             Assert.assertEquals(1, zone.get(RRCode.A, "www.test.com").size());
         } finally {
             Files.deleteIfExists(outerInclude);
+        }
+    }
+
+    @Test
+    public void includeCycleIsDetectedWithoutInfiniteRecursion() throws Exception {
+        Path recursiveInclude = Files.createTempFile("jdnss-include-cycle", ".zone");
+
+        Files.writeString(recursiveInclude,
+                String.join("\n",
+                        "$INCLUDE " + recursiveInclude.toAbsolutePath(),
+                        "loop A 192.168.1.77"),
+                StandardCharsets.UTF_8);
+
+        try {
+            String zoneText = String.join("\n",
+                    "$ORIGIN test.com.",
+                    "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                    "$INCLUDE " + recursiveInclude.toAbsolutePath(),
+                    "www A 192.168.1.2");
+
+            BindZone zone = parseZone(zoneText, "test.com");
+
+            Assert.assertEquals(1, zone.get(RRCode.A, "loop.test.com").size());
+            Assert.assertEquals(1, zone.get(RRCode.A, "www.test.com").size());
+        } finally {
+            Files.deleteIfExists(recursiveInclude);
+        }
+    }
+
+    @Test
+    public void includeDepthLimitSkipsTooDeepIncludes() throws Exception {
+        Path includeDirectory = Files.createTempDirectory("jdnss-include-depth");
+        int maxIndex = Parser.MAX_INCLUDE_DEPTH + 1;
+
+        try {
+            Path[] includeFiles = new Path[maxIndex + 1];
+            for (int i = 0; i <= maxIndex; i++) {
+                includeFiles[i] = includeDirectory.resolve("depth-" + i + ".zone");
+            }
+
+            for (int i = maxIndex; i >= 0; i--) {
+                StringBuilder content = new StringBuilder();
+                if (i < maxIndex) {
+                    content.append("$INCLUDE ")
+                            .append(includeFiles[i + 1].toAbsolutePath())
+                            .append("\n");
+                }
+                content.append("node").append(i).append(" A 192.168.1.")
+                        .append((i % 200) + 1)
+                        .append("\n");
+
+                Files.writeString(includeFiles[i], content.toString(), StandardCharsets.UTF_8);
+            }
+
+            String zoneText = String.join("\n",
+                    "$ORIGIN test.com.",
+                    "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                    "$INCLUDE " + includeFiles[0].toAbsolutePath(),
+                    "www A 192.168.1.2");
+
+            BindZone zone = parseZone(zoneText, "test.com");
+
+            Assert.assertEquals(1, zone.get(RRCode.A, "node0.test.com").size());
+            Assert.assertEquals(1, zone.get(RRCode.A,
+                    "node" + (Parser.MAX_INCLUDE_DEPTH - 1) + ".test.com").size());
+            Assert.assertEquals(0, zone.get(RRCode.A,
+                    "node" + Parser.MAX_INCLUDE_DEPTH + ".test.com").size());
+            Assert.assertEquals(1, zone.get(RRCode.A, "www.test.com").size());
+        } finally {
+            Files.walk(includeDirectory)
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.deleteIfExists(path);
+                        } catch (Exception ignored) {
+                        }
+                    });
         }
     }
 

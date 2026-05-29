@@ -56,7 +56,7 @@ enum RRCode {
 
     static RRCode findCode(final int number) {
         for (RRCode rrCode : values()) {
-            if (number == rrCode.getCode()) {
+            if (rrCode.code != 0 && number == rrCode.getCode()) {
                 return rrCode;
             }
         }

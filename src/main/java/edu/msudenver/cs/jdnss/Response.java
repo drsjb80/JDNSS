@@ -140,13 +140,23 @@ class Response {
         logger.traceEntry();
         authority = Utils.combine(authority, SOA.getBytes(zone.getName(), minimum));
         numAuthorities = 1;
-        if (DNSSEC) {
-            numAuthorities++;
-            addRRSignature(RRCode.SOA, zone.getName(), authority, ResponseSection.AUTHORITY);
-            addNSECRecords(zone.getName());
-            addRRSignature(RRCode.NSEC, zone.getName(), authority, ResponseSection.AUTHORITY);
-        }
+        maybeAppendDnssecNegativeResponseMaterial();
         logger.traceExit();
+    }
+
+    private void maybeAppendDnssecNegativeResponseMaterial() {
+        if (!DNSSEC) {
+            return;
+        }
+
+        numAuthorities++;
+        addDnssecNegativeResponseSignature(RRCode.SOA, zone.getName());
+        addNSECRecords(zone.getName());
+        addDnssecNegativeResponseSignature(RRCode.NSEC, zone.getName());
+    }
+
+    private void addDnssecNegativeResponseSignature(final RRCode type, final String name) {
+        addRRSignature(type, name, authority, ResponseSection.AUTHORITY);
     }
 
     private void doOneRR(final String name, final RRCode type,
@@ -160,15 +170,20 @@ class Response {
         //Add RRSIG Records Corresponding to Type
         //seems right to add answers somewhere close but we only want to do it once on last
         //TODO Check the stuff to assure its doing what I want it to
-        if (lastRecord && DNSSEC) {
-            addRRSignature(rr.getType(), name, responses, ResponseSection.ANSWER);
-        }
+        maybeAddAnswerSignature(lastRecord, rr.getType(), name);
 
         maybeCreateAuthorities(firstRecord, type, name);
         maybeCreateTypeAdditionals(type, rr, name);
         maybeCreateSoaDnssecAdditionals(type, name);
 
         logger.traceExit();
+    }
+
+    private void maybeAddAnswerSignature(final boolean lastRecord, final RRCode type,
+                                         final String name) {
+        if (lastRecord && DNSSEC) {
+            addRRSignature(type, name, responses, ResponseSection.ANSWER);
+        }
     }
 
     private void appendAnswerRecord(final byte[] add) {
@@ -212,9 +227,13 @@ class Response {
     private void maybeCreateSoaDnssecAdditionals(final RRCode type,
                                                   final String name) {
         if (DNSSEC && type == RRCode.SOA) {
-            final List<RR> dnsKeyArrayList = zone.get(RRCode.DNSKEY, name);
-            createAdditionals(dnsKeyArrayList, name);
+            addSoaDnssecAdditionals(name);
         }
+    }
+
+    private void addSoaDnssecAdditionals(final String name) {
+        final List<RR> dnsKeyArrayList = zone.get(RRCode.DNSKEY, name);
+        createAdditionals(dnsKeyArrayList, name);
     }
 
     private boolean setZone(@NonNull final String name) {

@@ -10,6 +10,10 @@ final class NetworkBinding {
     }
 
     static NetworkBinding fromParts(final String[] parts) {
+        if (parts == null || parts.length < 3) {
+            throw new IllegalArgumentException("Invalid network binding");
+        }
+
         return new NetworkBinding(parts[1], Integer.parseInt(parts[2]));
     }
 

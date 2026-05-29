@@ -21,7 +21,7 @@ public class NetworkBindingTest {
 
     @Test
     public void fromPartsRequiresHostAndPortEntries() {
-        Assert.assertThrows(ArrayIndexOutOfBoundsException.class,
+        Assert.assertThrows(IllegalArgumentException.class,
                 () -> NetworkBinding.fromParts(new String[] {"TCP"}));
     }
 }

@@ -152,6 +152,48 @@ public class HTTPSTest {
     }
 
     @Test
+    public void getJsonRequestReturnsDnsJsonBody() throws Exception {
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put("test.com", createZone("test.com"));
+
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("GET",
+                new URI("/dns-query?name=test.com&type=A"),
+                new ByteArrayInputStream(new byte[0]));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(exchange.getResponseBody()).thenReturn(out);
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(eq(200), anyLong());
+        Assert.assertEquals("application/dns-json; charset=utf-8",
+                exchange.getResponseHeaders().getFirst("Content-Type"));
+
+        String body = out.toString(java.nio.charset.StandardCharsets.UTF_8);
+        Assert.assertTrue(body.contains("\"Status\":0"));
+        Assert.assertTrue(body.contains("\"Question\""));
+        Assert.assertTrue(body.contains("\"Answer\""));
+        Assert.assertTrue(body.contains("\"name\":\"test.com\""));
+    }
+
+    @Test
+    public void getJsonRequestWithInvalidTypeReturns500() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        HttpExchange exchange = baseExchange("GET",
+                new URI("/dns-query?name=test.com&type=NOTATYPE"),
+                new ByteArrayInputStream(new byte[0]));
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(500, -1);
+    }
+
+    @Test
     public void constructorSkipsBindingValidationWhenNotStartingServer() {
         new HTTPS(new String[] {"HTTPS"}, false);
     }
@@ -247,6 +289,15 @@ public class HTTPSTest {
                 (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
                 (byte) 0x00, (byte) 0x01
         };
+    }
+
+    private static BindZone createZone(final String zoneName) {
+        final BindZone zone = new BindZone(zoneName);
+        zone.add(zoneName,
+                new SOARR(zoneName, "ns1.test.com", "hostmaster.test.com",
+                        1, 7200, 3600, 1209600, 3600, 3600));
+        zone.add(zoneName, new ARR(zoneName, 3600, "192.168.1.2"));
+        return zone;
     }
 
     private static void setJargField(final String fieldName, final Object value) throws Exception {

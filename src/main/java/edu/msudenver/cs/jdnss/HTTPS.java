@@ -11,16 +11,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 // Source: https://stackoverflow.com/a/34483734
 
 public class HTTPS {
     private final Logger logger = JDNSS.logger;
+    private static final String JSON_CONTENT_TYPE = "application/dns-json; charset=utf-8";
 
     public HTTPS(@NotNull final String[] parts) {
         this(parts, true);
@@ -86,21 +91,21 @@ public class HTTPS {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            Response r = null;
+            RenderedResponse rendered = null;
 
             switch (t.getRequestMethod()) {
                 case "GET":
-                    r = getResponse(t);
+                    rendered = getResponse(t);
                     break;
                 case "POST":
-                    r = postResponse(t);
+                    rendered = postResponse(t);
                     break;
                 default:
                     logger.warn("Unsupported DoH method: {}", t.getRequestMethod());
                     t.sendResponseHeaders(405, -1);
                     return;
             }
-            if (r == null) {
+            if (rendered == null) {
                 t.sendResponseHeaders(500, -1);
                 return;
             }
@@ -110,17 +115,19 @@ public class HTTPS {
             }
 
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            if (rendered.contentType != null) {
+                t.getResponseHeaders().set("Content-Type", rendered.contentType);
+            }
 
-            String encoded_response = Base64.getEncoder().encodeToString(r.getBytes());
-            logger.trace("Encoded response length: {}", encoded_response.length());
-            t.sendResponseHeaders(200, encoded_response.getBytes(StandardCharsets.UTF_8).length);
+            logger.trace("Encoded response length: {}", rendered.body.length);
+            t.sendResponseHeaders(200, rendered.body.length);
 
             try (OutputStream os = t.getResponseBody()) {
-                os.write(encoded_response.getBytes(StandardCharsets.UTF_8));
+                os.write(rendered.body);
             }
         }
 
-        private Response postResponse(HttpExchange t) {
+        private RenderedResponse postResponse(HttpExchange t) {
             Query q;
             Response r;
             List<Byte> ar = new ArrayList<>();
@@ -145,36 +152,340 @@ public class HTTPS {
                 q = new Query(post_query);
                 q.parseQueries(t.getRemoteAddress().toString());
                 r = new Response(q, false);
-                return r;
+                return new RenderedResponse(
+                        Base64.getEncoder().encodeToString(r.getBytes()).getBytes(StandardCharsets.UTF_8),
+                        null);
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
             }
         }
 
-        private Response getResponse(HttpExchange t) {
-            Query q;
-            Response r;
+        private RenderedResponse getResponse(HttpExchange t) {
             String query = t.getRequestURI().getQuery();
             if (query == null) {
                 return null;
             }
 
-            String[] both = query.split("=", 2);
-            if (both.length < 2) {
+            Map<String, String> params = parseQueryParameters(query);
+            if (params.containsKey("dns")) {
+                return getBinaryResponse(t, params.get("dns"));
+            }
+
+            if (!params.containsKey("name")) {
                 return null;
             }
 
             try {
-                byte[] decoded = Base64.getDecoder().decode(both[1]);
-                q = new Query(decoded);
+                byte[] queryBytes = buildJsonQuery(params);
+                Query q = new Query(queryBytes);
                 q.parseQueries(t.getRemoteAddress().toString());
-                r = new Response(q, false);
-                return r;
+                Response response = new Response(q, false);
+                String json = toJsonResponse(response.getBytes());
+                return new RenderedResponse(json.getBytes(StandardCharsets.UTF_8), JSON_CONTENT_TYPE);
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
             }
+        }
+
+        private RenderedResponse getBinaryResponse(final HttpExchange t, final String encodedQuery) {
+            try {
+                byte[] decoded = Base64.getDecoder().decode(encodedQuery);
+                Query q = new Query(decoded);
+                q.parseQueries(t.getRemoteAddress().toString());
+                Response r = new Response(q, false);
+                return new RenderedResponse(
+                        Base64.getEncoder().encodeToString(r.getBytes()).getBytes(StandardCharsets.UTF_8),
+                        null);
+            } catch (RuntimeException e) {
+                logger.catching(e);
+                return null;
+            }
+        }
+
+        private Map<String, String> parseQueryParameters(final String query) {
+            Map<String, String> params = new LinkedHashMap<>();
+
+            for (String pair : query.split("&")) {
+                if (pair.isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = pair.split("=", 2);
+                String key = URLDecoder.decode(parts[0], StandardCharsets.UTF_8);
+                String value = parts.length > 1 ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8) : "";
+                params.put(key, value);
+            }
+
+            return params;
+        }
+
+        private byte[] buildJsonQuery(final Map<String, String> params) {
+            final String name = params.get("name");
+            final RRCode type = resolveQueryType(params.get("type"));
+
+            byte[] queryBytes = new byte[] {
+                    0x00, 0x01,
+                    0x01, 0x00,
+                    0x00, 0x01,
+                    0x00, 0x00,
+                    0x00, 0x00,
+                    0x00, 0x00
+            };
+
+            queryBytes = Utils.combine(queryBytes, DnsNameCodec.convertString(name));
+            queryBytes = Utils.combine(queryBytes, new byte[] {
+                    (byte) ((type.getCode() >> 8) & 0xff), (byte) (type.getCode() & 0xff),
+                    0x00, 0x01
+            });
+
+            return queryBytes;
+        }
+
+        private RRCode resolveQueryType(final String typeName) {
+            if (typeName == null || typeName.isEmpty()) {
+                return RRCode.A;
+            }
+
+            return RRCode.valueOf(typeName.toUpperCase(Locale.ROOT));
+        }
+
+        private String toJsonResponse(final byte[] responseBytes) {
+            final int questionCount = readUInt16(responseBytes, 4);
+            final int answerCount = readUInt16(responseBytes, 6);
+            final int authorityCount = readUInt16(responseBytes, 8);
+            final int additionalCount = readUInt16(responseBytes, 10);
+
+            int current = 12;
+            StringBuilder json = new StringBuilder();
+            json.append('{');
+            json.append("\"Status\":").append(responseBytes[3] & 0x0f).append(',');
+            json.append("\"TC\":").append((responseBytes[2] & 0x02) != 0).append(',');
+            json.append("\"RD\":").append((responseBytes[2] & 0x01) != 0).append(',');
+            json.append("\"RA\":").append((responseBytes[3] & 0x80) != 0).append(',');
+            json.append("\"AD\":").append((responseBytes[3] & 0x20) != 0).append(',');
+            json.append("\"CD\":").append((responseBytes[3] & 0x10) != 0).append(',');
+
+            ParseResult<QuestionRecord> questions = parseQuestions(responseBytes, current, questionCount);
+            current = questions.nextIndex;
+            ParseResult<ResourceRecord> answers = parseResourceRecords(responseBytes, current, answerCount);
+            current = answers.nextIndex;
+            ParseResult<ResourceRecord> authorities = parseResourceRecords(responseBytes, current, authorityCount);
+            current = authorities.nextIndex;
+            ParseResult<ResourceRecord> additionals = parseResourceRecords(responseBytes, current, additionalCount);
+
+            json.append("\"Question\":").append(renderQuestions(questions.records)).append(',');
+            json.append("\"Answer\":").append(renderResourceRecords(answers.records)).append(',');
+            json.append("\"Authority\":").append(renderResourceRecords(authorities.records)).append(',');
+            json.append("\"Additional\":").append(renderResourceRecords(additionals.records));
+            json.append('}');
+            return json.toString();
+        }
+
+        private ParseResult<QuestionRecord> parseQuestions(final byte[] responseBytes, final int start,
+                                                           final int count) {
+            int current = start;
+            List<QuestionRecord> records = new ArrayList<>();
+
+            for (int i = 0; i < count; i++) {
+                Map.Entry<String, Integer> parsedName = DnsNameCodec.parseName(current, responseBytes);
+                current = parsedName.getValue();
+
+                final int type = readUInt16(responseBytes, current);
+                current += 2;
+                final int clazz = readUInt16(responseBytes, current);
+                current += 2;
+
+                records.add(new QuestionRecord(parsedName.getKey(), type, clazz));
+            }
+
+            return new ParseResult<>(records, current);
+        }
+
+        private ParseResult<ResourceRecord> parseResourceRecords(final byte[] responseBytes,
+                                                                 final int start,
+                                                                 final int count) {
+            int current = start;
+            List<ResourceRecord> records = new ArrayList<>();
+
+            for (int i = 0; i < count; i++) {
+                Map.Entry<String, Integer> parsedName = DnsNameCodec.parseName(current, responseBytes);
+                current = parsedName.getValue();
+
+                final int type = readUInt16(responseBytes, current);
+                current += 2;
+                current += 2;
+                final long ttl = readUInt32(responseBytes, current);
+                current += 4;
+                final int rdlength = readUInt16(responseBytes, current);
+                current += 2;
+
+                final int rdataStart = current;
+                final String data = formatRdata(type, responseBytes, rdataStart, rdlength);
+                current += rdlength;
+
+                records.add(new ResourceRecord(parsedName.getKey(), type, ttl, data));
+            }
+
+            return new ParseResult<>(records, current);
+        }
+
+        private String renderQuestions(final List<QuestionRecord> records) {
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < records.size(); i++) {
+                if (i > 0) {
+                    json.append(',');
+                }
+                QuestionRecord record = records.get(i);
+                json.append('{')
+                        .append("\"name\":\"").append(escapeJson(record.name)).append("\",")
+                        .append("\"type\":").append(record.type).append(',')
+                        .append("\"class\":").append(record.clazz)
+                        .append('}');
+            }
+            json.append(']');
+            return json.toString();
+        }
+
+        private String renderResourceRecords(final List<ResourceRecord> records) {
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < records.size(); i++) {
+                if (i > 0) {
+                    json.append(',');
+                }
+                ResourceRecord record = records.get(i);
+                json.append('{')
+                        .append("\"name\":\"").append(escapeJson(record.name)).append("\",")
+                        .append("\"type\":").append(record.type).append(',')
+                        .append("\"TTL\":").append(record.ttl).append(',')
+                        .append("\"data\":\"").append(escapeJson(record.data)).append("\"")
+                        .append('}');
+            }
+            json.append(']');
+            return json.toString();
+        }
+
+        private String formatRdata(final int type, final byte[] responseBytes,
+                                   final int rdataStart, final int rdlength) {
+            final RRCode rrCode = RRCode.findCode(type);
+
+            try {
+                switch (rrCode) {
+                    case A:
+                    case AAAA:
+                        return InetAddress.getByAddress(
+                                copyRange(responseBytes, rdataStart, rdlength)).getHostAddress();
+                    case CNAME:
+                    case NS:
+                    case PTR:
+                        return normalizeDnsName(DnsNameCodec.parseName(rdataStart, responseBytes).getKey());
+                    case MX: {
+                        final int preference = readUInt16(responseBytes, rdataStart);
+                        final String exchange = normalizeDnsName(
+                                DnsNameCodec.parseName(rdataStart + 2, responseBytes).getKey());
+                        return preference + " " + exchange;
+                    }
+                    case TXT:
+                        return decodeTxt(copyRange(responseBytes, rdataStart, rdlength));
+                    default:
+                        return Base64.getEncoder().encodeToString(copyRange(responseBytes, rdataStart, rdlength));
+                }
+            } catch (Exception e) {
+                logger.trace("Unable to format RDATA for {}", rrCode, e);
+                return Base64.getEncoder().encodeToString(copyRange(responseBytes, rdataStart, rdlength));
+            }
+        }
+
+        private String decodeTxt(final byte[] rdata) {
+            if (rdata.length == 0) {
+                return "";
+            }
+
+            int length = rdata[0] & 0xff;
+            if (length + 1 > rdata.length) {
+                return Base64.getEncoder().encodeToString(rdata);
+            }
+
+            return new String(rdata, 1, length, StandardCharsets.US_ASCII);
+        }
+
+        private String normalizeDnsName(final String name) {
+            if (name == null || name.isEmpty()) {
+                return name;
+            }
+
+            return name.endsWith(".") ? name.substring(0, name.length() - 1) : name;
+        }
+
+        private byte[] copyRange(final byte[] bytes, final int start, final int length) {
+            byte[] copy = new byte[length];
+            System.arraycopy(bytes, start, copy, 0, length);
+            return copy;
+        }
+
+        private String escapeJson(final String value) {
+            return value
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"");
+        }
+
+        private int readUInt16(final byte[] bytes, final int offset) {
+            return ((bytes[offset] & 0xff) << 8) | (bytes[offset + 1] & 0xff);
+        }
+
+        private long readUInt32(final byte[] bytes, final int offset) {
+            return ((long) (bytes[offset] & 0xff) << 24)
+                    | ((long) (bytes[offset + 1] & 0xff) << 16)
+                    | ((long) (bytes[offset + 2] & 0xff) << 8)
+                    | (long) (bytes[offset + 3] & 0xff);
+        }
+    }
+
+    private static final class RenderedResponse {
+        private final byte[] body;
+        private final String contentType;
+
+        private RenderedResponse(final byte[] body, final String contentType) {
+            this.body = body;
+            this.contentType = contentType;
+        }
+    }
+
+    private static final class ParseResult<T> {
+        private final List<T> records;
+        private final int nextIndex;
+
+        private ParseResult(final List<T> records, final int nextIndex) {
+            this.records = records;
+            this.nextIndex = nextIndex;
+        }
+    }
+
+    private static final class QuestionRecord {
+        private final String name;
+        private final int type;
+        private final int clazz;
+
+        private QuestionRecord(final String name, final int type, final int clazz) {
+            this.name = name;
+            this.type = type;
+            this.clazz = clazz;
+        }
+    }
+
+    private static final class ResourceRecord {
+        private final String name;
+        private final int type;
+        private final long ttl;
+        private final String data;
+
+        private ResourceRecord(final String name, final int type,
+                               final long ttl, final String data) {
+            this.name = name;
+            this.type = type;
+            this.ttl = ttl;
+            this.data = data;
         }
     }
 

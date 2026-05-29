@@ -1,0 +1,49 @@
+name: Changelog
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Build CHANGELOG from GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "# Changelog"
+            echo ""
+            echo "All notable changes to this project are documented in this file."
+            echo ""
+            gh api "repos/${{ github.repository }}/releases?per_page=100" --paginate --jq '.[]
+              | select(.draft | not)
+              | select(.prerelease | not)
+              | "## \(.tag_name) - \(.published_at[0:10])\n\n\(.body // \"No release notes.\")\n"'
+          } > CHANGELOG.md
+
+      - name: Commit changelog update
+        run: |
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "No changelog changes to commit"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG from GitHub Releases"
+          git push origin HEAD:main

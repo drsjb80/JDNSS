@@ -1,5 +1,6 @@
 [![CI](https://github.com/drsjb80/JDNSS/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/drsjb80/JDNSS/actions/workflows/ci.yml)
 [![CD](https://github.com/drsjb80/JDNSS/actions/workflows/cd.yml/badge.svg)](https://github.com/drsjb80/JDNSS/actions/workflows/cd.yml)
+[![Changelog](https://github.com/drsjb80/JDNSS/actions/workflows/changelog.yml/badge.svg)](https://github.com/drsjb80/JDNSS/actions/workflows/changelog.yml)
 
 <table>
 <tr>
@@ -18,6 +19,21 @@
 # JDNSS
 An authoritative-only, DNSSEC/TLS/DoH capable, leaf DNS server in Java. See the
 issues for the known problems with DNSSEC.
+
+## Release process
+
+Release notes and CHANGELOG updates are automated via GitHub Actions.
+
+To cut a new release:
+
+```
+git tag -a vX.Y -m "Release vX.Y"
+git push origin vX.Y
+```
+
+This triggers CD to build artifacts and publish a GitHub Release with generated
+release notes, then triggers the changelog workflow to refresh CHANGELOG.md from
+published releases.
 
 It was written to be both more portable and more secure.  It is
 currently intended for use as a "leaf" server as it does not do

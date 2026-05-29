@@ -15,6 +15,9 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyStore;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -148,6 +151,38 @@ public class HTTPSTest {
         verify(exchange).sendResponseHeaders(500, -1);
     }
 
+    @Test
+    public void constructorSkipsBindingValidationWhenNotStartingServer() {
+        new HTTPS(new String[] {"HTTPS"}, false);
+    }
+
+    @Test
+    public void getSslContextLoadsTemporaryKeyStore() throws Exception {
+        Path keyStoreFile = Files.createTempFile("jdnss-https", ".jks");
+        char[] password = "changeit".toCharArray();
+        Object originalKeyStoreFile = getJargField("keystoreFile");
+        Object originalKeyStorePassword = getJargField("keystorePassword");
+
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(null, password);
+            try (java.io.OutputStream output = Files.newOutputStream(keyStoreFile)) {
+                keyStore.store(output, password);
+            }
+
+            setJargField("keystoreFile", keyStoreFile.toString());
+            setJargField("keystorePassword", "changeit");
+
+            HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+
+            Assert.assertNotNull(https.getSslContext());
+        } finally {
+            setJargField("keystoreFile", originalKeyStoreFile);
+            setJargField("keystorePassword", originalKeyStorePassword);
+            Files.deleteIfExists(keyStoreFile);
+        }
+    }
+
     private static HttpExchange baseExchange(final String method, final URI uri,
                                              final InputStream requestBody) {
         HttpExchange exchange = mock(HttpExchange.class);
@@ -178,6 +213,18 @@ public class HTTPSTest {
                 (byte) 0x6d, (byte) 0x00, (byte) 0x00, (byte) 0x01,
                 (byte) 0x00, (byte) 0x01
         };
+    }
+
+    private static void setJargField(final String fieldName, final Object value) throws Exception {
+        Field field = jdnssArgs.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(JDNSS.jargs, value);
+    }
+
+    private static Object getJargField(final String fieldName) throws Exception {
+        Field field = jdnssArgs.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(JDNSS.jargs);
     }
 
     @SuppressWarnings("unchecked")

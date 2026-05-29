@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/drsjb80/JDNSS.svg?branch=dev)](https://travis-ci.org/drsjb80/JDNSS)
+[![CI](https://github.com/drsjb80/JDNSS/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/drsjb80/JDNSS/actions/workflows/ci.yml)
+[![CD](https://github.com/drsjb80/JDNSS/actions/workflows/cd.yml/badge.svg)](https://github.com/drsjb80/JDNSS/actions/workflows/cd.yml)
 
 <table>
 <tr>

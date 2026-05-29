@@ -229,6 +229,66 @@ class Parser {
         return RRCode.NOTOK;
     }
 
+    private RRCode classifyWordToken(final String tokenText) {
+        logger.trace("a = " + tokenText);
+
+        final RRCode knownToken = lookupKnownToken(tokenText);
+        if (knownToken != null) {
+            return knownToken;
+        }
+
+        final RRCode matchedToken = matcher(tokenText);
+        logger.traceExit(matchedToken);
+        return matchedToken;
+    }
+
+    private RRCode lookupKnownToken(final String tokenText) {
+        return tokens.get(tokenText);
+    }
+
+    private RRCode classifyStreamToken(final int rawToken) {
+        switch (rawToken) {
+            case '"':
+                stringValue = st.sval;
+                logger.trace(stringValue);
+                logger.traceExit("STRING");
+                return RRCode.STRING;
+            case StreamTokenizer.TT_EOF:
+                logger.traceExit("EOF");
+                return RRCode.EOF;
+            case StreamTokenizer.TT_NUMBER:
+                // numbers are counted as words...
+                logger.traceExit("NOTOK");
+                return RRCode.NOTOK;
+            case StreamTokenizer.TT_WORD:
+                return classifyWordToken(st.sval);
+            case '@':
+                stringValue = origin;
+                logger.trace(stringValue);
+                logger.traceExit("AT");
+                return RRCode.DN;
+            case '{':
+                logger.traceExit("LCURLY");
+                return RRCode.LCURLY;
+            case '}':
+                logger.traceExit("RCURLY");
+                return RRCode.RCURLY;
+            case '(':
+                logger.traceExit("LPAREN");
+                return RRCode.LPAREN;
+            case ')':
+                logger.traceExit("RPAREN");
+                return RRCode.RPAREN;
+            case '*':
+                logger.traceExit("STAR");
+                return RRCode.STAR;
+            default:
+                logger.info("Unknown token at line " + st.lineno() + ": " + rawToken);
+                logger.traceExit("NOTOK");
+                return RRCode.NOTOK;
+        }
+    }
+
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("SF_SWITCH_FALLTHROUGH")
     private void calculateMDWM(final String a) {
         intValue = Integer.parseInt(a.substring(0, a.length() - 1));
@@ -281,63 +341,9 @@ class Parser {
     }
 
     private RRCode getNextToken() {
-        final int t = getOneWord();
-        logger.trace("t = " + t);
-
-        switch (t) {
-            case '"':
-                stringValue = st.sval;
-                logger.trace(stringValue);
-                logger.traceExit("STRING");
-                return RRCode.STRING;
-            case StreamTokenizer.TT_EOF:
-                logger.traceExit("EOF");
-                return RRCode.EOF;
-            case StreamTokenizer.TT_NUMBER:
-                // numbers are counted as words...
-                logger.traceExit("NOTOK");
-                return RRCode.NOTOK;
-            case StreamTokenizer.TT_WORD: {
-                final String a = st.sval;
-                logger.trace("a = " + a);
-
-                /*
-                ** is it in the tokens hash?
-                */
-                final RRCode i = tokens.get(a);
-                if (i != null) {
-                    return i;
-                }
-
-                final RRCode k = matcher(a);
-                logger.traceExit(k);
-                return k;
-            }
-            case '@':
-                stringValue = origin;
-                logger.trace(stringValue);
-                logger.traceExit("AT");
-                return RRCode.DN;
-            case '{':
-                logger.traceExit("LCURLY");
-                return RRCode.LCURLY;
-            case '}':
-                logger.traceExit("RCURLY");
-                return RRCode.RCURLY;
-            case '(':
-                logger.traceExit("LPAREN");
-                return RRCode.LPAREN;
-            case ')':
-                logger.traceExit("RPAREN");
-                return RRCode.RPAREN;
-            case '*':
-                logger.traceExit("STAR");
-                return RRCode.STAR;
-            default:
-                logger.info("Unknown token at line " + st.lineno() + ": " + t);
-                logger.traceExit("NOTOK");
-                return RRCode.NOTOK;
-        }
+        final int rawToken = getOneWord();
+        logger.trace("t = " + rawToken);
+        return classifyStreamToken(rawToken);
     }
 
     private void doInclude() throws UnsupportedEncodingException {

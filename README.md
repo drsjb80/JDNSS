@@ -57,3 +57,21 @@ You should be able to run the following queries (from a different window):
 * dig @localhost test.com +cookie="0123456789abcdef"
 * dig @localhost www.test.com AAAA
 * dig @localhost www.test.com +noedns
+
+## DNS over HTTPS
+
+JDNSS listens on the /dns-query endpoint for HTTPS bindings.
+
+- Binary-style DoH GET: /dns-query?dns=<base64url_dns_wire_query>
+- Binary-style DoH POST: raw DNS wire query in request body
+- JSON-style DoH GET: /dns-query?name=<fqdn>&type=<rrtype>
+
+The JSON-style GET returns content type application/dns-json and includes
+Status, Question, Answer, Authority, and Additional fields.
+
+Current binary-style DoH responses are emitted as base64-encoded DNS wire bytes
+with content type application/dns-message.
+
+Example JSON query:
+
+curl "https://127.0.0.1:8443/dns-query?name=test.com&type=A"

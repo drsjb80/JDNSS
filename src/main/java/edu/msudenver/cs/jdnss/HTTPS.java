@@ -25,6 +25,7 @@ import java.util.Map;
 
 public class HTTPS {
     private final Logger logger = JDNSS.logger;
+    private static final String DNS_MESSAGE_CONTENT_TYPE = "application/dns-message";
     private static final String JSON_CONTENT_TYPE = "application/dns-json; charset=utf-8";
 
     public HTTPS(@NotNull final String[] parts) {
@@ -154,7 +155,7 @@ public class HTTPS {
                 r = new Response(q, false);
                 return new RenderedResponse(
                         Base64.getEncoder().encodeToString(r.getBytes()).getBytes(StandardCharsets.UTF_8),
-                        null);
+                        DNS_MESSAGE_CONTENT_TYPE);
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
@@ -191,17 +192,26 @@ public class HTTPS {
 
         private RenderedResponse getBinaryResponse(final HttpExchange t, final String encodedQuery) {
             try {
-                byte[] decoded = Base64.getDecoder().decode(encodedQuery);
+                byte[] decoded = decodeDnsQuery(encodedQuery);
                 Query q = new Query(decoded);
                 q.parseQueries(t.getRemoteAddress().toString());
                 Response r = new Response(q, false);
                 return new RenderedResponse(
                         Base64.getEncoder().encodeToString(r.getBytes()).getBytes(StandardCharsets.UTF_8),
-                        null);
+                        DNS_MESSAGE_CONTENT_TYPE);
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
             }
+        }
+
+        private byte[] decodeDnsQuery(final String encodedQuery) {
+            String normalized = encodedQuery.replace('-', '+').replace('_', '/');
+            int remainder = normalized.length() % 4;
+            if (remainder != 0) {
+                normalized = normalized + "=".repeat(4 - remainder);
+            }
+            return Base64.getDecoder().decode(normalized);
         }
 
         private Map<String, String> parseQueryParameters(final String query) {

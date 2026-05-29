@@ -61,6 +61,8 @@ public class HTTPSTest {
         verify(exchange).sendResponseHeaders(eq(200), anyLong());
         Assert.assertTrue(out.size() > 0);
         Assert.assertEquals("*", exchange.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+        Assert.assertEquals("application/dns-message",
+            exchange.getResponseHeaders().getFirst("Content-Type"));
     }
 
     @Test
@@ -78,7 +80,28 @@ public class HTTPSTest {
         verify(exchange).sendResponseHeaders(eq(200), anyLong());
         Assert.assertTrue(out.size() > 0);
         Assert.assertEquals("*", exchange.getResponseHeaders().getFirst("Access-Control-Allow-Origin"));
+        Assert.assertEquals("application/dns-message",
+            exchange.getResponseHeaders().getFirst("Content-Type"));
     }
+
+        @Test
+        public void getRequestAcceptsUrlSafeBase64DnsParameter() throws Exception {
+        HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+        HttpHandler handler = https.createHandler();
+
+        String urlSafe = Base64.getUrlEncoder().withoutPadding().encodeToString(buildQueryPacket());
+        HttpExchange exchange = baseExchange("GET", new URI("/dns-query?dns=" + urlSafe),
+            new ByteArrayInputStream(new byte[0]));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(exchange.getResponseBody()).thenReturn(out);
+
+        handler.handle(exchange);
+
+        verify(exchange).sendResponseHeaders(eq(200), anyLong());
+        Assert.assertTrue(out.size() > 0);
+        Assert.assertEquals("application/dns-message",
+            exchange.getResponseHeaders().getFirst("Content-Type"));
+        }
 
     @Test
     public void unsupportedMethodReturns405() throws Exception {

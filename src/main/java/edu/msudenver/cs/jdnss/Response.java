@@ -145,14 +145,12 @@ class Response {
     }
 
     private void maybeAppendDnssecNegativeResponseMaterial() {
-        if (!isDnssecEnabled()) {
-            return;
-        }
-
-        numAuthorities++;
-        addDnssecAuthoritySignature(RRCode.SOA, zone.getName());
-        addNSECRecords(zone.getName());
-        addDnssecAuthoritySignature(RRCode.NSEC, zone.getName());
+        runIfDnssecEnabled(() -> {
+            numAuthorities++;
+            addDnssecAuthoritySignature(RRCode.SOA, zone.getName());
+            addNSECRecords(zone.getName());
+            addDnssecAuthoritySignature(RRCode.NSEC, zone.getName());
+        });
     }
 
     private boolean isDnssecEnabled() {
@@ -344,9 +342,9 @@ class Response {
     }
 
     private void maybeAddDnssecAdditionalSignature(final RRCode type, final String host) {
-        if (isDnssecEnabled()) {
+        runIfDnssecEnabled(() -> {
             addRRSignature(type, host, additional, ResponseSection.ADDITIONAL);
-        }
+        });
     }
 
     // put the possible authorities in, but don't add to response until we know
@@ -369,9 +367,9 @@ class Response {
     }
 
     private void maybeAddDnssecAuthoritySignature() {
-        if (isDnssecEnabled()) {
+        runIfDnssecEnabled(() -> {
             addDnssecAuthoritySignature(RRCode.NS, zone.getName());
-        }
+        });
     }
 
 
@@ -574,8 +572,14 @@ class Response {
     }
 
     private void maybeAddNsecRecord(final String name) {
-        if (isDnssecEnabled()) {
+        runIfDnssecEnabled(() -> {
             addNSECRecords(name);
+        });
+    }
+
+    private void runIfDnssecEnabled(final Runnable action) {
+        if (isDnssecEnabled()) {
+            action.run();
         }
     }
 

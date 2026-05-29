@@ -7,7 +7,6 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;

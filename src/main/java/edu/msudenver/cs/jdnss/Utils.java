@@ -399,10 +399,13 @@ final class Utils {
     private static byte[] docolons(final String s, final int length) {
         if (s == null || s.isEmpty()) {
             failIllegalArgument("Invalid IPv6 address: " + s);
+            return new byte[0];
         }
 
+        final String source = s;
+
         // nothing but colons, IPv6 unspecified
-        if (s.equals("::")) {
+        if ("::".equals(source)) {
             byte[] ret = new byte[length];
             for (int i = 0; i < length; i++) {
                 ret[i] = 0;
@@ -413,26 +416,26 @@ final class Utils {
 
         final int expectedGroups = length / 2;
 
-        if (count(s, "::") > 1) {
-            failIllegalArgument("Invalid IPv6 address: " + s);
+        if (count(source, "::") > 1) {
+            failIllegalArgument("Invalid IPv6 address: " + source);
         }
 
         final List<String> groups = new ArrayList<>();
 
-        if (s.contains("::")) {
-            String[] halves = s.split("::", -1);
+        if (source.contains("::")) {
+            String[] halves = source.split("::", -1);
             if (halves.length != 2) {
-                failIllegalArgument("Invalid IPv6 address: " + s);
+                failIllegalArgument("Invalid IPv6 address: " + source);
             }
 
             String[] left = halves[0].isEmpty() ? new String[0] : halves[0].split(":", -1);
             String[] right = halves[1].isEmpty() ? new String[0] : halves[1].split(":", -1);
-            validateIpv6Groups(left, s);
-            validateIpv6Groups(right, s);
+            validateIpv6Groups(left, source);
+            validateIpv6Groups(right, source);
 
             int present = left.length + right.length;
             if (present >= expectedGroups) {
-                failIllegalArgument("Invalid IPv6 address: " + s);
+                failIllegalArgument("Invalid IPv6 address: " + source);
             }
 
             groups.addAll(Arrays.asList(left));
@@ -441,16 +444,16 @@ final class Utils {
             }
             groups.addAll(Arrays.asList(right));
         } else {
-            String[] all = s.split(":", -1);
-            validateIpv6Groups(all, s);
+            String[] all = source.split(":", -1);
+            validateIpv6Groups(all, source);
             if (all.length != expectedGroups) {
-                failIllegalArgument("Invalid IPv6 address: " + s);
+                failIllegalArgument("Invalid IPv6 address: " + source);
             }
             groups.addAll(Arrays.asList(all));
         }
 
         if (groups.size() != expectedGroups) {
-            failIllegalArgument("Invalid IPv6 address: " + s);
+            failIllegalArgument("Invalid IPv6 address: " + source);
         }
 
         byte[] ret = new byte[length];
@@ -460,7 +463,7 @@ final class Utils {
             try {
                 conv = Integer.parseInt(group, 16);
             } catch (NumberFormatException nfe) {
-                failIllegalArgument("Invalid IPv6 address: " + s);
+                failIllegalArgument("Invalid IPv6 address: " + source);
                 return new byte[0];
             }
             ret[where++] = getByte(conv, 2);

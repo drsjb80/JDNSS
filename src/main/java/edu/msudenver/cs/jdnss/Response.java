@@ -145,17 +145,21 @@ class Response {
     }
 
     private void maybeAppendDnssecNegativeResponseMaterial() {
-        if (!DNSSEC) {
+        if (!isDnssecEnabled()) {
             return;
         }
 
         numAuthorities++;
-        addDnssecNegativeResponseSignature(RRCode.SOA, zone.getName());
+        addDnssecAuthoritySignature(RRCode.SOA, zone.getName());
         addNSECRecords(zone.getName());
-        addDnssecNegativeResponseSignature(RRCode.NSEC, zone.getName());
+        addDnssecAuthoritySignature(RRCode.NSEC, zone.getName());
     }
 
-    private void addDnssecNegativeResponseSignature(final RRCode type, final String name) {
+    private boolean isDnssecEnabled() {
+        return DNSSEC;
+    }
+
+    private void addDnssecAuthoritySignature(final RRCode type, final String name) {
         addRRSignature(type, name, authority, ResponseSection.AUTHORITY);
     }
 
@@ -181,9 +185,13 @@ class Response {
 
     private void maybeAddAnswerSignature(final boolean lastRecord, final RRCode type,
                                          final String name) {
-        if (lastRecord && DNSSEC) {
+        if (shouldAddAnswerSignature(lastRecord)) {
             addRRSignature(type, name, responses, ResponseSection.ANSWER);
         }
+    }
+
+    private boolean shouldAddAnswerSignature(final boolean lastRecord) {
+        return lastRecord && isDnssecEnabled();
     }
 
     private void appendAnswerRecord(final byte[] add) {
@@ -226,9 +234,13 @@ class Response {
 
     private void maybeCreateSoaDnssecAdditionals(final RRCode type,
                                                   final String name) {
-        if (DNSSEC && type == RRCode.SOA) {
+        if (shouldAddSoaDnssecAdditionals(type)) {
             addSoaDnssecAdditionals(name);
         }
+    }
+
+    private boolean shouldAddSoaDnssecAdditionals(final RRCode type) {
+        return isDnssecEnabled() && type == RRCode.SOA;
     }
 
     private void addSoaDnssecAdditionals(final String name) {
@@ -332,7 +344,7 @@ class Response {
     }
 
     private void maybeAddDnssecAdditionalSignature(final RRCode type, final String host) {
-        if (DNSSEC) {
+        if (isDnssecEnabled()) {
             addRRSignature(type, host, additional, ResponseSection.ADDITIONAL);
         }
     }
@@ -357,8 +369,8 @@ class Response {
     }
 
     private void maybeAddDnssecAuthoritySignature() {
-        if (DNSSEC) {
-            addRRSignature(RRCode.NS, zone.getName(), authority, ResponseSection.AUTHORITY);
+        if (isDnssecEnabled()) {
+            addDnssecAuthoritySignature(RRCode.NS, zone.getName());
         }
     }
 
@@ -489,7 +501,7 @@ class Response {
 
     private void nameNotFound(final RRCode type, final String name) {
         logger.traceEntry();
-        if (DNSSEC) {
+        if (isDnssecEnabled()) {
             throw new AssertionError();
         }
 
@@ -547,7 +559,7 @@ class Response {
             return;
         }
 
-        if (DNSSEC) {
+        if (isDnssecEnabled()) {
             addNSECRecords(name);
         }
     }

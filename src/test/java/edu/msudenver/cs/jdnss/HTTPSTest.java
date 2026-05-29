@@ -183,6 +183,40 @@ public class HTTPSTest {
         }
     }
 
+    @Test(expected = AssertionError.class)
+    public void getSslContextRejectsMissingPassword() throws Exception {
+        Object originalKeyStoreFile = getJargField("keystoreFile");
+        Object originalKeyStorePassword = getJargField("keystorePassword");
+
+        try {
+            setJargField("keystoreFile", "server.jks");
+            setJargField("keystorePassword", null);
+
+            HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+            https.getSslContext();
+        } finally {
+            setJargField("keystoreFile", originalKeyStoreFile);
+            setJargField("keystorePassword", originalKeyStorePassword);
+        }
+    }
+
+    @Test(expected = java.io.FileNotFoundException.class)
+    public void getSslContextRejectsMissingFile() throws Exception {
+        Object originalKeyStoreFile = getJargField("keystoreFile");
+        Object originalKeyStorePassword = getJargField("keystorePassword");
+
+        try {
+            setJargField("keystoreFile", "/tmp/jdnss-does-not-exist.jks");
+            setJargField("keystorePassword", "changeit");
+
+            HTTPS https = new HTTPS(new String[] {"HTTPS", "127.0.0.1", "0"}, false);
+            https.getSslContext();
+        } finally {
+            setJargField("keystoreFile", originalKeyStoreFile);
+            setJargField("keystorePassword", originalKeyStorePassword);
+        }
+    }
+
     private static HttpExchange baseExchange(final String method, final URI uri,
                                              final InputStream requestBody) {
         HttpExchange exchange = mock(HttpExchange.class);

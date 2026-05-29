@@ -76,6 +76,15 @@ abstract class FNV1 {
   }
 
   /**
+   * Initialize this hash instance from raw bytes.
+   *
+   * @param buf byte buffer from which to compute the hash
+   */
+  void init(byte[] buf) {
+    init(buf, 0, buf.length);
+  }
+
+  /**
    * Initialize this hash instance. Any previous state is reset, and the new
    * hash value is computed.
    *
@@ -100,6 +109,15 @@ abstract class FNV1 {
     } catch (Exception e) {
       buf = s.getBytes("UTF-8");
     }
+    update(buf, 0, buf.length);
+  }
+
+  /**
+   * Update the hash value from raw bytes.
+   *
+   * @param buf byte buffer from which to compute the hash
+   */
+  void update(byte[] buf) {
     update(buf, 0, buf.length);
   }
 

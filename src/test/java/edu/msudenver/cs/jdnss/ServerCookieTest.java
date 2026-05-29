@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 public class ServerCookieTest {
 
@@ -29,6 +30,17 @@ public class ServerCookieTest {
         Assert.assertFalse(serverCookie.isValid(cookie, "not a good ip"));
         Assert.assertFalse(serverCookie.isValid(differentCookie, clientIPaddress));
         Assert.assertFalse(serverCookie.isValid(differentCookie, "not a good ip"));
+    }
+    
+    @Test
+    public void isValidPreservesArbitraryCookieBytes() throws UnsupportedEncodingException {
+        byte[] rawCookie = new byte[] {(byte) 0xc3, (byte) 0x28, (byte) 0xff, (byte) 0x00,
+                (byte) 0x10, (byte) 0x80, (byte) 0x7f, (byte) 0x01};
+        ServerCookie arbitraryCookie = new ServerCookie(rawCookie, clientIPaddress);
+
+        Assert.assertTrue(arbitraryCookie.isValid(rawCookie, clientIPaddress));
+        Assert.assertFalse(arbitraryCookie.isValid(Arrays.copyOf(rawCookie, rawCookie.length),
+                "not a good ip"));
     }
 }
 

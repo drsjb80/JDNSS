@@ -259,12 +259,22 @@ class Response {
             return;
         }
 
-        if (!UDP || responses.length + sectionData.length < maximumPayload) {
-            responses = Utils.combine(responses, sectionData);
-            setHeaderCount.accept(sectionCount);
-        } else {
+        if (!canAppendWholeSection(sectionData.length)) {
             header.markTruncated();
+            return;
         }
+
+        appendToResponsesAndSetCount(sectionData, sectionCount, setHeaderCount);
+    }
+
+    private boolean canAppendWholeSection(final int sectionLength) {
+        return !UDP || responses.length + sectionLength < maximumPayload;
+    }
+
+    private void appendToResponsesAndSetCount(final byte[] sectionData, final int sectionCount,
+                                              final IntConsumer setHeaderCount) {
+        responses = Utils.combine(responses, sectionData);
+        setHeaderCount.accept(sectionCount);
     }
 
     /**
@@ -274,11 +284,15 @@ class Response {
     private void createAorAAAA(@NonNull final String host, @NonNull final String name) {
         logger.traceEntry();
 
-        for (RRCode rrCode: Arrays.asList(RRCode.A, RRCode.AAAA)) {
-            final List<RR> v = zone.get(rrCode, host);
-            if (! v.isEmpty()) {
-                createAdditionals(v, host);
-            }
+        for (RRCode rrCode: ADDRESS_QUERY_TYPES) {
+            createAddressAdditionalsForType(rrCode, host);
+        }
+    }
+
+    private void createAddressAdditionalsForType(final RRCode rrCode, final String host) {
+        final List<RR> records = zone.get(rrCode, host);
+        if (!records.isEmpty()) {
+            createAdditionals(records, host);
         }
     }
 
@@ -287,11 +301,18 @@ class Response {
         logger.traceEntry();
         final RRCode type = v.get(0).getType();
 
-        for (RR rr : v) {
+        appendAdditionalRecords(v, host);
+        maybeAddDnssecAdditionalSignature(type, host);
+    }
+
+    private void appendAdditionalRecords(final List<RR> records, final String host) {
+        for (RR rr : records) {
             additional = Utils.combine(additional, rr.getBytes(host, minimum));
             numAdditionals++;
         }
+    }
 
+    private void maybeAddDnssecAdditionalSignature(final RRCode type, final String host) {
         if (DNSSEC) {
             addRRSignature(type, host, additional, ResponseSection.ADDITIONAL);
         }
@@ -301,14 +322,22 @@ class Response {
     // there is room for them.
     private void createAuthorities(final String name) {
         logger.traceEntry(name);
-        final List<RR> v = zone.get(RRCode.NS, zone.getName());
+        final List<RR> nsRecords = zone.get(RRCode.NS, zone.getName());
 
-        for (RR nsrr : v) {
+        appendAuthorityRecordsAndAddressAdditionals(nsRecords, name);
+        maybeAddDnssecAuthoritySignature();
+    }
+
+    private void appendAuthorityRecordsAndAddressAdditionals(final List<RR> nsRecords,
+                                                             final String queryName) {
+        for (RR nsrr : nsRecords) {
             authority = Utils.combine(authority, nsrr.getBytes(nsrr.getName(), minimum));
             numAuthorities++;
-            createAorAAAA(nsrr.getString(), name);
+            createAorAAAA(nsrr.getString(), queryName);
         }
+    }
 
+    private void maybeAddDnssecAuthoritySignature() {
         if (DNSSEC) {
             addRRSignature(RRCode.NS, zone.getName(), authority, ResponseSection.AUTHORITY);
         }
@@ -363,13 +392,18 @@ class Response {
                                        final boolean skipWhenOverflow,
                                        final Consumer<byte[]> sectionUpdater,
                                        final Runnable counterIncrementer) {
-        final boolean overflow = checkAndMarkUdpOverflow(responses.length, add.length);
-        if (overflow && skipWhenOverflow) {
+        if (shouldSkipSignedSection(add.length, skipWhenOverflow)) {
             return;
         }
 
         sectionUpdater.accept(Utils.combine(destination, add));
         counterIncrementer.run();
+    }
+
+    private boolean shouldSkipSignedSection(final int additionalLength,
+                                            final boolean skipWhenOverflow) {
+        final boolean overflow = checkAndMarkUdpOverflow(responses.length, additionalLength);
+        return overflow && skipWhenOverflow;
     }
 
     private boolean checkAndMarkUdpOverflow(final int currentLength, final int additionalLength) {

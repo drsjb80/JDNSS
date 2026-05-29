@@ -169,9 +169,6 @@ class Response {
         final byte[] add = rr.getBytes(name, minimum);
         appendAnswerRecord(add);
 
-        //Add RRSIG Records Corresponding to Type
-        //seems right to add answers somewhere close but we only want to do it once on last
-        //TODO Check the stuff to assure its doing what I want it to
         maybeAddAnswerSignature(lastRecord, rr.getType(), name);
 
         maybeCreateAuthorities(firstRecord, type, name);

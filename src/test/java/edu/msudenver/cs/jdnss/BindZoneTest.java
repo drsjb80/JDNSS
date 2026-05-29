@@ -37,8 +37,6 @@ public class BindZoneTest
         Assert.assertEquals (z.toString(), expectedZ);
         */
 
-        // FIXME Assert.assertEquals (z.get (RRCode.A, "www").toString(), expectedwww);
-
         // exception.expect (AssertionError.class);
         // Assert.assertNull (z.get (RRCode.A, "WWW"));
     }

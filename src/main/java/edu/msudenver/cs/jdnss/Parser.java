@@ -543,44 +543,31 @@ class Parser {
 
         switch (t) {
             case A:
-                zone.add(currentName, new ARR(currentName, currentTTL,
-                        getIPV4ADDR()));
+                addARecord();
                 break;
             case A6:
-                // deprecated
-                getNextToken();
+                skipDeprecatedA6Record();
                 break;
             case AAAA:
-                zone.add(currentName, new AAAARR(currentName, currentTTL,
-                        getIPV6ADDR()));
+                addAaaaRecord();
                 break;
             case NS:
-                zone.add(currentName, new NSRR(currentName, currentTTL,
-                        getDomain()));
+                addNsRecord();
                 break;
             case CNAME:
-                zone.add(currentName, new CNAMERR(currentName, currentTTL,
-                        getDomain()));
+                addCnameRecord();
                 break;
             case TXT:
-                zone.add(currentName, new TXTRR(currentName, currentTTL,
-                        getString()));
+                addTxtRecord();
                 break;
             case HINFO:
-                final String first = getString();
-                final String second = getString();
-                zone.add(currentName, new HINFORR(currentName, currentTTL,
-                        first, second));
+                addHinfoRecord();
                 break;
             case MX:
-                final int preference = getInt("preference");
-                final String exchanger = getDomain();
-                zone.add(currentName, new MXRR(currentName, currentTTL,
-                        exchanger, preference));
+                addMxRecord();
                 break;
             case PTR:
-                zone.add(currentName, new PTRRR(currentName, currentTTL,
-                        getDomain()));
+                addPtrRecord();
                 break;
             case RRSIG:
                 doRRSIG();
@@ -602,6 +589,47 @@ class Parser {
                         + t);
                 break;
         }
+    }
+
+    private void addARecord() {
+        zone.add(currentName, new ARR(currentName, currentTTL, getIPV4ADDR()));
+    }
+
+    private void skipDeprecatedA6Record() {
+        // deprecated
+        getNextToken();
+    }
+
+    private void addAaaaRecord() {
+        zone.add(currentName, new AAAARR(currentName, currentTTL, getIPV6ADDR()));
+    }
+
+    private void addNsRecord() {
+        zone.add(currentName, new NSRR(currentName, currentTTL, getDomain()));
+    }
+
+    private void addCnameRecord() {
+        zone.add(currentName, new CNAMERR(currentName, currentTTL, getDomain()));
+    }
+
+    private void addTxtRecord() {
+        zone.add(currentName, new TXTRR(currentName, currentTTL, getString()));
+    }
+
+    private void addHinfoRecord() {
+        final String first = getString();
+        final String second = getString();
+        zone.add(currentName, new HINFORR(currentName, currentTTL, first, second));
+    }
+
+    private void addMxRecord() {
+        final int preference = getInt("preference");
+        final String exchanger = getDomain();
+        zone.add(currentName, new MXRR(currentName, currentTTL, exchanger, preference));
+    }
+
+    private void addPtrRecord() {
+        zone.add(currentName, new PTRRR(currentName, currentTTL, getDomain()));
     }
 
     private int CalcTTL() {

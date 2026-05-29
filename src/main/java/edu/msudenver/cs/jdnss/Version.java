@@ -9,13 +9,21 @@ import java.io.InputStream;
 class Version {
     public String getVersion() {
         try {
-            Properties properties = new Properties();
             try (InputStream in = getClass().getResourceAsStream("/version.properties")) {
-                properties.load(in);
+                return readVersion(in);
             }
-            return properties.getProperty("version");
         } catch (java.io.IOException IOE) {
             return "unknown";
         }
+    }
+
+    static String readVersion(final InputStream in) throws java.io.IOException {
+        if (in == null) {
+            return "unknown";
+        }
+
+        Properties properties = new Properties();
+        properties.load(in);
+        return properties.getProperty("version", "unknown");
     }
 }

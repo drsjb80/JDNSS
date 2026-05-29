@@ -22,24 +22,7 @@ class MyDatagramSocket extends DatagramSocket
      */
     public String toString()
     {
-        String s = "";
-
-        try
-        {
-            s += "getBroadcast() = " + getBroadcast() + "\n";
-            s += "getLocalAddress = " + getLocalAddress().getHostAddress() + "\n";
-            s += "getLocalPort() = " + getLocalPort() + "\n";
-            s += "getReceiveBufferSize() = " + getReceiveBufferSize() + "\n";
-            s += "getReuseAddress() = " + getReuseAddress() + "\n";
-            s += "getSendBufferSize() = " + getSendBufferSize() + "\n";
-            s += "getSoTimeout() = " + getSoTimeout() + "\n";
-            s += "getTrafficClass() = " + getTrafficClass() + "\n";
-            s += "isBound() = " + isBound() + "\n";
-            s += "isClosed() = " + isClosed() + "\n";
-            s += "isConnected() = " + isConnected();
-        }
-        catch (SocketException e) { e.printStackTrace(); }
-
-        return s;
+        String socketDetails = SocketDebugFormatter.toString(this);
+        return socketDetails == null ? "" : socketDetails;
     }
 }

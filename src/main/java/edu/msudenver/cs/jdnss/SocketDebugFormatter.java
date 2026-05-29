@@ -27,7 +27,7 @@ final class SocketDebugFormatter {
         return s.toString();
     }
 
-    private static String toString(final DatagramSocket dgs) {
+    static String toString(final DatagramSocket dgs) {
         StringBuilder s = new StringBuilder();
 
         try {

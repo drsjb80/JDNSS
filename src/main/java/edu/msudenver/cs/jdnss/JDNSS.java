@@ -14,6 +14,24 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 class JDNSS {
+    static final class RuntimeConfig {
+        private final String serverSecret;
+        private final String[] additional;
+
+        RuntimeConfig(final String serverSecret, final String[] additional) {
+            this.serverSecret = serverSecret;
+            this.additional = additional;
+        }
+
+        String getServerSecret() {
+            return serverSecret;
+        }
+
+        String[] getAdditional() {
+            return additional;
+        }
+    }
+
     // a few AOP singletons
     static final jdnssArgs jargs = new jdnssArgs();
     static final Logger logger = LogManager.getLogger("JDNSS");
@@ -45,6 +63,15 @@ class JDNSS {
 
     static boolean hasConfiguredZoneSource() {
         return bindZones.size() != 0 || DBConnection != null;
+    }
+
+    static JCLO parseCommandLineArgs(final String[] args) {
+        // Normalize so explicit --IPaddresses replaces defaults instead of appending to them.
+        normalizeIpAddressOption(args);
+
+        JCLO jclo = new JCLO(jargs);
+        jclo.parse(args);
+        return jclo;
     }
 
     /**
@@ -114,6 +141,62 @@ class JDNSS {
         Configurator.setLevel("JDNSS", level);
     }
 
+    static RuntimeConfig buildRuntimeConfig() {
+        return new RuntimeConfig(resolveServerSecret(jargs.serverSecret), jargs.getAdditional());
+    }
+
+    static String resolveServerSecret(final String configuredSecret) {
+        if (configuredSecret == null){
+            return String.valueOf(ThreadLocalRandom.current().nextLong());
+        }
+
+        if (configuredSecret.length() < 16) {
+            logger.warn("Secret too short, generating random secret instead.");
+            return String.valueOf(ThreadLocalRandom.current().nextLong());
+        }
+
+        return configuredSecret;
+    }
+
+    static String deriveZoneNameForAdditionalFile(final String additionalPath) {
+        String name = new File(additionalPath).getName();
+
+        if (name.endsWith(".db")) {
+            name = name.replaceFirst("\\.db$", "");
+            if (Character.isDigit(name.charAt(0))) {
+                name = Utils.reverseIP(name);
+                name = name + ".in-addr.arpa";
+            }
+        }
+
+        return name;
+    }
+
+    static void loadAdditionalZones(final String[] additional)
+            throws UnsupportedEncodingException, ClassNotFoundException {
+        if (additional == null) {
+            return;
+        }
+
+        for (String anAdditional: additional) {
+            try {
+                String name = deriveZoneNameForAdditionalFile(anAdditional);
+
+                logger.info("Parsing: " + anAdditional);
+
+                BindZone zone = new BindZone(name);
+                new Parser(new FileInputStream(anAdditional), zone).RRs();
+                logger.trace(zone);
+
+                // the name of the zone can change while parsing, so use
+                // the name from the zone
+                bindZones.put(zone.getName(), zone);
+            } catch (FileNotFoundException e) {
+                logger.warn("Couldn't open file " + anAdditional + '\n' + e);
+            }
+        }
+    }
+
     private static void doargs() throws UnsupportedEncodingException, ClassNotFoundException {
         logger.traceEntry();
         logger.trace(jargs.toString());
@@ -130,58 +213,16 @@ class JDNSS {
                     jargs.getDBUser(), jargs.getDBPass());
         }
 
-
-        if (jargs.serverSecret == null){
-            jargs.serverSecret = String.valueOf(ThreadLocalRandom.current().nextLong());
-        }
-
-        if (jargs.serverSecret != null && jargs.serverSecret.length() < 16) {
-            logger.warn("Secret too short, generating random secret instead.");
-            jargs.serverSecret = String.valueOf(ThreadLocalRandom.current().nextLong());
-        }
-
-        String additional[] = jargs.getAdditional();
-        if (additional == null) {
-            return;
-        }
-
-        for (String anAdditional: additional) {
-            try {
-                String name = new File(anAdditional).getName();
-
-                logger.info("Parsing: " + anAdditional);
-
-                if (name.endsWith(".db")) {
-                    name = name.replaceFirst("\\.db$", "");
-                    if (Character.isDigit(name.charAt(0))) {
-                        name = Utils.reverseIP(name);
-                        name = name + ".in-addr.arpa";
-                    }
-                }
-
-                BindZone zone = new BindZone(name);
-                new Parser(new FileInputStream(anAdditional), zone).RRs();
-                logger.trace(zone);
-
-                // the name of the zone can change while parsing, so use
-                // the name from the zone
-                bindZones.put(zone.getName(), zone);
-            } catch (FileNotFoundException e) {
-                logger.warn("Couldn't open file " + anAdditional + '\n' + e);
-            }
-        }
+        RuntimeConfig runtimeConfig = buildRuntimeConfig();
+        jargs.serverSecret = runtimeConfig.getServerSecret();
+        loadAdditionalZones(runtimeConfig.getAdditional());
     }
 
     /**
      * The main driver for the server; creates threads for TCP and UDP.
      */
     public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException {
-        // i'm not sure of a better way to do this. i want command-line options to overwrite
-        // the defaults.
-        normalizeIpAddressOption(args);
-
-        JCLO jclo = new JCLO(jargs);
-        jclo.parse(args);
+        JCLO jclo = parseCommandLineArgs(args);
 
         if (jargs.isHelp()) {
             System.out.println(jclo.usage());

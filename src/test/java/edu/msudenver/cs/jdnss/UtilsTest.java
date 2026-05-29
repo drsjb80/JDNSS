@@ -423,6 +423,25 @@ public class UtilsTest
     }
 
     @Test
+    public void datagramPacketToStringUsesOnlyTheActiveSlice()
+    {
+        byte[] payload = new byte[] {9, 8, 1, 2, 3, 7, 6};
+        DatagramPacket packet = new DatagramPacket(payload, 2, 3);
+
+        String rendered = SocketDebugFormatter.toString(packet);
+
+        Assert.assertTrue(rendered.contains("getLength() = 3"));
+        Assert.assertTrue(rendered.contains("000: "));
+        Assert.assertTrue(rendered.contains("001"));
+        Assert.assertTrue(rendered.contains("002"));
+        Assert.assertTrue(rendered.contains("003"));
+        Assert.assertFalse(rendered.contains("009"));
+        Assert.assertFalse(rendered.contains("008"));
+        Assert.assertFalse(rendered.contains("007"));
+        Assert.assertFalse(rendered.contains("006"));
+    }
+
+    @Test
     public void parseNameReadsPlainLabelSequence()
     {
         byte[] encoded = new byte[] {

@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.MulticastSocket;
 import java.net.StandardSocketOptions;
+import java.util.Arrays;
 
 final class SocketDebugFormatter {
     private static final Logger logger = JDNSS.logger;
@@ -22,7 +23,9 @@ final class SocketDebugFormatter {
         s.append("getOffset() = ").append(dgp.getOffset()).append("\n");
         s.append("getPort() = ").append(dgp.getPort()).append("\n");
         s.append("getSocketAddress() = ").append(dgp.getSocketAddress()).append("\n");
-        s.append("getData() = ").append(Utils.toString(dgp.getData()));
+        s.append("getData() = ").append(Utils.toString(
+            Arrays.copyOfRange(dgp.getData(), dgp.getOffset(),
+                dgp.getOffset() + dgp.getLength())));
 
         return s.toString();
     }

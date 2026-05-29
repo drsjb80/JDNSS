@@ -54,6 +54,15 @@ public class JDNSSWiringTest {
     }
 
     @Test
+    public void normalizeIpAddressOptionClearsDefaultWhenSingleDashFlagPresent() {
+        JDNSS.jargs.IPaddresses = new String[] {"UDP@0.0.0.0@53"};
+
+        JDNSS.normalizeIpAddressOption(new String[] {"-IPaddresses=TCP@127.0.0.1@53"});
+
+        Assert.assertNull(JDNSS.jargs.IPaddresses);
+    }
+
+    @Test
     public void uncaughtExceptionHandlerWritesExpectedPrefix() {
         Thread.UncaughtExceptionHandler handler = JDNSS.createUncaughtExceptionHandler();
 

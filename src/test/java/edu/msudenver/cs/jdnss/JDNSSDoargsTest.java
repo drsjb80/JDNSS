@@ -100,6 +100,33 @@ public class JDNSSDoargsTest {
         Assert.assertTrue(getBindZones().isEmpty());
     }
 
+    @Test
+    public void doargsTreatsNumericDotDbAsReverseZone() throws Exception {
+        Path tempDirectory = Files.createTempDirectory("jdnss-reverse");
+        Path zoneFile = tempDirectory.resolve("192.168.1.db");
+        Files.writeString(zoneFile,
+                String.join("\n",
+                        "$TTL 300",
+                        "@ IN SOA ns1.example.com. hostmaster.example.com. ( 1 7200 3600 1209600 3600 )",
+                        "@ IN NS ns1.example.com.",
+                        "1 IN PTR host.example.com."),
+                StandardCharsets.UTF_8);
+
+        try {
+            setJargField("serverSecret", "0123456789abcdef");
+            setJargField("additional", new String[] {zoneFile.toString()});
+
+            invokeDoargs();
+
+            Zone zone = JDNSS.getZone("1.168.192.in-addr.arpa");
+            Assert.assertFalse(zone.isEmpty());
+            Assert.assertEquals("1.168.192.in-addr.arpa", zone.getName());
+        } finally {
+            Files.deleteIfExists(zoneFile);
+            Files.deleteIfExists(tempDirectory);
+        }
+    }
+
     private static void invokeDoargs() throws Exception {
         Method method = JDNSS.class.getDeclaredMethod("doargs");
         method.setAccessible(true);

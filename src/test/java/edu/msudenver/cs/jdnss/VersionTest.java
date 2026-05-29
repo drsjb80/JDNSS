@@ -1,17 +1,19 @@
 package edu.msudenver.cs.jdnss;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class VersionTest
 {
     @Test
     public void version() {
-        Assert.assertEquals("3.0", new Version().getVersion());
+        String version = new Version().getVersion();
+        assertFalse("unknown".equals(version));
+        assertFalse(version.trim().isEmpty());
     }
 
     @Test

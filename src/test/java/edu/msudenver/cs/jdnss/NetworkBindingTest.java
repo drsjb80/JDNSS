@@ -24,4 +24,10 @@ public class NetworkBindingTest {
         Assert.assertThrows(IllegalArgumentException.class,
                 () -> NetworkBinding.fromParts(new String[] {"TCP"}));
     }
+
+    @Test
+    public void fromPartsRejectsNullArray() {
+        Assert.assertThrows(IllegalArgumentException.class,
+                () -> NetworkBinding.fromParts(null));
+    }
 }

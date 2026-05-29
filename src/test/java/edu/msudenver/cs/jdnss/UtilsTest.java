@@ -4,6 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.MulticastSocket;
+import java.net.SocketException;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -439,6 +442,59 @@ public class UtilsTest
         Assert.assertFalse(rendered.contains("008"));
         Assert.assertFalse(rendered.contains("007"));
         Assert.assertFalse(rendered.contains("006"));
+    }
+
+    @Test
+    public void datagramSocketToStringIncludesCoreSocketFields() throws Exception
+    {
+        try (DatagramSocket socket = new DatagramSocket(0)) {
+            String rendered = SocketDebugFormatter.toString(socket);
+
+            Assert.assertNotNull(rendered);
+            Assert.assertTrue(rendered.contains("getLocalPort() = "));
+            Assert.assertTrue(rendered.contains("isBound() = "));
+            Assert.assertTrue(rendered.contains("isConnected() = "));
+        }
+    }
+
+    @Test
+    public void multicastSocketToStringIncludesMulticastFields() throws Exception
+    {
+        try (MulticastSocket socket = new MulticastSocket(0)) {
+            String rendered = SocketDebugFormatter.toString(socket);
+
+            Assert.assertNotNull(rendered);
+            Assert.assertTrue(rendered.contains("getNetworkInterface() = "));
+            Assert.assertTrue(rendered.contains("getTimeToLive() = "));
+            Assert.assertTrue(rendered.contains("getLoopbackMode() = "));
+        }
+    }
+
+    @Test
+    public void datagramSocketToStringReturnsNullWhenSocketThrows() throws Exception {
+        DatagramSocket socket = new DatagramSocket() {
+            @Override
+            public boolean getBroadcast() throws SocketException {
+                throw new SocketException("boom");
+            }
+        };
+
+        Assert.assertNull(SocketDebugFormatter.toString(socket));
+        socket.close();
+    }
+
+    @Test
+    public void multicastSocketToStringReturnsNullWhenSocketThrows() throws Exception
+    {
+        MulticastSocket socket = new MulticastSocket() {
+            @Override
+            public int getTimeToLive() throws java.io.IOException {
+                throw new java.io.IOException("boom");
+            }
+        };
+
+        Assert.assertNull(SocketDebugFormatter.toString(socket));
+        socket.close();
     }
 
     @Test

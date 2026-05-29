@@ -520,19 +520,29 @@ class Response {
 
         final List<RR> u = zone.get(RRCode.CNAME, name);
         if (u.isEmpty()) {
-            dealWithOther(type, name);
+            handleMissingRecord(type, name);
             return emptyResult();
         }
 
-        final String s = u.get(0).getString();
-        final List<RR> v = zone.get(type, s);
-        if (! v.isEmpty()) {
-            responses = Utils.combine(responses, u.get(0).getBytes(name, minimum));
-            header.incrementNumAnswers();
-            return Map.entry(s, v);
+        return resolveCnameTarget(type, name, u);
+    }
+
+    private Map.Entry<String, List<RR>> resolveCnameTarget(final RRCode type,
+                                                           final String name,
+                                                           final List<RR> cnameRecords) {
+        final String targetName = cnameRecords.get(0).getString();
+        final List<RR> targetRecords = zone.get(type, targetName);
+        if (!targetRecords.isEmpty()) {
+            appendCnameRecord(name, cnameRecords);
+            return Map.entry(targetName, targetRecords);
         }
 
         return emptyResult();
+    }
+
+    private void appendCnameRecord(final String name, final List<RR> cnameRecords) {
+        responses = Utils.combine(responses, cnameRecords.get(0).getBytes(name, minimum));
+        header.incrementNumAnswers();
     }
 
     /*
@@ -548,20 +558,30 @@ class Response {
     no AAAA RR(but may have other types of RRs), and thus improve the response
     time to further queries for an AAAA RR of the name.
     */
-    private void dealWithOther(final RRCode type, final String name) {
+    private void handleMissingRecord(final RRCode type, final String name) {
         logger.traceEntry();
-        final RRCode other = type == RRCode.A ? RRCode.AAAA : RRCode.A;
-
-        final List<RR> v = zone.get(other, name);
-        if (v.isEmpty()) {
-            logger.debug(type.toString() + " lookup of " + name + " failed");
-            header.markNameError();
+        if (hasOtherAddressRecord(type, name)) {
+            maybeAddNsecRecord(name);
             return;
         }
 
+        markNameError(type, name);
+    }
+
+    private boolean hasOtherAddressRecord(final RRCode type, final String name) {
+        final RRCode other = type == RRCode.A ? RRCode.AAAA : RRCode.A;
+        return !zone.get(other, name).isEmpty();
+    }
+
+    private void maybeAddNsecRecord(final String name) {
         if (isDnssecEnabled()) {
             addNSECRecords(name);
         }
+    }
+
+    private void markNameError(final RRCode type, final String name) {
+        logger.debug(type.toString() + " lookup of " + name + " failed");
+        header.markNameError();
     }
 
 

@@ -134,6 +134,7 @@ class Query {
         // need to set the RCODE in header for the response needs to be FORMERR
         if(optrr.hasFormErr()){
             header.markFormatError();
+            return;
         }
 
         if(optrr.isCookie()) {

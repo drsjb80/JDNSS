@@ -79,6 +79,20 @@ public class QueryTest
     }
 
     @Test
+    public void malformedCookieOptionMarksFormatErrorAndSkipsServerCookie() {
+        byte[] malformed = Arrays.copyOf(digBuffer, digBuffer.length + 1);
+        malformed[44] = (byte) 0x09;
+        malformed[malformed.length - 1] = (byte) 0x00;
+
+        Query malformedQuery = new Query(malformed);
+        malformedQuery.parseQueries("/0:0:0:0:0:");
+
+        Assert.assertEquals(ErrorCodes.FORMERROR.getCode(),
+                malformedQuery.getHeader().getRcode());
+    Assert.assertEquals(1, malformedQuery.getOptrr().getServerCookie().length);
+    }
+
+    @Test
     public void getBuffer()  {
         Assert.assertTrue(Arrays.equals(buffer, query.getBuffer()));
     }

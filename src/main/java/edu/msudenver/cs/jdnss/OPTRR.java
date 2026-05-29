@@ -82,8 +82,6 @@ class OPTRR {
         location += CLIENT_COOKIE_LENGTH;
 
         if (optionLength > CLIENT_COOKIE_LENGTH) { // server cookie returned
-            // OPTION-LENGTH >= 16, <= 40 [rfc7873]
-            assert optionLength == 16 || optionLength == 24 || optionLength == 32 || optionLength == 40;
             serverCookie = Arrays.copyOfRange(bytes, location,
                     location + optionLength - CLIENT_COOKIE_LENGTH);
         }

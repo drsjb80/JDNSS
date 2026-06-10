@@ -38,6 +38,7 @@ class Parser {
             RRCode.A6,
             RRCode.DNAME,
             RRCode.DS,
+            RRCode.SRV,
             RRCode.RRSIG,
             RRCode.NSEC,
             RRCode.DNSKEY,
@@ -45,7 +46,9 @@ class Parser {
             RRCode.ORIGIN,
             RRCode.TTL,
             RRCode.NSEC3,
-            RRCode.NSEC3PARAM);
+            RRCode.NSEC3PARAM,
+            RRCode.TLSA,
+            RRCode.CAA);
 
     private static final Pattern IPV4_PATTERN = Pattern.compile("(\\d+\\.){3}+\\d+");
     private static final Pattern IPV6_PATTERN = Pattern.compile("(\\p{XDigit}*:)+\\p{XDigit}+");
@@ -125,11 +128,14 @@ class Parser {
         tokens.put("PTR", RRCode.PTR);
         tokens.put("TXT", RRCode.TXT);
         tokens.put("HINFO", RRCode.HINFO);
+        tokens.put("SRV", RRCode.SRV);
         tokens.put("RRSIG", RRCode.RRSIG);
         tokens.put("NSEC", RRCode.NSEC);
         tokens.put("DNSKEY", RRCode.DNSKEY);
         tokens.put("NSEC3", RRCode.NSEC3);
         tokens.put("NSEC3PARAM", RRCode.NSEC3PARAM);
+        tokens.put("TLSA", RRCode.TLSA);
+        tokens.put("CAA", RRCode.CAA);
         tokens.put("DS", RRCode.DS);
         tokens.put("$INCLUDE", RRCode.INCLUDE);
         tokens.put("$ORIGIN", RRCode.ORIGIN);
@@ -718,6 +724,15 @@ class Parser {
             case NSEC3PARAM:
                 doNSEC3PARAM();
                 break;
+            case SRV:
+                addSrvRecord();
+                break;
+            case TLSA:
+                addTlsaRecord();
+                break;
+            case CAA:
+                addCaaRecord();
+                break;
             default:
                 logger.info("At line " + st.lineno() + ", didn't recognize: "
                         + t);
@@ -764,6 +779,29 @@ class Parser {
 
     private void addPtrRecord() {
         zone.add(currentName, new PTRRR(currentName, currentTTL, getDomain()));
+    }
+
+    private void addSrvRecord() {
+        final int priority = getInt("priority");
+        final int weight = getInt("weight");
+        final int port = getInt("port");
+        final String target = getDomain();
+        zone.add(currentName, new SRVRR(currentName, currentTTL, priority, weight, port, target));
+    }
+
+    private void addTlsaRecord() {
+        final int usage = getInt("usage");
+        final int selector = getInt("selector");
+        final int matchingType = getInt("matching_type");
+        final String associationData = getHex();
+        zone.add(currentName, new TLSARR(currentName, currentTTL, usage, selector, matchingType, associationData));
+    }
+
+    private void addCaaRecord() {
+        final int flags = getInt("flags");
+        final String tag = getString();
+        final String value = getString();
+        zone.add(currentName, new CAARR(currentName, currentTTL, flags, tag, value));
     }
 
     private int CalcTTL() {
@@ -870,11 +908,14 @@ class Parser {
             case MX:
             case A6:
             case PTR:
+            case SRV:
             case RRSIG:
             case NSEC:
             case NSEC3:
             case NSEC3PARAM:
             case DNSKEY:
+            case TLSA:
+            case CAA:
                 return true;
             default:
                 return false;

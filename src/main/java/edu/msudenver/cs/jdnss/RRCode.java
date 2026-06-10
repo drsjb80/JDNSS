@@ -14,11 +14,14 @@ enum RRCode {
     DNAME(39),
     OPT(41),
     DS(43),
+    SRV(33),
     RRSIG(46),
     NSEC(47),
     DNSKEY(48),
     NSEC3(50),
-    NSEC3PARAM(51), // from here down, these aren't RRCode but are needed for parsing
+    NSEC3PARAM(51),
+    TLSA(52),
+    CAA(257), // from here down, these aren't RRCode but are needed for parsing
     INCLUDE,
     ORIGIN,
     TTL,

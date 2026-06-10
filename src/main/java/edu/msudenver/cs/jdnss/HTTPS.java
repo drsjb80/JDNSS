@@ -438,6 +438,36 @@ public class HTTPS {
                         String os = new String(responseBytes, offset, osLen, StandardCharsets.US_ASCII);
                         return cpu + " " + os;
                     }
+                    case SRV: {
+                        int offset = rdataStart;
+                        int priority = readUInt16(responseBytes, offset);
+                        offset += 2;
+                        int weight = readUInt16(responseBytes, offset);
+                        offset += 2;
+                        int port = readUInt16(responseBytes, offset);
+                        offset += 2;
+                        String target = normalizeDnsName(DnsNameCodec.parseName(offset, responseBytes).getKey());
+                        return priority + " " + weight + " " + port + " " + target;
+                    }
+                    case TLSA: {
+                        int offset = rdataStart;
+                        int usage = responseBytes[offset++] & 0xff;
+                        int selector = responseBytes[offset++] & 0xff;
+                        int matchingType = responseBytes[offset++] & 0xff;
+                        byte[] assocData = copyRange(responseBytes, offset, rdlength - 3);
+                        String hex = bytesToHex(assocData);
+                        return usage + " " + selector + " " + matchingType + " " + hex;
+                    }
+                    case CAA: {
+                        int offset = rdataStart;
+                        int flags = responseBytes[offset++] & 0xff;
+                        int tagLen = responseBytes[offset++] & 0xff;
+                        String tag = new String(responseBytes, offset, tagLen, StandardCharsets.US_ASCII);
+                        offset += tagLen;
+                        byte[] value = copyRange(responseBytes, offset, rdlength - 2 - tagLen);
+                        String valueStr = new String(value, StandardCharsets.US_ASCII);
+                        return flags + " " + tag + " " + valueStr;
+                    }
                     case TXT:
                         return decodeTxt(copyRange(responseBytes, rdataStart, rdlength));
                     default:
@@ -496,6 +526,14 @@ public class HTTPS {
                     | ((long) (bytes[offset + 1] & 0xff) << 16)
                     | ((long) (bytes[offset + 2] & 0xff) << 8)
                     | (long) (bytes[offset + 3] & 0xff);
+        }
+
+        private String bytesToHex(final byte[] bytes) {
+            StringBuilder hex = new StringBuilder();
+            for (byte b : bytes) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
         }
     }
 

@@ -46,6 +46,9 @@ class BindZone extends Zone {
         tableOfTables.put(RRCode.NSEC, new HashMap<>());
         tableOfTables.put(RRCode.NSEC3, new HashMap<>());
         tableOfTables.put(RRCode.NSEC3PARAM, new HashMap<>());
+        tableOfTables.put(RRCode.SRV, new HashMap<>());
+        tableOfTables.put(RRCode.TLSA, new HashMap<>());
+        tableOfTables.put(RRCode.CAA, new HashMap<>());
     }
 
 

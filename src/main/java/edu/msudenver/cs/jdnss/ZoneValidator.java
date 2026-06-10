@@ -13,12 +13,6 @@ final class ZoneValidator {
     static ValidationResult validate(final RRCode rrsetType, final String rrsetName,
                                      final List<? extends RR> rrset, final Zone zone) {
         if (!zone.isDnssecEnabled()) {
-            return ValidationResult.UNVERIFIED;
-        }
-
-        final List<DNSKEYRR> dnskeys = zone.getDNSKEYs();
-        if (dnskeys == null || dnskeys.isEmpty()) {
-            logger.fine("No DNSKEY records in zone " + zone.getName() + " for " + rrsetName);
             return ValidationResult.UNSIGNED;
         }
 
@@ -26,6 +20,12 @@ final class ZoneValidator {
         if (rrsigs.isEmpty()) {
             logger.fine("No RRSIG found for " + rrsetType + " " + rrsetName);
             return ValidationResult.UNSIGNED;
+        }
+
+        final List<DNSKEYRR> dnskeys = zone.getDNSKEYs();
+        if (dnskeys == null || dnskeys.isEmpty()) {
+            logger.fine("No DNSKEY records in zone " + zone.getName() + " for " + rrsetName);
+            return ValidationResult.UNVERIFIED;
         }
 
         for (final RRSIG rrsig : rrsigs) {

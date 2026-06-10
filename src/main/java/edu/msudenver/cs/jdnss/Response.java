@@ -129,6 +129,9 @@ class Response {
 
     private void processResolvedRecords(final String name, final RRCode type,
                                         final List<RR> records) {
+        final ValidationResult validation = validateIfDnssecEnabled(type, name, records);
+        logValidationResult(validation, type, name);
+
         for (int i = 0; i < records.size(); i++) {
             final RR rr = records.get(i);
             final boolean firstRecord = i == 0;
@@ -170,6 +173,32 @@ class Response {
 
     private boolean isDnssecEnabled() {
         return DNSSEC;
+    }
+
+    private ValidationResult validateIfDnssecEnabled(final RRCode type, final String name,
+                                                     final List<RR> records) {
+        if (!isDnssecEnabled() || zone == null) {
+            return ValidationResult.UNVERIFIED;
+        }
+        return zone.validate(type, name, records);
+    }
+
+    private void logValidationResult(final ValidationResult result, final RRCode type,
+                                     final String name) {
+        switch (result) {
+            case VALID:
+                logger.debug("DNSSEC validation PASSED: " + type + " " + name);
+                break;
+            case INVALID:
+                logger.warn("DNSSEC validation FAILED: " + type + " " + name);
+                break;
+            case UNSIGNED:
+                logger.debug("Zone unsigned or no RRSIG for: " + type + " " + name);
+                break;
+            case UNVERIFIED:
+                logger.trace("DNSSEC not enabled for query or zone: " + type + " " + name);
+                break;
+        }
     }
 
     private void addDnssecAuthoritySignature(final RRCode type, final String name) {

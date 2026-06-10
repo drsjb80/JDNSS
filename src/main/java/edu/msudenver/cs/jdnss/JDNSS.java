@@ -17,10 +17,15 @@ class JDNSS {
     static final class RuntimeConfig {
         private final String serverSecret;
         private final String[] additional;
+        private final boolean dnssecValidationEnabled;
+        private final boolean dnssecRefuseUnsigned;
 
-        RuntimeConfig(final String serverSecret, final String[] additional) {
+        RuntimeConfig(final String serverSecret, final String[] additional,
+                      final boolean dnssecValidationEnabled, final boolean dnssecRefuseUnsigned) {
             this.serverSecret = serverSecret;
             this.additional = additional;
+            this.dnssecValidationEnabled = dnssecValidationEnabled;
+            this.dnssecRefuseUnsigned = dnssecRefuseUnsigned;
         }
 
         String getServerSecret() {
@@ -29,6 +34,14 @@ class JDNSS {
 
         String[] getAdditional() {
             return additional;
+        }
+
+        boolean isDnssecValidationEnabled() {
+            return dnssecValidationEnabled;
+        }
+
+        boolean isDnssecRefuseUnsigned() {
+            return dnssecRefuseUnsigned;
         }
     }
 
@@ -142,7 +155,12 @@ class JDNSS {
     }
 
     static RuntimeConfig buildRuntimeConfig() {
-        return new RuntimeConfig(resolveServerSecret(jargs.serverSecret), jargs.getAdditional());
+        return new RuntimeConfig(
+            resolveServerSecret(jargs.serverSecret),
+            jargs.getAdditional(),
+            jargs.isDnssecValidationEnabled(),
+            jargs.isDnssecRefuseUnsigned()
+        );
     }
 
     static String resolveServerSecret(final String configuredSecret) {
@@ -172,7 +190,7 @@ class JDNSS {
         return name;
     }
 
-    static void loadAdditionalZones(final String[] additional)
+    static void loadAdditionalZones(final String[] additional, final RuntimeConfig runtimeConfig)
             throws UnsupportedEncodingException, ClassNotFoundException {
         if (additional == null) {
             return;
@@ -189,6 +207,11 @@ class JDNSS {
                 new Parser(new FileInputStream(additionalFile), zone,
                         additionalFile.getAbsoluteFile().getParentFile()).RRs();
                 logger.trace(zone);
+
+                if (runtimeConfig.isDnssecValidationEnabled()) {
+                    zone.setDnssecEnabled(true);
+                    logger.info("DNSSEC validation enabled for zone: " + zone.getName());
+                }
 
                 // the name of the zone can change while parsing, so use
                 // the name from the zone
@@ -217,7 +240,7 @@ class JDNSS {
 
         RuntimeConfig runtimeConfig = buildRuntimeConfig();
         jargs.serverSecret = runtimeConfig.getServerSecret();
-        loadAdditionalZones(runtimeConfig.getAdditional());
+        loadAdditionalZones(runtimeConfig.getAdditional(), runtimeConfig);
     }
 
     /**

@@ -27,6 +27,9 @@ class jdnssArgs {
     boolean debugSSL;
 
     @Getter private String additional[];
+
+    @Getter private boolean dnssecValidationEnabled = false;
+    @Getter private boolean dnssecRefuseUnsigned = false;
 }
 
 /*

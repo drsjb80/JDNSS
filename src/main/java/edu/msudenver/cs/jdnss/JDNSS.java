@@ -55,6 +55,11 @@ class JDNSS {
 	}
 
     private static final Map<String, Zone> bindZones = new HashMap<>();
+    private static RuntimeConfig currentRuntimeConfig = null;
+
+    static RuntimeConfig getRuntimeConfig() {
+        return currentRuntimeConfig;
+    }
 
     static void normalizeIpAddressOption(final String[] args) {
         for (String arg: args) {
@@ -239,6 +244,7 @@ class JDNSS {
         }
 
         RuntimeConfig runtimeConfig = buildRuntimeConfig();
+        currentRuntimeConfig = runtimeConfig;
         jargs.serverSecret = runtimeConfig.getServerSecret();
         loadAdditionalZones(runtimeConfig.getAdditional(), runtimeConfig);
     }

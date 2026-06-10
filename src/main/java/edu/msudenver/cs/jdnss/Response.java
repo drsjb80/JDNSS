@@ -132,6 +132,11 @@ class Response {
         final ValidationResult validation = validateIfDnssecEnabled(type, name, records);
         logValidationResult(validation, type, name);
 
+        if (shouldRefuseUnsigned(validation)) {
+            header.markServerError();
+            return;
+        }
+
         for (int i = 0; i < records.size(); i++) {
             final RR rr = records.get(i);
             final boolean firstRecord = i == 0;
@@ -199,6 +204,15 @@ class Response {
                 logger.trace("DNSSEC not enabled for query or zone: " + type + " " + name);
                 break;
         }
+    }
+
+    private boolean shouldRefuseUnsigned(final ValidationResult validation) {
+        if (validation != ValidationResult.UNSIGNED) {
+            return false;
+        }
+
+        final JDNSS.RuntimeConfig config = JDNSS.getRuntimeConfig();
+        return config != null && config.isDnssecRefuseUnsigned() && isDnssecEnabled();
     }
 
     private void addDnssecAuthoritySignature(final RRCode type, final String name) {

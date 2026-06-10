@@ -82,6 +82,10 @@ class Header {
         rcode = ErrorCodes.YXRRSET.getCode();
     }
 
+    void markServerError() {
+        rcode = ErrorCodes.SERVFAIL.getCode();
+    }
+
     void build() {
         checkValidity();
 

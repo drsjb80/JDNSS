@@ -86,6 +86,7 @@ class Parser {
     private final Deque<String> includeStack = new ArrayDeque<>();
 
     private final BindZone zone;
+    private ParsingContext context;
     private final Logger logger = JDNSS.logger;
     private boolean inBase64;
     private File includeDirectory;
@@ -103,6 +104,7 @@ class Parser {
             throws UnsupportedEncodingException {
         this.zone = zone;
         this.includeDirectory = includeDirectory;
+        this.context = new ParsingContext(zone.getName(), zone);
 
         /*
         ** set up the tokenizer
@@ -417,7 +419,7 @@ class Parser {
         return t;
     }
 
-    private RRCode getNextToken() {
+    RRCode getNextToken() {
         final int rawToken = getOneWord();
         logger.trace("t = " + rawToken);
         return classifyStreamToken(rawToken);
@@ -532,7 +534,7 @@ class Parser {
     }
 
 
-    private boolean isARR(final RRCode which) {
+    boolean isARR(final RRCode which) {
         final boolean isRecordToken = RR_TOKENS.contains(which);
         logger.traceExit(isRecordToken);
         return isRecordToken;
@@ -681,62 +683,30 @@ class Parser {
     private void dispatchRecord(final RRCode t) {
         logger.traceEntry(new ObjectMessage(t));
 
-        switch (t) {
-            case A:
-                addARecord();
-                break;
-            case A6:
-                skipDeprecatedA6Record();
-                break;
-            case AAAA:
-                addAaaaRecord();
-                break;
-            case NS:
-                addNsRecord();
-                break;
-            case CNAME:
-                addCnameRecord();
-                break;
-            case TXT:
-                addTxtRecord();
-                break;
-            case HINFO:
-                addHinfoRecord();
-                break;
-            case MX:
-                addMxRecord();
-                break;
-            case PTR:
-                addPtrRecord();
-                break;
-            case RRSIG:
-                doRRSIG();
-                break;
-            case NSEC:
-                doNSEC();
-                break;
-            case DNSKEY:
-                doDNSKEY();
-                break;
-            case NSEC3:
-                doNSEC3();
-                break;
-            case NSEC3PARAM:
-                doNSEC3PARAM();
-                break;
-            case SRV:
-                addSrvRecord();
-                break;
-            case TLSA:
-                addTlsaRecord();
-                break;
-            case CAA:
-                addCaaRecord();
-                break;
-            default:
-                logger.info("At line " + st.lineno() + ", didn't recognize: "
-                        + t);
-                break;
+        if (t == RRCode.A6) {
+            skipDeprecatedA6Record();
+            return;
+        }
+
+        // Sync context state before dispatching
+        context.setCurrentName(currentName);
+        context.setCurrentTTL(currentTTL);
+        context.setGlobalTTL(globalTTL);
+        context.setSOATTL(SOATTL);
+        context.setSOAMinimumTTL(SOAMinimumTTL);
+
+        RecordParser parser = RecordParserRegistry.getParser(t);
+        if (parser != null) {
+            try {
+                parser.parse(this, context);
+                // Sync context state back after dispatching (for state mutations like SOA TTL)
+                SOATTL = context.getSOATTL();
+                SOAMinimumTTL = context.getSOAMinimumTTL();
+            } catch (Exception e) {
+                logger.warn("Failed to parse " + t + " at line " + st.lineno(), e);
+            }
+        } else {
+            logger.info("At line " + st.lineno() + ", didn't recognize: " + t);
         }
     }
 
@@ -998,59 +968,59 @@ class Parser {
         return getNextToken();
     }
 
-    private int getInt(final String message) {
+    int getInt(final String message) {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.INT, message);
         return intValue;
     }
 
-    private void getLeftParen() {
+    void getLeftParen() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.LPAREN, "left paren");
     }
 
-    private void getRightParen() {
+    void getRightParen() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.RPAREN, "right paren");
     }
 
-    private String getString() {
+    String getString() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.STRING, "string");
         return stringValue;
     }
 
-    private String getDomain() {
+    String getDomain() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.DN, "domain");
         return stringValue;
     }
 
-    private String getHex() {
+    String getHex() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.HEX, "hexadecimal");
         return stringValue;
     }
 
-    private int getDate() {
+    int getDate() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.DATE, "date");
         return intValue;
     }
 
-    private String getIPV4ADDR() {
+    String getIPV4ADDR() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.IPV4ADDR, "IPV4ADDR");
         return stringValue;
     }
 
-    private String getIPV6ADDR() {
+    String getIPV6ADDR() {
         RRCode token = getNextToken();
         ensureToken(token, RRCode.IPV6ADDR, "IPV6ADDR");
         return stringValue;
     }
 
-    private void ensureToken(final RRCode actual, final RRCode expected, final String message) {
+    void ensureToken(final RRCode actual, final RRCode expected, final String message) {
         if (actual != expected) {
             throw parseFailure("Expecting " + message + " at line " + st.lineno());
         }
@@ -1059,5 +1029,14 @@ class Parser {
     private IllegalArgumentException parseFailure(final String message) {
         logger.warn(message);
         return new IllegalArgumentException(message);
+    }
+
+    // Package-private accessors for RecordParser strategies
+    String getStringValue() {
+        return stringValue;
+    }
+
+    void setInBase64(final boolean value) {
+        inBase64 = value;
     }
 }

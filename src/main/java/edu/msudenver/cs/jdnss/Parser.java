@@ -512,172 +512,10 @@ class Parser {
         return String.join(" -> ", includeStack);
     }
 
-    private void doSOA() {
-        origin = currentName;
-
-        final String server = getDomain();
-        final String contact = getDomain();
-        getLeftParen();
-        final int serial = getInt("serial");
-        final int refresh = getInt("refresh");
-        final int retry = getInt("retry");
-        final int expire = getInt("expire");
-        final int minimum = getInt("minimum");
-        getRightParen();
-
-        SOAMinimumTTL = minimum;
-        SOATTL = currentTTL;
-
-        zone.add(origin, new SOARR(origin, server, contact, serial,
-                refresh, retry, expire, minimum,
-                (SOATTL != -1) ? SOATTL : minimum));
-    }
-
-
     boolean isARR(final RRCode which) {
         final boolean isRecordToken = RR_TOKENS.contains(which);
         logger.traceExit(isRecordToken);
         return isRecordToken;
-    }
-
-    private void doNSEC() {
-        logger.traceEntry();
-
-        boolean paren = false;
-
-        String nextDomainName = getDomain();
-
-        RRCode a = getNextToken();
-
-        // if there's more than one, they start with a paren
-        if (a == RRCode.LPAREN) {
-            paren = true;
-            a = getNextToken();
-        }
-
-        Set<RRCode> resourceRecords = EnumSet.noneOf(RRCode.class);
-        while (isARR(a)) {
-            resourceRecords.add(a);
-            a = getNextToken();
-        }
-
-        if (paren) {
-            getRightParen();
-        }
-
-        zone.add(currentName, new NSECRR(currentName, currentTTL, nextDomainName,
-                resourceRecords));
-        logger.traceExit(false);
-    }
-
-    private void doDNSKEY() {
-        logger.traceEntry();
-
-        final int flags = getInt("flags");
-        final int protocol = getInt("protocol");
-        if (protocol != 3) {
-            throw parseFailure("DNSKEY protocol must be 3 at line " + st.lineno());
-        }
-        final int algorithm = getInt("algorithm");
-        getLeftParen();
-
-        final StringBuilder publicKeyBuilder = new StringBuilder();
-        inBase64 = true;
-        RRCode tok;
-        while ((tok = getNextToken()) == RRCode.BASE64) {
-            publicKeyBuilder.append(stringValue);
-        }
-        inBase64 = false;
-        ensureToken(tok, RRCode.RPAREN, "right paren");
-
-        zone.add(currentName,
-                new DNSKEYRR(currentName, currentTTL, flags, protocol,
-                        algorithm, publicKeyBuilder.toString()));
-        logger.traceExit(false);
-    }
-
-    private void doNSEC3PARAM() {
-        logger.traceEntry();
-
-        final int hashAlgorithm = getInt("hash algorithm");
-        final int flags = getInt("flags");
-        final int iterations = getInt("interations");
-
-        final String salt = getHex();
-
-        final NSEC3PARAMRR d = new NSEC3PARAMRR(currentName, currentTTL,
-                hashAlgorithm, flags, iterations, salt);
-        zone.add(currentName, d);
-        logger.traceExit();
-    }
-
-    private void doNSEC3() {
-        logger.traceEntry();
-
-        final int hashAlgorithm = getInt("hash algorithm");
-        final int flags = getInt("flags");
-        final int iterations = getInt("iterations");
-
-        final String salt = getHex();
-        getLeftParen();
-
-        // this is probably cheating as this is supposed to be Base 32.
-        final StringBuilder nextHashedOwnerNameBuilder = new StringBuilder();
-        inBase64 = true;
-        while (getNextToken() == RRCode.BASE64) {
-            nextHashedOwnerNameBuilder.append(stringValue);
-        }
-        inBase64 = false;
-
-        final Set<RRCode> types = EnumSet.noneOf(RRCode.class);
-        RRCode rrcode;
-        while ((rrcode = getNextToken()) != RRCode.RPAREN) {
-            types.add(rrcode);
-        }
-
-        final NSEC3RR d = new NSEC3RR(currentName, currentTTL, hashAlgorithm,
-        flags, iterations, salt, nextHashedOwnerNameBuilder.toString(), types);
-        zone.add(currentName, d);
-        logger.traceExit();
-    }
-
-
-    private void doRRSIG() {
-        logger.traceEntry();
-
-        final RRCode typeCovered = getNextToken();
-        if (!isARR(typeCovered)) {
-            throw parseFailure(typeCovered + " not covered with RRSIG on line " + st.lineno());
-        }
-
-        final int algorithm = getInt("algorithm");
-        final int labels = getInt("labels");
-        final int originalTTL = getInt("original TTL");
-
-        // https://tools.ietf.org/html/rfc4034#section-3.3
-
-        getLeftParen();
-
-        final int expiration = getDate();
-        final int inception = getDate();
-        final int keyTag = getInt("key tag");
-        final String signersName = getDomain();
-
-        final StringBuilder signatureBuilder = new StringBuilder();
-        RRCode tok;
-
-        inBase64 = true;
-        while ((tok = getNextToken()) == RRCode.BASE64) {
-            signatureBuilder.append(stringValue);
-        }
-        inBase64 = false;
-        ensureToken(tok, RRCode.RPAREN, "right paren");
-
-        final RRSIG d = new RRSIG(currentName, currentTTL, typeCovered,
-                algorithm, labels, originalTTL, expiration, inception,
-                keyTag, signersName, signatureBuilder.toString());
-        zone.add(currentName, d);
-        logger.traceExit();
     }
 
     private void dispatchRecord(final RRCode t) {
@@ -710,68 +548,9 @@ class Parser {
         }
     }
 
-    private void addARecord() {
-        zone.add(currentName, new ARR(currentName, currentTTL, getIPV4ADDR()));
-    }
-
     private void skipDeprecatedA6Record() {
         // deprecated
         getNextToken();
-    }
-
-    private void addAaaaRecord() {
-        zone.add(currentName, new AAAARR(currentName, currentTTL, getIPV6ADDR()));
-    }
-
-    private void addNsRecord() {
-        zone.add(currentName, new NSRR(currentName, currentTTL, getDomain()));
-    }
-
-    private void addCnameRecord() {
-        zone.add(currentName, new CNAMERR(currentName, currentTTL, getDomain()));
-    }
-
-    private void addTxtRecord() {
-        zone.add(currentName, new TXTRR(currentName, currentTTL, getString()));
-    }
-
-    private void addHinfoRecord() {
-        final String first = getString();
-        final String second = getString();
-        zone.add(currentName, new HINFORR(currentName, currentTTL, first, second));
-    }
-
-    private void addMxRecord() {
-        final int preference = getInt("preference");
-        final String exchanger = getDomain();
-        zone.add(currentName, new MXRR(currentName, currentTTL, exchanger, preference));
-    }
-
-    private void addPtrRecord() {
-        zone.add(currentName, new PTRRR(currentName, currentTTL, getDomain()));
-    }
-
-    private void addSrvRecord() {
-        final int priority = getInt("priority");
-        final int weight = getInt("weight");
-        final int port = getInt("port");
-        final String target = getDomain();
-        zone.add(currentName, new SRVRR(currentName, currentTTL, priority, weight, port, target));
-    }
-
-    private void addTlsaRecord() {
-        final int usage = getInt("usage");
-        final int selector = getInt("selector");
-        final int matchingType = getInt("matching_type");
-        final String associationData = getHex();
-        zone.add(currentName, new TLSARR(currentName, currentTTL, usage, selector, matchingType, associationData));
-    }
-
-    private void addCaaRecord() {
-        final int flags = getInt("flags");
-        final String tag = getString();
-        final String value = getString();
-        zone.add(currentName, new CAARR(currentName, currentTTL, flags, tag, value));
     }
 
     private int CalcTTL() {
@@ -839,10 +618,6 @@ class Parser {
 
                     break;
                 }
-                case SOA:
-                    doSOA();
-                    done = true;
-                    break;
                 default:
                     logger.info("At line " + st.lineno()
                             + ", didn't recognize: " + token);
@@ -873,6 +648,7 @@ class Parser {
             case AAAA:
             case NS:
             case CNAME:
+            case SOA:
             case TXT:
             case HINFO:
             case MX:

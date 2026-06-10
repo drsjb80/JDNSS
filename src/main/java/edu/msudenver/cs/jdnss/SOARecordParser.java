@@ -8,11 +8,13 @@ final class SOARecordParser implements RecordParser {
 
         final String mname = parser.getDomain();
         final String rname = parser.getDomain();
+        parser.getLeftParen();
         final int serial = parser.getInt("serial");
         final int refresh = parser.getInt("refresh");
         final int retry = parser.getInt("retry");
         final int expire = parser.getInt("expire");
         final int minimum = parser.getInt("minimum");
+        parser.getRightParen();
 
         context.setSOAMinimumTTL(minimum);
 

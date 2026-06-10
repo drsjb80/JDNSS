@@ -12,13 +12,21 @@ import java.util.Base64;
 class RRSIG extends RR {
     @Getter
     private final RRCode typeCovered;
+    @Getter
     private final int algorithm;
+    @Getter
     private final int labels;
+    @Getter
     private final int originalttl;
+    @Getter
     private final int signatureExpiration;
+    @Getter
     private final int signatureInception;
+    @Getter
     private final int keyTag;
+    @Getter
     private final String signersName;
+    @Getter
     private final String signature;
 
     RRSIG(final String domain, final int ttl, final RRCode typeCovered,

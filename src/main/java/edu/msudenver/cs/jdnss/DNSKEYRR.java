@@ -3,6 +3,7 @@ package edu.msudenver.cs.jdnss;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @ToString
@@ -30,9 +31,9 @@ class DNSKEYRR extends RR {
         a = Utils.combine(a, Utils.getByte(protocol, 1));
         a = Utils.combine(a, Utils.getByte(algorithm, 1));
         try {
-            a = Utils.combine(a, Base64.getDecoder().decode(publicKey.getBytes("UTF8")));
-        } catch (Exception e) {
-            assert false;
+            a = Utils.combine(a, Base64.getDecoder().decode(publicKey.getBytes(StandardCharsets.UTF_8)));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid Base64 encoding in DNSKEY public key", e);
         }
         return a;
     }

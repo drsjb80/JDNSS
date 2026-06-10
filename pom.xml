@@ -10,7 +10,7 @@
     <groupId>edu.msudenver.cs.jdnss</groupId>
     <artifactId>jdnss</artifactId>
     <packaging>jar</packaging>
-    <version>3.1-SNAPSHOT</version>
+    <version>3.1</version>
     <name>Java DNS Server</name>
     <url>https://github.com/drsjb80/JDNSS</url>
     <dependencies>

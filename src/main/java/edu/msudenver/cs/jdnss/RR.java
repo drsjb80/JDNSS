@@ -48,13 +48,11 @@ abstract class RR {
 
     // to enhance polymorphism and decrease casting for derived classes
     String getString() {
-        assert false;
-        return null;
+        throw new UnsupportedOperationException("getString() not supported for " + getClass().getSimpleName());
     }
 
     String getHost() {
-        assert false;
-        return null;
+        throw new UnsupportedOperationException("getHost() not supported for " + getClass().getSimpleName());
     }
 
     /**
@@ -102,8 +100,7 @@ class EmptyRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        assert false;
-        return new byte[0];
+        throw new UnsupportedOperationException("EmptyRR should not be serialized");
     }
 }
 /**

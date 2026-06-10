@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -555,8 +556,10 @@ public class SystemZoneIntegrationTest {
                                                      final String fixtureFileName)
             throws Exception {
         final BindZone zone = new BindZone(zoneName);
-        try (InputStream in = new FileInputStream("src/test/system/zone_files/" + fixtureFileName)) {
-            final Parser parser = new Parser(in, zone);
+        final File fixtureFile = new File("src/test/system/zone_files", fixtureFileName);
+        try (InputStream in = new FileInputStream(fixtureFile)) {
+            final Parser parser = new Parser(in, zone,
+                    fixtureFile.getAbsoluteFile().getParentFile());
             parser.RRs();
         }
 

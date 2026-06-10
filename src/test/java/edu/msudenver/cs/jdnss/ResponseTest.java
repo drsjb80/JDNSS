@@ -81,6 +81,30 @@ public class ResponseTest {
     }
 
     @Test
+    public void missingTypeForExistingNameReturnsNoErrorNodataWithAuthoritySoa() {
+        final Query txtQuery = new Query(buildQuery(0x2468, ZONE_NAME, RRCode.TXT));
+        txtQuery.parseQueries("");
+
+        final byte[] result = new Response(txtQuery, true).getBytes();
+
+        Assert.assertEquals(ErrorCodes.NOERROR.getCode(), unsignedByte(result[3]) & 0x0f);
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+    }
+
+    @Test
+    public void missingMxForMissingNameReturnsNameErrorWithAuthoritySoa() {
+        final Query mxQuery = new Query(buildQuery(0x1357, "missing.test.com", RRCode.MX));
+        mxQuery.parseQueries("");
+
+        final byte[] result = new Response(mxQuery, true).getBytes();
+
+        Assert.assertEquals(ErrorCodes.NAMEERROR.getCode(), unsignedByte(result[3]) & 0x0f);
+        Assert.assertEquals(0, readUInt16(result, 6));
+        Assert.assertEquals(1, readUInt16(result, 8));
+    }
+
+    @Test
     public void getBytesLargeTxtResponseMarksTruncatedForUdp() throws Exception {
         final Map<String, Zone> liveZones = getBindZones();
         liveZones.clear();
@@ -98,6 +122,22 @@ public class ResponseTest {
         Assert.assertEquals(0x04, unsignedByte(result[2]) & 0x04);
         Assert.assertEquals(0x02, unsignedByte(result[2]) & 0x02);
         Assert.assertEquals(1, readUInt16(result, 4));
+    }
+
+    @Test
+    public void ednsQueryIncludesOptRecordInResponseAdditionalCount() throws Exception {
+        final Query ednsQuery = new Query(buildQueryWithOptPayload(0x6d11, ZONE_NAME,
+                RRCode.A, 1232));
+        ednsQuery.parseQueries("");
+
+        final byte[] result = new Response(ednsQuery, true).getBytes();
+        final int optOffset = result.length - 11;
+
+        Assert.assertEquals(1, readUInt16(result, 10));
+        Assert.assertEquals(0, unsignedByte(result[optOffset]));
+        Assert.assertEquals(RRCode.OPT.getCode(), readUInt16(result, optOffset + 1));
+        Assert.assertEquals(1232, readUInt16(result, optOffset + 3));
+        Assert.assertEquals(0, readUInt16(result, optOffset + 9));
     }
 
     @Test
@@ -225,7 +265,7 @@ public class ResponseTest {
 
         Assert.assertEquals(0x02, unsignedByte(result[2]) & 0x02);
         Assert.assertEquals(1, readUInt16(result, 6));
-        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(1, readUInt16(result, 10));
     }
 
     @Test
@@ -284,7 +324,7 @@ public class ResponseTest {
         Assert.assertEquals(1, readUInt16(result, 4));
         Assert.assertEquals(1, readUInt16(result, 6));
         Assert.assertEquals(0, readUInt16(result, 8));
-        Assert.assertEquals(0, readUInt16(result, 10));
+        Assert.assertEquals(1, readUInt16(result, 10));
     }
 
     @Test

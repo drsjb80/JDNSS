@@ -180,12 +180,14 @@ class JDNSS {
 
         for (String anAdditional: additional) {
             try {
+                final File additionalFile = new File(anAdditional);
                 String name = deriveZoneNameForAdditionalFile(anAdditional);
 
                 logger.info("Parsing: " + anAdditional);
 
                 BindZone zone = new BindZone(name);
-                new Parser(new FileInputStream(anAdditional), zone).RRs();
+                new Parser(new FileInputStream(additionalFile), zone,
+                        additionalFile.getAbsoluteFile().getParentFile()).RRs();
                 logger.trace(zone);
 
                 // the name of the zone can change while parsing, so use

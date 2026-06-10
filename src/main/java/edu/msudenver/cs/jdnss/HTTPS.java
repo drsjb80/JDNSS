@@ -106,6 +106,7 @@ public class HTTPS {
                     t.sendResponseHeaders(405, -1);
                     return;
             }
+
             if (rendered == null) {
                 t.sendResponseHeaders(500, -1);
                 return;
@@ -139,7 +140,7 @@ public class HTTPS {
                     ar.add((byte) c);
                 }
             } catch (IOException ioe) {
-                logger.catching(ioe);
+                logger.debug("Unable to read DoH POST request body: {}", ioe.getMessage());
                 return null;
             }
 
@@ -152,10 +153,11 @@ public class HTTPS {
             try {
                 q = new Query(post_query);
                 q.parseQueries(t.getRemoteAddress().toString());
-                r = new Response(q, false);
-                return new RenderedResponse(
-                        Base64.getEncoder().encodeToString(r.getBytes()).getBytes(StandardCharsets.UTF_8),
-                        DNS_MESSAGE_CONTENT_TYPE);
+                r = new Response(q, true);
+                return new RenderedResponse(r.getBytes(), DNS_MESSAGE_CONTENT_TYPE);
+            } catch (IllegalArgumentException e) {
+                logger.debug("Invalid DoH POST query: {}", e.getMessage());
+                return null;
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
@@ -184,6 +186,9 @@ public class HTTPS {
                 Response response = new Response(q, false);
                 String json = toJsonResponse(response.getBytes());
                 return new RenderedResponse(json.getBytes(StandardCharsets.UTF_8), JSON_CONTENT_TYPE);
+            } catch (IllegalArgumentException e) {
+                logger.debug("Invalid DoH JSON query: {}", e.getMessage());
+                return null;
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
@@ -195,10 +200,11 @@ public class HTTPS {
                 byte[] decoded = decodeDnsQuery(encodedQuery);
                 Query q = new Query(decoded);
                 q.parseQueries(t.getRemoteAddress().toString());
-                Response r = new Response(q, false);
-                return new RenderedResponse(
-                        Base64.getEncoder().encodeToString(r.getBytes()).getBytes(StandardCharsets.UTF_8),
-                        DNS_MESSAGE_CONTENT_TYPE);
+                Response r = new Response(q, true);
+                return new RenderedResponse(r.getBytes(), DNS_MESSAGE_CONTENT_TYPE);
+            } catch (IllegalArgumentException e) {
+                logger.debug("Invalid DoH binary query: {}", e.getMessage());
+                return null;
             } catch (RuntimeException e) {
                 logger.catching(e);
                 return null;
@@ -257,8 +263,11 @@ public class HTTPS {
             if (typeName == null || typeName.isEmpty()) {
                 return RRCode.A;
             }
-
-            return RRCode.valueOf(typeName.toUpperCase(Locale.ROOT));
+            try {
+                return RRCode.valueOf(typeName.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(typeName);
+            }
         }
 
         private String toJsonResponse(final byte[] responseBytes) {
@@ -332,10 +341,12 @@ public class HTTPS {
                 current += 2;
 
                 final int rdataStart = current;
-                final String data = formatRdata(type, responseBytes, rdataStart, rdlength);
                 current += rdlength;
 
-                records.add(new ResourceRecord(parsedName.getKey(), type, ttl, data));
+                if (type != RRCode.OPT.getCode()) {
+                    final String data = formatRdata(type, responseBytes, rdataStart, rdlength);
+                    records.add(new ResourceRecord(parsedName.getKey(), type, ttl, data));
+                }
             }
 
             return new ParseResult<>(records, current);
@@ -350,8 +361,7 @@ public class HTTPS {
                 QuestionRecord record = records.get(i);
                 json.append('{')
                         .append("\"name\":\"").append(escapeJson(record.name)).append("\",")
-                        .append("\"type\":").append(record.type).append(',')
-                        .append("\"class\":").append(record.clazz)
+                        .append("\"type\":").append(record.type)
                         .append('}');
             }
             json.append(']');
@@ -387,6 +397,7 @@ public class HTTPS {
                         return InetAddress.getByAddress(
                                 copyRange(responseBytes, rdataStart, rdlength)).getHostAddress();
                     case CNAME:
+                    case DNAME:
                     case NS:
                     case PTR:
                         return normalizeDnsName(DnsNameCodec.parseName(rdataStart, responseBytes).getKey());
@@ -395,6 +406,37 @@ public class HTTPS {
                         final String exchange = normalizeDnsName(
                                 DnsNameCodec.parseName(rdataStart + 2, responseBytes).getKey());
                         return preference + " " + exchange;
+                    }
+                    case SOA: {
+                        int offset = rdataStart;
+                        Map.Entry<String, Integer> mnameEntry = DnsNameCodec.parseName(offset, responseBytes);
+                        String mname = normalizeDnsName(mnameEntry.getKey());
+                        offset = mnameEntry.getValue();
+
+                        Map.Entry<String, Integer> rnameEntry = DnsNameCodec.parseName(offset, responseBytes);
+                        String rname = normalizeDnsName(rnameEntry.getKey());
+                        offset = rnameEntry.getValue();
+
+                        long serial = readUInt32(responseBytes, offset);
+                        offset += 4;
+                        long refresh = readUInt32(responseBytes, offset);
+                        offset += 4;
+                        long retry = readUInt32(responseBytes, offset);
+                        offset += 4;
+                        long expire = readUInt32(responseBytes, offset);
+                        offset += 4;
+                        long minimum = readUInt32(responseBytes, offset);
+
+                        return mname + " " + rname + " " + serial + " " + refresh + " " + retry + " " + expire + " " + minimum;
+                    }
+                    case HINFO: {
+                        int offset = rdataStart;
+                        int cpuLen = responseBytes[offset++] & 0xff;
+                        String cpu = new String(responseBytes, offset, cpuLen, StandardCharsets.US_ASCII);
+                        offset += cpuLen;
+                        int osLen = responseBytes[offset++] & 0xff;
+                        String os = new String(responseBytes, offset, osLen, StandardCharsets.US_ASCII);
+                        return cpu + " " + os;
                     }
                     case TXT:
                         return decodeTxt(copyRange(responseBytes, rdataStart, rdlength));
@@ -412,12 +454,17 @@ public class HTTPS {
                 return "";
             }
 
-            int length = rdata[0] & 0xff;
-            if (length + 1 > rdata.length) {
-                return Base64.getEncoder().encodeToString(rdata);
+            StringBuilder sb = new StringBuilder();
+            int offset = 0;
+            while (offset < rdata.length) {
+                int len = rdata[offset++] & 0xff;
+                if (offset + len > rdata.length) {
+                    return Base64.getEncoder().encodeToString(rdata);
+                }
+                sb.append(new String(rdata, offset, len, StandardCharsets.US_ASCII));
+                offset += len;
             }
-
-            return new String(rdata, 1, length, StandardCharsets.US_ASCII);
+            return sb.toString();
         }
 
         private String normalizeDnsName(final String name) {

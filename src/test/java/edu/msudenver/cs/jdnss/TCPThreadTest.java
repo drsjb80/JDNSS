@@ -21,6 +21,20 @@ import static org.mockito.Mockito.when;
 public class TCPThreadTest {
     private Map<String, Zone> originalZones;
 
+    private static final class ChunkedInputStream extends ByteArrayInputStream {
+        private final int chunkSize;
+
+        ChunkedInputStream(final byte[] buffer, final int chunkSize) {
+            super(buffer);
+            this.chunkSize = chunkSize;
+        }
+
+        @Override
+        public synchronized int read(final byte[] buffer, final int offset, final int length) {
+            return super.read(buffer, offset, Math.min(length, chunkSize));
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         originalZones = new HashMap<>(getBindZones());
@@ -56,6 +70,30 @@ public class TCPThreadTest {
 
         int declaredLength = Utils.addThem(written[0], written[1]);
         Assert.assertEquals(written.length - 2, declaredLength);
+        verify(socket).close();
+    }
+
+    @Test
+    public void runReadsLengthAndQueryAcrossPartialTcpReads() throws Exception {
+        Map<String, Zone> liveZones = getBindZones();
+        liveZones.clear();
+        liveZones.put("other.com", new BindZone("other.com"));
+
+        Socket socket = mock(Socket.class);
+        byte[] packet = buildTcpQueryPacket();
+        ChunkedInputStream inputstream = new ChunkedInputStream(packet, 1);
+        ByteArrayOutputStream outputstream = new ByteArrayOutputStream();
+
+        when(socket.getInputStream()).thenReturn(inputstream);
+        when(socket.getOutputStream()).thenReturn(outputstream);
+        when(socket.getInetAddress()).thenReturn(InetAddress.getLoopbackAddress());
+
+        TCPThread tt = new TCPThread(socket);
+        tt.run();
+
+        byte[] written = outputstream.toByteArray();
+        Assert.assertTrue(written.length > 2);
+        Assert.assertEquals(written.length - 2, Utils.addThem(written[0], written[1]));
         verify(socket).close();
     }
 

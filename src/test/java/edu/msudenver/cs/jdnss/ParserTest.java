@@ -75,6 +75,29 @@ public class ParserTest {
     }
 
     @Test
+    public void includeLoadsRelativePathFromZoneFileDirectory() throws Exception {
+        Path zoneDirectory = Files.createTempDirectory("jdnss-zone-dir");
+        Path includeFile = zoneDirectory.resolve("relative-include.zone");
+        Files.writeString(includeFile, "api A 192.168.1.99\n", StandardCharsets.UTF_8);
+
+        try {
+            String zoneText = String.join("\n",
+                    "$ORIGIN test.com.",
+                    "@ IN SOA ns1.test.com. hostmaster.test.com. ( 1 7200 3600 1209600 3600 )",
+                    "$INCLUDE relative-include.zone");
+
+            BindZone zone = parseZone(zoneText, "test.com", zoneDirectory);
+            List<RR> aRecords = zone.get(RRCode.A, "api.test.com");
+
+            Assert.assertEquals(1, aRecords.size());
+            Assert.assertEquals(3600, aRecords.get(0).getTtl());
+        } finally {
+            Files.deleteIfExists(includeFile);
+            Files.deleteIfExists(zoneDirectory);
+        }
+    }
+
+    @Test
     public void includeMissingFileDoesNotAbortParsing() throws Exception {
         String zoneText = String.join("\n",
                 "$ORIGIN test.com.",
@@ -332,9 +355,15 @@ public class ParserTest {
     }
 
     private static BindZone parseZone(final String zoneText, final String zoneName) throws Exception {
+        return parseZone(zoneText, zoneName, null);
+    }
+
+    private static BindZone parseZone(final String zoneText, final String zoneName,
+                                      final Path includeDirectory) throws Exception {
         BindZone zone = new BindZone(zoneName);
         ByteArrayInputStream input = new ByteArrayInputStream(zoneText.getBytes(StandardCharsets.UTF_8));
-        Parser parser = new Parser(input, zone);
+        Parser parser = new Parser(input, zone,
+                includeDirectory == null ? null : includeDirectory.toFile());
         parser.RRs();
         return zone;
     }

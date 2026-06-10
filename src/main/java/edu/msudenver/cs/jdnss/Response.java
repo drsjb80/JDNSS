@@ -47,6 +47,21 @@ class Response {
     private final boolean UDP;
     private final Query query;
     private final OPTRR optRecord;
+    private static final Set<RRCode> DATA_RR_TYPES = EnumSet.of(
+            RRCode.A,
+            RRCode.NS,
+            RRCode.CNAME,
+            RRCode.SOA,
+            RRCode.PTR,
+            RRCode.HINFO,
+            RRCode.MX,
+            RRCode.TXT,
+            RRCode.AAAA,
+            RRCode.DNSKEY,
+            RRCode.RRSIG,
+            RRCode.NSEC,
+            RRCode.NSEC3,
+            RRCode.NSEC3PARAM);
 
     private static final class ResolvedRecords {
         private final String name;
@@ -130,7 +145,7 @@ class Response {
     }
 
     private void finalizeHeader() {
-        if (optRecord != null && header.getNumAdditionals() > 1) {
+        if (optRecord != null) {
             header.incrementAdditionalCount();
         }
         header.build();
@@ -472,12 +487,7 @@ class Response {
         final List<RR> list = zone.get(type, name);
         if (list.isEmpty()) {
             logger.debug("Didn't find: " + name);
-            if (!isAddressQueryType(type)) {
-                nameNotFound(type, name);
-                return emptyResult();
-            }
-
-            return lookForCNAME(type, name);
+            return handleMissingRecordLookup(type, name);
         }
 
         Map.Entry<java.lang.String, List<edu.msudenver.cs.jdnss.RR>> ret =
@@ -486,27 +496,22 @@ class Response {
         return ret;
     }
 
+    private Map.Entry<String, List<RR>> handleMissingRecordLookup(final RRCode type,
+                                                                  final String name) {
+        if (isAddressQueryType(type)) {
+            return lookForCNAME(type, name);
+        }
+
+        handleMissingRecord(type, name);
+        return emptyResult();
+    }
+
     private Map.Entry<String, List<RR>> emptyResult() {
         return EMPTY_RESULT;
     }
 
     private boolean isAddressQueryType(final RRCode type) {
         return ADDRESS_QUERY_TYPES.contains(type);
-    }
-
-    private void nameNotFound(final RRCode type, final String name) {
-        logger.traceEntry();
-        if (isDnssecEnabled()) {
-            throw new AssertionError();
-        }
-
-        if (type == RRCode.MX) {
-            logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
-            header.markNoError();
-        } else {
-            logger.debug("'" + type.toString() + "' lookup of " + name + " failed");
-            header.markNameError();
-        }
     }
 
     private Map.Entry<String, List<RR>> lookForCNAME(final RRCode type, final String name) {
@@ -555,7 +560,8 @@ class Response {
     */
     private void handleMissingRecord(final RRCode type, final String name) {
         logger.traceEntry();
-        if (hasOtherAddressRecord(type, name)) {
+        if (nameHasAnyRecords(name)) {
+            header.markNoError();
             maybeAddNsecRecord(name);
             return;
         }
@@ -563,9 +569,13 @@ class Response {
         markNameError(type, name);
     }
 
-    private boolean hasOtherAddressRecord(final RRCode type, final String name) {
-        final RRCode other = type == RRCode.A ? RRCode.AAAA : RRCode.A;
-        return !zone.get(other, name).isEmpty();
+    private boolean nameHasAnyRecords(final String name) {
+        for (RRCode rrCode : DATA_RR_TYPES) {
+            if (!zone.get(rrCode, name).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void maybeAddNsecRecord(final String name) {

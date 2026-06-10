@@ -2,16 +2,20 @@
 
 This file is for recording coding preferences, style choices, and project conventions.
 
-## General Style
 
+## Python
 - Use `python3` as the default Python interpreter.
 - Prefer `black`-style formatting for Python code, but maintain existing project style where necessary.
+- I don't use type hinting.
+
+## General Style
 - Use clear, concise logging messages.
 - Keep functions small and focused.
 - Do not have mutators/setters. Instead have custom constructors
 - Prefer cloning to mutators/setters.
 - I prefer to keep pre-existing comments along with AIs
 - I want AI to run my unit and system tests, and create more when appropriate.
+- I prefer yoda comparisons.
 
 ## JavaScript
 - Always use strict equality operators: === and !==.

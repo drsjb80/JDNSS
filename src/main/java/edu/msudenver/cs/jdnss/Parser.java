@@ -85,6 +85,7 @@ class Parser {
     private final BindZone zone;
     private final Logger logger = JDNSS.logger;
     private boolean inBase64;
+    private File includeDirectory;
 
     /**
      * The main parsing routine.
@@ -92,7 +93,13 @@ class Parser {
      * @param in where the information is coming from
      */
     Parser(final InputStream in, final BindZone zone) throws UnsupportedEncodingException {
+        this(in, zone, null);
+    }
+
+    Parser(final InputStream in, final BindZone zone, final File includeDirectory)
+            throws UnsupportedEncodingException {
         this.zone = zone;
+        this.includeDirectory = includeDirectory;
 
         /*
         ** set up the tokenizer
@@ -422,17 +429,18 @@ class Parser {
         }
 
         final String includePath = st.sval;
-        final File includeFile = new File(includePath);
+        final File includeFile = resolveIncludeFile(includePath);
         final String includeContext = includeContextString();
 
-        final String canonicalIncludePath;
+        final File canonicalIncludeFile;
         try {
-            canonicalIncludePath = includeFile.getCanonicalPath();
+            canonicalIncludeFile = includeFile.getCanonicalFile();
         } catch (IOException e) {
             logger.info("Cannot resolve $INCLUDE file at line " + st.lineno()
                     + ": " + includePath + " (context: " + includeContext + ")");
             return;
         }
+        final String canonicalIncludePath = canonicalIncludeFile.getPath();
 
         if (includeStack.size() >= MAX_INCLUDE_DEPTH) {
             logger.warn("Skipping $INCLUDE due to max depth " + MAX_INCLUDE_DEPTH
@@ -450,10 +458,11 @@ class Parser {
         // save the old one so we can get back to it.  if we're called
         // recursively, we're still good to go...
         final StreamTokenizer old = st;
+        final File oldIncludeDirectory = includeDirectory;
 
         final FileInputStream in;
         try {
-            in = new FileInputStream(includeFile);
+            in = new FileInputStream(canonicalIncludeFile);
         } catch (FileNotFoundException e) {
             logger.info("Cannot open $INCLUDE file at line " + st.lineno()
                     + ": " + includePath + " (context: " + includeContext + ")");
@@ -463,11 +472,13 @@ class Parser {
         includeStack.push(canonicalIncludePath);
         try {
             st = new StreamTokenizer(new InputStreamReader(in, "UTF-8"));
+            includeDirectory = canonicalIncludeFile.getParentFile();
             initTokenizer(st);
             RRs();
         } finally {
             includeStack.pop();
             st = old;
+            includeDirectory = oldIncludeDirectory;
             try {
                 in.close();
             } catch (IOException ignored) {
@@ -476,6 +487,14 @@ class Parser {
         }
 
         logger.traceExit();
+    }
+
+    private File resolveIncludeFile(final String includePath) {
+        final File includeFile = new File(includePath);
+        if (includeFile.isAbsolute() || includeDirectory == null) {
+            return includeFile;
+        }
+        return new File(includeDirectory, includePath);
     }
 
     private String includeContextString() {

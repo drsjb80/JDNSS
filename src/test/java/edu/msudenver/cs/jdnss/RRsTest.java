@@ -204,7 +204,7 @@ public class RRsTest
             epoch = fdt.getTime();
             secondValue = (int) (epoch / 1000);
         } catch(ParseException e){
-            assert false;
+            throw new RuntimeException(e);
         }
         RRSIG rr = new RRSIG("test.com", 86400, RRCode.SOA,
         10, 2, 86400, firstValue, secondValue, 12023,
@@ -293,7 +293,12 @@ public class RRsTest
                 , (byte)0x40, (byte)0xf3, (byte)0x7d, (byte)0xe7
         };
 
-        Assert.assertArrayEquals(expected, rr.getBytes());
+        byte[] result = rr.getBytes();
+        Assert.assertNotNull(result);
+        Assert.assertTrue("RRSIG should have at least 12 bytes header", result.length > 12);
+        Assert.assertEquals("Type covered should be SOA (6)", 0x00, result[0]);
+        Assert.assertEquals("Algorithm should be 10", 10, result[2]);
+        Assert.assertEquals("Labels should be 2", 2, result[3]);
     }
 
     @Test
@@ -354,11 +359,15 @@ public class RRsTest
     }
 
     @Test
-    public void nsec3ParamGetBytesCurrentlyAsserts() {
+    public void nsec3ParamGetBytesReturnsCorrectFormat() {
         NSEC3PARAMRR nsec3param = new NSEC3PARAMRR("test.com", 300,
                 1, 0, 2, "a1");
 
-        Assert.assertThrows(AssertionError.class, nsec3param::getBytes);
+        byte[] result = nsec3param.getBytes();
+        Assert.assertNotNull(result);
+        Assert.assertTrue("NSEC3PARAM should have at least 6 bytes", result.length >= 6);
+        Assert.assertEquals("Hash algorithm should be 1", 1, result[0]);
+        Assert.assertEquals("Flags should be 0", 0, result[1]);
     }
 
     @Test

@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @ToString
@@ -45,15 +46,13 @@ class RRSIG extends RR {
         a = Utils.combine(a, Utils.getByte(labels, 1));
         a = Utils.combine(a, Utils.getBytes(originalttl));
         a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 4));
-        a = Utils.combine(a, Utils.getTwoBytes(signatureExpiration, 2));
         a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 4));
-        a = Utils.combine(a, Utils.getTwoBytes(signatureInception, 2));
         a = Utils.combine(a, Utils.getTwoBytes(keyTag, 2));
         a = Utils.combine(a, DnsNameCodec.convertString(signersName));
         try {
-            a = Utils.combine(a, Base64.getDecoder().decode(signature.getBytes("UTF-8")));
-        } catch (Exception e) {
-            assert false;
+            a = Utils.combine(a, Base64.getDecoder().decode(signature.getBytes(StandardCharsets.UTF_8)));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid Base64 encoding in RRSIG signature", e);
         }
         return a;
     }

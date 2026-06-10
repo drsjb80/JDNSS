@@ -42,6 +42,7 @@ class OPTRR {
     OPTRR(byte[] bytes) {
         logger.traceEntry();
         assert bytes[0] == ROOT_LABEL;
+        original = Arrays.copyOfRange(bytes, 0, bytes.length);
 
         int location = 1;
 
@@ -71,22 +72,21 @@ class OPTRR {
             case EDNS0_CHAIN_OPTION_CODE:
                 return parseChainOption(bytes, location);
             default:
-                logger.error("Shouldn't get here");
-                return Integer.MAX_VALUE;
+                return location + optionLength;
         }
     }
 
     private int parseCookieOption(final byte[] bytes, int location) {
         cookie = true;
+        final int optionEnd = location + optionLength;
         clientCookie = Arrays.copyOfRange(bytes, location, location + CLIENT_COOKIE_LENGTH);
         location += CLIENT_COOKIE_LENGTH;
 
         if (optionLength > CLIENT_COOKIE_LENGTH) { // server cookie returned
-            serverCookie = Arrays.copyOfRange(bytes, location,
-                    location + optionLength - CLIENT_COOKIE_LENGTH);
+            serverCookie = Arrays.copyOfRange(bytes, location, optionEnd);
         }
 
-        return location;
+        return optionEnd;
     }
 
     private int parseChainOption(final byte[] bytes, int location) {

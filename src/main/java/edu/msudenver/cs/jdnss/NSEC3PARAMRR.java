@@ -22,7 +22,14 @@ class NSEC3PARAMRR extends RR {
 
     @Override
     protected byte[] getBytes() {
-        assert false;
-        return null;
+        byte[] a = new byte[0];
+        a = Utils.combine(a, Utils.getByte(hashAlgorithm, 1));
+        a = Utils.combine(a, Utils.getByte(flags, 1));
+        a = Utils.combine(a, Utils.getTwoBytes(iterations, 2));
+        a = Utils.combine(a, Utils.getByte(salt.length(), 1));
+        if (salt != null && !salt.isEmpty()) {
+            a = Utils.combine(a, DnsNameCodec.convertString(salt));
+        }
+        return a;
     }
 }

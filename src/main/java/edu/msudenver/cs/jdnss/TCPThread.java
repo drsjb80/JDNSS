@@ -2,6 +2,7 @@ package edu.msudenver.cs.jdnss;
 
 import org.apache.logging.log4j.Logger;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,20 +31,30 @@ class TCPThread implements Runnable {
 
     private int getLength() throws IOException{
         // in TCP, the first two bytes signify the length of the request
-        byte buffer[] = new byte[2];
-
-        assert is.read(buffer, 0, 2) == 2;
+        byte buffer[] = readFully(2);
 
         return Utils.addThem(buffer[0], buffer[1]);
     }
 
     private Query getQuery() throws IOException{
-        byte query[] = new byte[getLength()];
-        assert is.read(query) == query.length;
+        byte query[] = readFully(getLength());
 
         Query q = new Query(query);
         q.parseQueries(socket.getInetAddress().toString());
         return q;
+    }
+
+    private byte[] readFully(final int length) throws IOException {
+        byte[] buffer = new byte[length];
+        int offset = 0;
+        while (offset < length) {
+            int count = is.read(buffer, offset, length - offset);
+            if (count == -1) {
+                throw new EOFException("Expected " + length + " bytes, read " + offset);
+            }
+            offset += count;
+        }
+        return buffer;
     }
 
     private void sendResponse (Query q) throws IOException{

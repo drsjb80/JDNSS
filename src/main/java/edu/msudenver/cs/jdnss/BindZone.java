@@ -19,6 +19,9 @@ class BindZone extends Zone {
     */
 
     private final Map<RRCode, Map<String, List<RR>>> tableOfTables = new HashMap<>();
+    private final List<DNSKEYRR> dnskeys = new ArrayList<>();
+    private final Map<String, ValidationResult> validationCache = new HashMap<>();
+    private boolean dnssecEnabled = false;
 
     private final Logger logger = JDNSS.logger;
 
@@ -102,6 +105,10 @@ class BindZone extends Zone {
             this.name = name;
         }
 
+        if (rr instanceof DNSKEYRR) {
+            dnskeys.add((DNSKEYRR) rr);
+        }
+
         Map<String, List<RR>> h = getTable(rr.getType());
 
         logger.trace(h.get(name));
@@ -145,5 +152,33 @@ class BindZone extends Zone {
             return Collections.emptyList();
         }
         return v;
+    }
+
+    @Override
+    public List<DNSKEYRR> getDNSKEYs() {
+        return new ArrayList<>(dnskeys);
+    }
+
+    @Override
+    public boolean isDnssecEnabled() {
+        return dnssecEnabled;
+    }
+
+    @Override
+    public void setDnssecEnabled(final boolean enabled) {
+        this.dnssecEnabled = enabled;
+    }
+
+    @Override
+    public ValidationResult validate(final RRCode type, final String name, final List<? extends RR> records) {
+        final String cacheKey = type.name() + ":" + name;
+        ValidationResult cached = validationCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
+        final ValidationResult result = ZoneValidator.validate(type, name, records, this);
+        validationCache.put(cacheKey, result);
+        return result;
     }
 }

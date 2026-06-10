@@ -11,4 +11,8 @@ abstract class Zone {
     abstract boolean isEmpty();
     abstract List<RR> get(RRCode type, String name);
     abstract String getName();
+    abstract List<DNSKEYRR> getDNSKEYs();
+    abstract boolean isDnssecEnabled();
+    abstract void setDnssecEnabled(boolean enabled);
+    abstract ValidationResult validate(RRCode type, String name, List<? extends RR> records);
 }

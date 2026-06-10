@@ -1,6 +1,7 @@
 package edu.msudenver.cs.jdnss;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString
@@ -13,7 +14,7 @@ class SOARR extends RR {
     private final int refresh;
     private final int retry;
     private final int expire;
-    private final int minimum;
+    @Getter private final int minimum;
 
     SOARR(final String domain, final String server, final String contact,
           final int serial, final int refresh, final int retry, final int expire,
@@ -28,10 +29,6 @@ class SOARR extends RR {
         this.retry = retry;
         this.expire = expire;
         this.minimum = minimum;
-    }
-
-    public int getMinimum() {
-        return minimum;
     }
 
     @Override

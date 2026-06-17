@@ -1,6 +1,7 @@
 [![CI](https://github.com/drsjb80/JDNSS/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/drsjb80/JDNSS/actions/workflows/ci.yml)
 [![CD](https://github.com/drsjb80/JDNSS/actions/workflows/cd.yml/badge.svg)](https://github.com/drsjb80/JDNSS/actions/workflows/cd.yml)
 [![Changelog](https://github.com/drsjb80/JDNSS/actions/workflows/changelog.yml/badge.svg)](https://github.com/drsjb80/JDNSS/actions/workflows/changelog.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <table>
 <tr>

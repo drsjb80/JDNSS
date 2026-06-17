@@ -4,6 +4,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 class ServerCookie {
     private final static Logger logger = JDNSS.logger;
@@ -15,23 +17,32 @@ class ServerCookie {
         return secret.getBytes(StandardCharsets.UTF_8);
     }
 
+    private long computeHash(byte[] clientCookie, String clientIP) throws UnsupportedEncodingException {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(clientCookie);
+            md.update(clientIP.getBytes(StandardCharsets.UTF_8));
+            md.update(serverSecretBytes());
+            byte[] digest = md.digest();
+            long result = 0;
+            for (int i = 0; i < 8; i++) {
+                result = (result << 8) | (digest[i] & 0xff);
+            }
+            return result;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 not available", e);
+        }
+    }
+
     ServerCookie(byte[] clientCookie, String clientIP) throws UnsupportedEncodingException {
-        FNV1a64 fnv = new FNV1a64();
-        fnv.init(clientCookie);
-        fnv.update(clientIP.getBytes(StandardCharsets.UTF_8));
-        fnv.update(serverSecretBytes());
+        hash = computeHash(clientCookie, clientIP);
         logger.trace(serverSecret);
-        hash = fnv.getHash();
         logger.trace(hash);
     }
 
     //check server cookie based on a client cookie and IP Address
     boolean isValid(byte[] clientCookie, String clientIP) throws UnsupportedEncodingException {
-        FNV1a64 fnv = new FNV1a64();
-        fnv.init(clientCookie);
-        fnv.update(clientIP.getBytes(StandardCharsets.UTF_8));
-        fnv.update(serverSecretBytes());
-        return this.hash == fnv.getHash();
+        return this.hash == computeHash(clientCookie, clientIP);
     }
 
     byte[] getBytes() {
